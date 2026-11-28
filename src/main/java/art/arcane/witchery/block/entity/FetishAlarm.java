@@ -1,7 +1,7 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.Witchery;
-import art.arcane.witchery.entity.DreamSpirit;
+import art.arcane.witchery.entity.FlyingSpirit;
 import art.arcane.witchery.entity.SleepingBody;
 import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.item.TaglockItem;
@@ -100,7 +100,7 @@ final class FetishAlarm {
 
     private static boolean ignored(Mob mob) {
         ResourceLocation type = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
-        return mob instanceof DreamSpirit || mob instanceof SleepingBody
+        return mob instanceof FlyingSpirit || mob instanceof SleepingBody
                 || type.getNamespace().equals(Witchery.MODID) && type.getPath().startsWith("illusion")
                 || mob instanceof Familiar familiar && familiar.isFamiliar();
     }

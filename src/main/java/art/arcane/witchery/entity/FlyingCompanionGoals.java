@@ -8,16 +8,19 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import java.util.function.Predicate;
 
 final class FlyingCompanionGoals {
     private FlyingCompanionGoals() {}
@@ -32,25 +35,31 @@ final class FlyingCompanionGoals {
     }
 
     static final class Tempt extends Goal {
-        private final TamableAnimal companion;
+        private final Mob companion;
+        private final Predicate<ItemStack> food;
         @Nullable private Player player;
         private Vec3 trackedPosition = Vec3.ZERO;
         private int cooldown;
 
         Tempt(TamableAnimal companion) {
+            this(companion, companion::isFood);
+        }
+
+        Tempt(Mob companion, Predicate<ItemStack> food) {
             this.companion = companion;
+            this.food = food;
             setFlags(EnumSet.of(Flag.MOVE));
         }
 
         @Override
         public boolean canUse() {
-            if (companion.isTame()) return false;
+            if (isTamed(companion)) return false;
             if (cooldown > 0) {
                 cooldown--;
                 return false;
             }
             player = companion.level().getNearestPlayer(companion, 10);
-            return player != null && companion.isFood(player.getMainHandItem());
+            return player != null && food.test(player.getMainHandItem());
         }
 
         @Override
@@ -158,7 +167,7 @@ final class FlyingCompanionGoals {
         }
     }
 
-    static void travel(TamableAnimal companion, Vec3 input) {
+    static void travel(Mob companion, Vec3 input) {
         if (companion.isControlledByLocalInstance()) {
             Level level = companion.level();
             float drag = 0.91F;
@@ -179,7 +188,7 @@ final class FlyingCompanionGoals {
         companion.calculateEntityAnimation(false);
     }
 
-    private static boolean clearCourse(TamableAnimal companion, Vec3 displacement) {
+    static boolean clearCourse(Mob companion, Vec3 displacement) {
         double distance = (float) displacement.length();
         if (distance < 1) return true;
         Vec3 direction = displacement.scale(1 / distance);
@@ -190,13 +199,13 @@ final class FlyingCompanionGoals {
         return true;
     }
 
-    private static void steer(TamableAnimal companion, Vec3 displacement, double impulse, double climb) {
+    static void steer(Mob companion, Vec3 displacement, double impulse, double climb) {
         double distance = (float) displacement.length();
         Vec3 acceleration = distance > 0 ? displacement.scale(impulse / distance) : Vec3.ZERO;
         companion.setDeltaMovement(companion.getDeltaMovement().add(acceleration).add(0, climb, 0));
     }
 
-    private static void faceVelocity(TamableAnimal companion) {
+    static void faceVelocity(Mob companion) {
         Vec3 velocity = companion.getDeltaMovement();
         float heading = (float) (-Math.atan2(velocity.x, velocity.z) * Mth.RAD_TO_DEG);
         companion.setYRot(heading);
@@ -208,13 +217,21 @@ final class FlyingCompanionGoals {
                 (level.random.nextFloat() * 2 - 1) * radius, (level.random.nextFloat() * 8 - 4) * radius);
     }
 
+    private static boolean isTamed(Mob companion) {
+        return companion instanceof TamableAnimal pet && pet.isTame();
+    }
+
+    private static boolean isSitting(Mob companion) {
+        return companion instanceof TamableAnimal pet && pet.isOrderedToSit();
+    }
+
     static final class Defend extends Goal {
-        private final TamableAnimal companion;
+        private final Mob companion;
         private int pursuitDelay;
         private int blockedPenalty;
         private int strikeDelay;
 
-        Defend(TamableAnimal companion) {
+        Defend(Mob companion) {
             this.companion = companion;
             setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
         }
@@ -222,7 +239,7 @@ final class FlyingCompanionGoals {
         @Override
         public boolean canUse() {
             LivingEntity target = companion.getTarget();
-            return !companion.isOrderedToSit() && target != null && target.isAlive() && target.level() == companion.level();
+            return !isSitting(companion) && target != null && target.isAlive() && target.level() == companion.level();
         }
 
         @Override
@@ -347,11 +364,11 @@ final class FlyingCompanionGoals {
     }
 
     static final class Land extends Goal {
-        private final TamableAnimal companion;
+        private final Mob companion;
         @Nullable private BlockPos perch;
         private int travelTicks;
 
-        Land(TamableAnimal companion) {
+        Land(Mob companion) {
             this.companion = companion;
             setFlags(EnumSet.of(Flag.MOVE));
         }
@@ -364,7 +381,7 @@ final class FlyingCompanionGoals {
         @Override
         public boolean canContinueToUse() {
             BlockPos pos = companion.blockPosition();
-            return !companion.isOrderedToSit()
+            return !isSitting(companion)
                     && !solidOrLeaves(BlockPos.containing(companion.getX(), companion.getY() - 0.01, companion.getZ()))
                     && !liquid(pos) && !liquid(pos.below());
         }
@@ -454,11 +471,11 @@ final class FlyingCompanionGoals {
     }
 
     static final class Wander extends Goal {
-        private final TamableAnimal companion;
+        private final Mob companion;
         private Vec3 waypoint = Vec3.ZERO;
         private int courseDelay;
 
-        Wander(TamableAnimal companion) {
+        Wander(Mob companion) {
             this.companion = companion;
             setFlags(EnumSet.of(Flag.MOVE));
         }
@@ -466,14 +483,14 @@ final class FlyingCompanionGoals {
         @Override
         public boolean canUse() {
             Level level = companion.level();
-            if (companion.isOrderedToSit()) return false;
-            if (!companion.isTame() && level.getNearestPlayer(companion, 10) != null) return true;
+            if (isSitting(companion)) return false;
+            if (!isTamed(companion) && level.getNearestPlayer(companion, 10) != null) return true;
             return companion.getNoActionTime() < 100 && companion.getRandom().nextInt(level.isDay() ? 300 : 100) == 0;
         }
 
         @Override
         public boolean canContinueToUse() {
-            return !companion.isOrderedToSit();
+            return !isSitting(companion);
         }
 
         @Override
@@ -486,7 +503,7 @@ final class FlyingCompanionGoals {
             Vec3 course = waypoint.subtract(companion.position());
             double distance = course.lengthSqr();
             if (distance < 1 || distance > 3600) {
-                course = randomDirection(companion.level(), companion.isTame() ? 2 : 6);
+                course = randomDirection(companion.level(), isTamed(companion) ? 2 : 6);
                 waypoint = companion.position().add(course);
             }
             if (courseDelay-- <= 0) {

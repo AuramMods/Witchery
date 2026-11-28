@@ -1,4 +1,7 @@
 {
   "replace": false,
-  "values": ["minecraft:fortress"]
+  "values": [
+    "minecraft:fortress",
+    { "id": "#betterfortresses:better_fortresses", "required": false }
+  ]
 }

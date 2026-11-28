@@ -2,6 +2,7 @@ package art.arcane.witchery.mixin;
 
 import art.arcane.witchery.entity.BrewDroplet;
 import art.arcane.witchery.entity.DarkMark;
+import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.entity.GrenadeProjectile;
 import art.arcane.witchery.entity.Hellhound;
 import art.arcane.witchery.entity.HobgoblinGod;
@@ -37,6 +38,7 @@ abstract class DoesItTickActiveEntityMixin {
                 || (entity instanceof HornedHuntsman huntsman && huntsman.hasActiveEntrance())
                 || (entity instanceof HobgoblinGod god && god.hasActiveEntrance())
                 || (entity instanceof Leonard leonard && leonard.hasActiveEntrance())
+                || (entity instanceof DreamSpirit spirit && spirit.hasTimedLife())
                 || (entity instanceof LostSoul soul && soul.hasTimedLife())
                 || entity instanceof DarkMark
                 || entity instanceof Illusion

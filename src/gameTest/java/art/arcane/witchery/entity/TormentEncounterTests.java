@@ -156,7 +156,7 @@ public final class TormentEncounterTests {
         soul.configure(0, -1);
         long seed = 0;
         while (RandomSource.create(seed).nextInt(4) != 0) seed++;
-        soul.getRandom().setSeed(seed);
+        level.random.setSeed(seed);
         helper.assertTrue(soul.doHurtTarget(boss) && boss.getHealth() == 498,
                 "The fire Lost Soul's direct flame attack damages the Lord");
 

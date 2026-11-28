@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Dream Spirit guides and Lost Soul pursuit (2026-11-28)
+
+- Dream Spirits use the original Focused Will approach and startle boundary, and regular releases return to the clicked column. The original village lookup returned a waypoint at Y=71. Forge's default structure search can return a chunk at Y=0. The port uses the first structure piece's position for village and fortress flight and preserves saved destinations.
+- Lost Souls pursue vertically, retain the original quarter-block bounds and sixteen-block target range, and accept the original damage by color. A newly summoned Soul expires silently. Loading a positive saved timer also restores the inherited Subdued Spirit expiry reward. [Spirit behavior comparison](PORTING.md#dream-spirit-guides-and-lost-soul-pursuit-2026-11-28)
+- Copied Auram uses YUNG's fortress and the optional structure tag now locates it directly. The original and both packaged profiles agree on all 34 sampled observations. The Witch's Ladder rite and the Screamer test also exercise the shared spirit classification. Java 17 data generation, reobfuscation, and all 717 local Forge GameTests passed. The tested JAR has SHA-256 `0e4c1422a137af3eb7e82f9feb284c6f9169fafd95d719d66d44a0471b7f8783`. Fixture sources and logs are under `build/qa-spirit-flight/`.
+- Both packaged profiles reopened the same named guide and the timed blue Soul on a dedicated restart with no players online. The guide continued and expired, and the blue Soul left one Subdued Spirit. The fixture stopped the remaining Auram workers after the server saved all dimensions.
+
 ## Ground familiar feeding, pursuit, and swimming (2026-11-28)
 
 - The Witch Cat accepts the raw fish variants, tames inside three blocks, heals ten points from the owner's fish, and hunts chickens at the original average interval. Older and modern goal schedulers use different sweep intervals. The recorded hunt began through the registered goal in each runtime.

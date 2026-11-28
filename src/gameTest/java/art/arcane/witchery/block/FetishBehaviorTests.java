@@ -94,7 +94,12 @@ public final class FetishBehaviorTests {
                         TaglockItem.bindSignature(taglock, goblin);
                         use(helper, actor(helper, "LocalizedAlarmTester"), taglock);
                         helper.assertTrue(taglock.isEmpty(), "A normal Taglock use registers the named individual");
-                        fetish.load(fetish.saveWithoutMetadata());
+                        var bound = fetish.saveWithoutMetadata();
+                        var individual = bound.getList("KnownCreatures", Tag.TAG_COMPOUND).getCompound(0);
+                        helper.assertTrue(individual.getLong("CreatureMost") == goblin.getUUID().getMostSignificantBits()
+                                        && individual.getLong("CreatureLeast") == goblin.getUUID().getLeastSignificantBits(),
+                                "The alarm saved the named Hobgoblin's UUID before loading");
+                        fetish.load(bound);
                     }).thenWaitUntil(() -> helper.assertFalse(lampLit(helper), "The saved individual binding clears the alarm"))
                     .thenExecute(() -> witch.setCustomName(Component.literal("Named Coven Witch")))
                     .thenWaitUntil(() -> helper.assertTrue(lampLit(helper), "The previous group has no named witch binding"))
@@ -126,11 +131,13 @@ public final class FetishBehaviorTests {
     private static void exerciseScreamer(GameTestHelper helper, FetishBlockEntity fetish) {
         var level = helper.getLevel();
         var pig = placeMob(helper, EntityType.PIG, CENTER.south(3));
+        var soul = placeMob(helper, WitcheryEntities.LOST_SOUL.get(), CENTER.east(3));
         var player = actor(helper, "FetishTester");
 
-        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(level.getEntity(pig.getUUID()) == pig,
-                "The alarm can query the trusted pig")).thenIdle(24).thenExecute(() -> {
-            helper.assertFalse(lampLit(helper), "The legacy Pig group keeps the lamp off");
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.getEntity(pig.getUUID()) == pig && level.getEntity(soul.getUUID()) == soul,
+                "The alarm can query the trusted pig and the Lost Soul")).thenIdle(24).thenExecute(() -> {
+            helper.assertFalse(lampLit(helper), "The legacy Pig group and the ignored Lost Soul keep the lamp off");
         }).thenExecute(() -> placeMob(helper, EntityType.SHEEP, CENTER.north(3)))
                 .thenWaitUntil(() -> helper.assertTrue(lampLit(helper), "The unlisted sheep lights the lamp"))
                 .thenExecute(() -> {
@@ -157,7 +164,10 @@ public final class FetishBehaviorTests {
                             "The wash clears the groups, preserves the alarm mode, and returns the empty bucket");
                 }).thenWaitUntil(() -> helper.assertTrue(pig.isAlive() && lampLit(helper),
                         "The original pig lights the lamp after the list is cleared"))
-                .thenExecute(pig::discard).thenSucceed();
+                .thenExecute(() -> {
+                    pig.discard();
+                    soul.discard();
+                }).thenSucceed();
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_bind_witchs_ladder", setupTicks = 5, timeoutTicks = 400)
@@ -188,7 +198,7 @@ public final class FetishBehaviorTests {
             var needed = List.of(
                     placeMob(helper, WitcheryEntities.SPIRIT.get(), spirits.get(0)),
                     placeMob(helper, WitcheryEntities.SPIRIT.get(), spirits.get(1)),
-                    placeMob(helper, WitcheryEntities.SPIRIT.get(), spirits.get(2)),
+                    placeMob(helper, WitcheryEntities.LOST_SOUL.get(), spirits.get(2)),
                     placeMob(helper, WitcheryEntities.BANSHEE.get(), spirits.get(3)),
                     placeMob(helper, WitcheryEntities.BANSHEE.get(), spirits.get(4)));
             var unrelated = placeMob(helper, WitcheryEntities.POLTERGEIST.get(), bystander);
@@ -216,7 +226,7 @@ public final class FetishBehaviorTests {
                     "The saved rite returns the dyed Screamer Ladder with immediate pickup");
             helper.assertTrue(altar.power() == beforeCharge - 6_000, "The binding uses the earlier payment");
             helper.assertTrue(needed.stream().allMatch(Mob::isRemoved) && unrelated.isAlive(),
-                    "The rite consumes the three Dream Spirits and two Banshees and leaves the Poltergeist");
+                    "The rite consumes two Dream Spirits, a Lost Soul, and two Banshees and leaves the Poltergeist");
             helper.assertTrue(items.size() == 3 && items.stream().anyMatch(item -> ItemStack.matches(item.getItem(), stone))
                             && items.stream().anyMatch(item -> ItemStack.matches(item.getItem(), boline)),
                     "The rite also returns the original named Necromantic Stone and worn Boline");

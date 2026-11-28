@@ -3,7 +3,7 @@ package art.arcane.witchery.ritual;
 import art.arcane.witchery.block.FetishBlock;
 import art.arcane.witchery.block.entity.FetishBlockEntity;
 import art.arcane.witchery.block.entity.FetishEffect;
-import art.arcane.witchery.entity.DreamSpirit;
+import art.arcane.witchery.entity.FlyingSpirit;
 import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.item.DeathClothingItem;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -37,7 +37,7 @@ public final class FetishBinding {
         AABB area = new AABB(pos.getX() - 5, pos.getY() - 5, pos.getZ() - 5,
                 pos.getX() + 5, pos.getY() + 5, pos.getZ() + 5);
         Predicate<LivingEntity> eligible = spirit -> legacy || spirit.isAlive();
-        var spirits = level.getEntitiesOfClass(DreamSpirit.class, area, eligible);
+        var spirits = level.getEntitiesOfClass(FlyingSpirit.class, area, eligible);
         var undead = level.getEntitiesOfClass(SpectralUndead.class, area, eligible);
         var spectres = undead.stream().filter(mob -> mob.kind() == SpectralUndead.Kind.SPECTRE).toList();
         var banshees = undead.stream().filter(mob -> mob.kind() == SpectralUndead.Kind.BANSHEE).toList();

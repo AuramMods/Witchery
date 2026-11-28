@@ -196,7 +196,7 @@ public final class WitcheryEntities {
                     .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":leonard"));
     public static final RegistryObject<EntityType<LostSoul>> LOST_SOUL =
             ENTITY_TYPES.register("lostsoul", () -> EntityType.Builder.of(LostSoul::new, MobCategory.MONSTER)
-                    .sized(0.35F, 0.4F).clientTrackingRange(8).build(Witchery.MODID + ":lostsoul"));
+                    .sized(0.25F, 0.25F).clientTrackingRange(8).build(Witchery.MODID + ":lostsoul"));
     public static final RegistryObject<EntityType<DeathBoss>> DEATH =
             ENTITY_TYPES.register("death", () -> EntityType.Builder.of(DeathBoss::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.8F).fireImmune().clientTrackingRange(8).build(Witchery.MODID + ":death"));

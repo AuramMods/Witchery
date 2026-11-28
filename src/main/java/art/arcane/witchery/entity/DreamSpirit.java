@@ -2,18 +2,15 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.world.WitcheryCreatureSpawns;
 import art.arcane.witchery.world.WitcheryDimensions;
+import art.arcane.witchery.world.WitcheryTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
@@ -22,31 +19,23 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
-import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
-import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 import java.util.EnumSet;
 
-public final class DreamSpirit extends PathfinderMob {
-    private static final EntityDataAccessor<Integer> COLOR =
-            SynchedEntityData.defineId(DreamSpirit.class, EntityDataSerializers.INT);
+public final class DreamSpirit extends FlyingSpirit {
     private static final TagKey<Structure> FORTRESSES = TagKey.create(Registries.STRUCTURE,
             ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "spirit_fortresses"));
     private static final int GUIDE_TICKS = 200;
@@ -62,8 +51,6 @@ public final class DreamSpirit extends PathfinderMob {
 
     public DreamSpirit(EntityType<? extends DreamSpirit> type, Level level) {
         super(type, level);
-        moveControl = new FlyingMoveControl(this, 20, true);
-        setNoGravity(true);
     }
 
     public static AttributeSupplier.Builder attributes() {
@@ -81,60 +68,65 @@ public final class DreamSpirit extends PathfinderMob {
                 && level.getRawBrightness(pos, 0) > 8;
     }
 
-    public static boolean release(ServerLevel level, Vec3 position, Kind kind) {
+    public static boolean release(ServerLevel level, BlockPos start, Kind kind, @Nullable Player player) {
+        BlockPos ground = WitcheryTeleport.findEncounterGround(level, start);
+        BlockPos landing = ground.above();
+        if (level.isOutsideBuildHeight(landing.above()) || level.isEmptyBlock(ground)
+                || !level.isEmptyBlock(landing) || !level.isEmptyBlock(landing.above())
+                || player != null && !level.mayInteract(player, landing)) return false;
+        Vec3 position = Vec3.atBottomCenterOf(landing).add(0, 0.05, 0);
         DreamSpirit spirit = WitcheryEntities.SPIRIT.get().create(level);
         if (spirit == null) return false;
+        if (!WitcheryTeleport.canArrive(spirit, level, position)) return false;
         spirit.setPos(position);
-        if (!level.noCollision(spirit)) return false;
         spirit.kind = kind;
         spirit.setPersistenceRequired();
         if (kind != Kind.SPIRIT) {
             spirit.lifeTicks = GUIDE_TICKS;
-            spirit.destination = level.findNearestMapStructure(level.dimension().equals(Level.NETHER)
-                    ? FORTRESSES : StructureTags.VILLAGE, spirit.blockPosition(), 100, false);
+            spirit.destination = findGuideDestination(level, spirit.blockPosition());
         }
         if (!level.addFreshEntity(spirit)) return false;
-        level.sendParticles(ParticleTypes.INSTANT_EFFECT, position.x, position.y, position.z, 16, 0.3, 0.3, 0.3, 0.04);
+        WitcheryNetwork.sendSpiritRelease(level, position, spirit.getBbHeight());
         return true;
     }
 
-    @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        entityData.define(COLOR, 0);
+    @Nullable
+    private static BlockPos findGuideDestination(ServerLevel level, BlockPos origin) {
+        if (!level.getServer().getWorldData().worldGenOptions().generateStructures()) return null;
+        var targetKind = level.dimension().equals(Level.NETHER) ? FORTRESSES : StructureTags.VILLAGE;
+        var targets = level.registryAccess().registryOrThrow(Registries.STRUCTURE).getTag(targetKind).orElse(null);
+        if (targets == null) return null;
+        var source = level.getChunkSource();
+        var nearest = source.getGenerator().findNearestMapStructure(level, targets, origin, 100, false);
+        if (nearest == null) return null;
+        var pos = nearest.getFirst();
+        var chunk = new ChunkPos(pos);
+        var start = source.getChunk(chunk.x, chunk.z, ChunkStatus.STRUCTURE_STARTS, true)
+                .getStartForStructure(nearest.getSecond().value());
+        // The locate result may be a chunk position at y=0. The original guide aimed at the first structure piece.
+        return start != null && start.isValid() ? start.getPieces().get(0).getLocatorPosition() : pos.atY(origin.getY());
     }
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(1, new GuideGoal());
-        goalSelector.addGoal(3, new TemptGoal(this, 0.6, Ingredient.of(WitcheryIngredient.FOCUSED_WILL.item()), true));
-        goalSelector.addGoal(10, new WaterAvoidingRandomFlyingGoal(this, 0.8));
+        goalSelector.addGoal(3, new FlyingCompanionGoals.Tempt(this, stack -> stack.is(WitcheryIngredient.FOCUSED_WILL.item())));
+        goalSelector.addGoal(8, new GuideGoal());
+        goalSelector.addGoal(9, new FlyingCompanionGoals.Land(this));
+        goalSelector.addGoal(10, new FlyingCompanionGoals.Wander(this));
         goalSelector.addGoal(11, new LookAtPlayerGoal(this, Player.class, 10, 0.2F));
     }
 
-    @Override
-    protected PathNavigation createNavigation(Level level) {
-        var flying = new FlyingPathNavigation(this, level);
-        flying.setCanFloat(true);
-        return flying;
-    }
-
-    public int color() {
-        return entityData.get(COLOR);
+    public boolean hasTimedLife() {
+        return lifeTicks >= 0;
     }
 
     @Override
     public void aiStep() {
         super.aiStep();
-        if (level() instanceof ServerLevel server && isAlive() && lifeTicks >= 0 && --lifeTicks <= 0) {
-            server.sendParticles(ParticleTypes.POOF, getX(), getY(0.5), getZ(), 16, 0.28, 0.24, 0.28, 0.02);
+        if (level() instanceof ServerLevel server && isAlive() && hasTimedLife() && --lifeTicks <= 0) {
+            WitcheryNetwork.sendSpiritDeparture(server, position());
             dropSpirit();
             discard();
-        } else if (level().isClientSide && isAlive()) {
-            int color = color() == 0 ? 0xFFCC00 : color();
-            Vector3f tint = Vec3.fromRGB24(color).toVector3f();
-            level().addParticle(new DustParticleOptions(tint, 0.6F), getRandomX(0.6), getRandomY() + 0.1,
-                    getRandomZ(0.6), 0, 0, 0);
         }
     }
 
@@ -148,11 +140,6 @@ public final class DreamSpirit extends PathfinderMob {
             spawnAtLocation((kind == Kind.VILLAGE ? WitcheryIngredient.SUBDUED_VILLAGE_SPIRIT
                     : WitcheryIngredient.SUBDUED_SPIRIT).item());
         }
-    }
-
-    @Override
-    public boolean causeFallDamage(float distance, float multiplier, DamageSource source) {
-        return false;
     }
 
     @Override
@@ -173,7 +160,8 @@ public final class DreamSpirit extends PathfinderMob {
             case 2 -> Kind.GUIDE;
             default -> Kind.SPIRIT;
         };
-        entityData.set(COLOR, tag.getInt("FeatherColor") & 0xFFFFFF);
+        if (kind != Kind.SPIRIT && tag.getBoolean("Sitting")) setNoAi(true);
+        setColor(tag.getInt("FeatherColor") & 0xFFFFFF);
         destination = tag.contains("GuideDestination", Tag.TAG_LONG) ? BlockPos.of(tag.getLong("GuideDestination")) : null;
         if (destination == null && kind != Kind.SPIRIT && tag.contains("WITCWaypoint", Tag.TAG_COMPOUND)
                 && tag.contains("HomeX", Tag.TAG_ANY_NUMERIC)
@@ -183,8 +171,10 @@ public final class DreamSpirit extends PathfinderMob {
     }
 
     private final class GuideGoal extends Goal {
+        private int courseDelay;
+
         private GuideGoal() {
-            setFlags(EnumSet.of(Flag.MOVE));
+            setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP));
         }
 
         @Override
@@ -198,14 +188,33 @@ public final class DreamSpirit extends PathfinderMob {
         }
 
         @Override
+        public void stop() {
+            // An interrupted guide clears the waypoint and sits through the rest of its timer.
+            if (lifeTicks > 0) setNoAi(true);
+            destination = null;
+            courseDelay = 0;
+        }
+
+        @Override
         public void tick() {
             if (destination == null) return;
-            Vec3 facing = Vec3.atCenterOf(destination).subtract(position()).multiply(1, 0, 1);
-            double distance = facing.horizontalDistance();
-            if (distance < 0.5) return;
-            Vec3 next = position().add(facing.scale(Math.min(4, distance) / distance));
-            if (!level().isEmptyBlock(BlockPos.containing(next))) next = next.add(0, 1, 0);
-            moveControl.setWantedPosition(next.x, next.y, next.z, 0.8);
+            if (--courseDelay <= 0) {
+                Vec3 course = Vec3.atLowerCornerOf(destination).subtract(position());
+                if (!FlyingCompanionGoals.clearCourse(DreamSpirit.this, course)) {
+                    double detourX = (level().random.nextDouble() * 4 - 2) * 6;
+                    double detourY = (level().random.nextDouble() * 2 - 1) * 4;
+                    double detourZ = (level().random.nextDouble() * 4 - 2) * 6;
+                    if (course.lengthSqr() <= 1 && getY() > destination.getY() && getY() + detourY > 0) {
+                        detourY = -2 * getY() - detourY;
+                    }
+                    course = level().random.nextInt(2) == 0
+                            ? new Vec3(course.x, detourY, course.z) : new Vec3(detourX, detourY, detourZ);
+                }
+                double ceiling = Math.min(destination.getY() + 32, level().getMaxBuildHeight() - 1);
+                FlyingCompanionGoals.steer(DreamSpirit.this, course, 0.2, getY() < ceiling ? 0.1 : 0);
+                courseDelay = 10;
+            }
+            FlyingCompanionGoals.faceVelocity(DreamSpirit.this);
         }
     }
 }
