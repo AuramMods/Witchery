@@ -54,7 +54,8 @@ public final class WitchSaplingBlock extends SaplingBlock {
             case ALDER -> ALDER_GROWER;
             case HAWTHORN -> HAWTHORN_GROWER;
         };
-        grower.growTree(level, level.getChunkSource().getGenerator(), pos, state, random);
+        // The grower restores this state if the feature fails to place. A Forge veto leaves the current block untouched.
+        grower.growTree(level, level.getChunkSource().getGenerator(), pos, state.setValue(STAGE, 0), random);
     }
 
     private static final class TreeGrower extends AbstractTreeGrower {

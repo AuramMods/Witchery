@@ -1329,6 +1329,13 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Pass Java 17 data generation, reobfuscation, and all 37 required GameTests. The new test verifies both recipes, placement rotation, activation, zombie movement, the lack of a route for a pig, and recovery.
 - [x] Verify both skull textures and mounting orientations in a muted client. A north wall mount showed the inactive teeth and the active gold teeth. Rotated floor mounts used the same skull renderer and sat on their supports.
 
+### Alluring Skull recovery and Witchwood growth retries (2026-11-28)
+
+- The original server ticked the skull while dormant. The fixture armed it after 95 ticks, left the quadrant unchanged for four more ticks, and scanned its first quadrant on tick 100. Forge keeps that cadence from placement or load. Only the active skull scans for undead.
+- A second Necromantic Stone interaction removed the skull and returned one dormant item at offsets `(0.5, 0.8, 0.5)`, even with tile drops disabled. The stone stayed in hand. Forge permits a retry if the returned item is vetoed. Both interactions send the original particle and sound cues from 0.3 blocks above the skull's base to viewers within 16 blocks.
+- The original server reset a marked Rowan, Alder, or Hawthorn sapling to its unmarked stage when an obstruction stopped growth. The next accepted bone meal application marked it for another attempt. Forge now restores that stage after a failed tree feature and honors a Forge veto of the growth attempt.
+- The previous Forge JAR diverged in all six packaged comparisons. Reobfuscated clean Forge and copied Auram passed all six and both tracked the returned item by UUID after the entity store had ticked. The cue probe recorded both original payloads at 15 blocks and no skull cue at 17 blocks. Read `build/qa-sapling-and-skull/{native/first,clean-baseline/fresh,clean/tracked,pack/tracked}.log`. Both profiles used JAR SHA-256 `4a7aa2e9048100f299ae8a0a62861fff3d66baaefec6d2d941108ed985b2caef`. All 695 Forge GameTests passed locally.
+
 ## Void Bramble and the Statue of the Goddess (2026-11-21)
 
 - [x] Restore both original crafting recipes. `allowVoidBrambleRecipe` and `allowGoddessStatueRecipe` in `witchery-common.toml` both default to false. Each option enables its own recipe. Four Void Brambles require Ender Bramble, two Nether Stars, two Mutandis Extremis, and four Drops of Luck. The statue requires stone, four Nether Stars, and a Demon Heart.
@@ -3751,6 +3758,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
+  - [x] Compare [Alluring Skull recovery, scan cadence, and Witchwood growth retries](#alluring-skull-recovery-and-witchwood-growth-retries-2026-11-28) with the original server.
   - [x] Compare [workstation removal and Distillery slot routing](#workstation-removal-and-distillery-slot-routing-2026-11-27) for both Oven and Distillery IDs and the Spinning Wheel.
   - [x] Compare [Glint Weed and Ember Moss spread, support, and ignition](#spreading-herb-ticks-and-ember-moss-ignition-2026-11-27).
   - [x] Compare [Poppet Shelf priority across dimensions, loaded-chunk behavior, and original break drops](#poppet-shelf-lookup-and-break-drops-2026-11-27).

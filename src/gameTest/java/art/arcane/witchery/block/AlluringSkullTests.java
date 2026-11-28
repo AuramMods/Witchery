@@ -2,6 +2,7 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryBlockEntities;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
 import com.mojang.authlib.GameProfile;
@@ -13,6 +14,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -22,18 +24,72 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class AlluringSkullTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_skull_recovery")
+    public static void skullRecoveryReturnsTheItemWithTileDropsDisabled(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(7, 3, 7));
+        var skull = (AlluringSkullBlock) WitcheryBlocks.getRequired("alluringskull").get();
+        var inactive = skull.defaultBlockState();
+        level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(pos, inactive);
+        helper.assertTrue(skull.getTicker(level, inactive, WitcheryBlockEntities.ALLURING_SKULL.get()) != null,
+                "The Alluring Skull starts its scan clock when placed");
+        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "SkullRecovery"));
+        var stone = new ItemStack(WitcheryIngredient.NECROMANTIC_STONE.item());
+        player.setItemInHand(InteractionHand.MAIN_HAND, stone);
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        helper.assertTrue(inactive.use(level, player, InteractionHand.MAIN_HAND, hit).consumesAction(),
+                "The Necromantic Stone activates the placed skull");
+        var active = level.getBlockState(pos);
+        helper.assertTrue(active.getValue(AlluringSkullBlock.ACTIVE), "The placed skull is active");
+
+        var tileDrops = level.getGameRules().getRule(GameRules.RULE_DOBLOCKDROPS);
+        boolean oldRule = tileDrops.get();
+        tileDrops.set(false, level.getServer());
+        try {
+            Consumer<EntityJoinLevelEvent> veto = event -> {
+                if (event.getLevel() == level && event.getEntity() instanceof ItemEntity drop && drop.getItem().is(skull.asItem())) {
+                    event.setCanceled(true);
+                }
+            };
+            MinecraftForge.EVENT_BUS.addListener(veto);
+            try {
+                active.use(level, player, InteractionHand.MAIN_HAND, hit);
+                helper.assertTrue(level.getBlockState(pos) == active, "A rejected return keeps the placed skull available");
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(veto);
+            }
+
+            helper.assertTrue(active.use(level, player, InteractionHand.MAIN_HAND, hit).consumesAction() && level.isEmptyBlock(pos),
+                    "The second successful use removes the skull");
+            var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos), item -> item.getItem().is(skull.asItem()));
+            helper.assertTrue(drops.size() == 1 && drops.get(0).getItem().getCount() == 1 && stone.getCount() == 1
+                            && drops.get(0).position().distanceTo(Vec3.atBottomCenterOf(pos).add(0, 0.8, 0)) < 1.0E-7,
+                    "Recovery returns one item at the original point and keeps the stone with tile drops disabled");
+        } finally {
+            tileDrops.set(oldRule, level.getServer());
+            player.discard();
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", timeoutTicks = 160)
     public static void craftsActivatesLuresAndRecoversTheSkull(GameTestHelper helper) {
         var level = helper.getLevel();

@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Alluring Skull recovery and Witchwood growth retries (2026-11-28)
+
+- Marked Rowan, Alder and Hawthorn saplings reset to their initial stage after blocked growth. The next successful bone meal use marks the same species again.
+- The Alluring Skull's first scan uses the same clock as its dormant ticks. It returns one dormant item at the original position even with tile drops disabled, and an item-spawn veto leaves it available to try again. The shared cue packets use the original Flame and Explode samples and the skeleton horse sounds within 16 blocks.
+- The original and packaged observations are linked in the [comparison](PORTING.md#alluring-skull-recovery-and-witchwood-growth-retries-2026-11-28). Clean Forge and copied Auram passed all six comparisons and tracked the returned item. All 695 required Forge GameTests passed locally.
+
 ## Demon bargains and mob-cast symbols (2026-11-28)
 
 - The original Demon kept pursuit and ranged combat eligible during a bargain. The bargain began within four blocks and ended if the customer left or the Demon was knocked back. Its Blaze Rod trade exploded on update 51. The port restores the original goals and timings. Night village routing uses occupied village points of interest in the modern world.

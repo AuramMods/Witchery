@@ -1,5 +1,6 @@
 package art.arcane.witchery.block.entity;
 
+import art.arcane.witchery.block.AlluringSkullBlock;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.MobType;
@@ -34,6 +35,7 @@ public final class AlluringSkullBlockEntity extends BlockEntity {
     public static void tick(Level level, BlockPos pos, BlockState state, AlluringSkullBlockEntity skull) {
         if (++skull.ticks < UPDATE_INTERVAL) return;
         skull.ticks = 0;
+        if (!state.getValue(AlluringSkullBlock.ACTIVE)) return;
         skull.quadrant = (skull.quadrant + 1) % QUADRANTS.size();
         for (PathfinderMob undead : level.getEntitiesOfClass(PathfinderMob.class,
                 QUADRANTS.get(skull.quadrant).move(pos), mob -> mob.getMobType() == MobType.UNDEAD)) {

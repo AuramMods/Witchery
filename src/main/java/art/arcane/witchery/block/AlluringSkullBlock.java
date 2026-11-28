@@ -2,15 +2,14 @@ package art.arcane.witchery.block;
 
 import art.arcane.witchery.block.entity.AlluringSkullBlockEntity;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -56,16 +55,18 @@ public final class AlluringSkullBlock extends MountedSkullBlock {
         if (!WitcheryIngredient.NECROMANTIC_STONE.matches(player.getItemInHand(hand))) return InteractionResult.PASS;
         if (level instanceof ServerLevel server) {
             boolean active = state.getValue(ACTIVE);
-            server.sendParticles(active ? ParticleTypes.POOF : ParticleTypes.FLAME,
-                    pos.getX() + 0.5, pos.getY() + 0.3, pos.getZ() + 0.5, 16, 0.25, 0.25, 0.25, 0.03);
-            server.playSound(null, pos, active ? SoundEvents.SKELETON_HORSE_HURT : SoundEvents.SKELETON_HORSE_DEATH,
-                    SoundSource.BLOCKS, 1, 1);
             if (active) {
-                server.removeBlock(pos, false);
-                popResource(server, pos.above(), new ItemStack(this));
+                var drop = new ItemEntity(server, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5,
+                        new ItemStack(this));
+                if (!server.addFreshEntity(drop)) return InteractionResult.FAIL;
+                if (server.getBlockState(pos) != state || !server.removeBlock(pos, false)) {
+                    drop.discard();
+                    return InteractionResult.FAIL;
+                }
             } else {
                 server.setBlockAndUpdate(pos, state.setValue(ACTIVE, true));
             }
+            WitcheryNetwork.sendAlluringSkullCue(server, pos, active);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -77,7 +78,7 @@ public final class AlluringSkullBlock extends MountedSkullBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return state.getValue(ACTIVE) && !level.isClientSide
+        return !level.isClientSide
                 ? createTickerHelper(type, WitcheryBlockEntities.ALLURING_SKULL.get(), AlluringSkullBlockEntity::tick) : null;
     }
 }
