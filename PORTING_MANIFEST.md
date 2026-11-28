@@ -1441,6 +1441,8 @@ On an explicit legacy import, Witchery reads its `TicketList` records from each 
 
 The Poppet Shelf imports the original six placement directions and the powered bit. Placing a shelf uses the original vertical and horizontal rules. Neighbor updates sample power at the shelf and in the space above it. Earlier 1.20.1 palettes that lacked these properties use south and unpowered. The model keeps its original fixed alignment.
 
+Ward lookup checks the player's inventory, then loaded shelves in the Overworld, Nether, End, and Dream. Unrestricted lookup also checks Torment and Mirror in their original default order, followed by other modern dimensions in the server's order. Within a dimension the first loaded shelf wins, and each shelf checks its slots in order. The lookup never loads a missing chunk. Breaking a shelf scatters its contents in slot order with the original world rolls and releases the ticking ticket. See the [shelf behavior comparison](PORTING.md#poppet-shelf-lookup-and-break-drops-2026-11-27).
+
 The Vampiric Poppet keeps both legacy Taglock indices. The first tracks the protected player, and the second tracks the damage recipient. Player bindings read `WITCPlayer1` and `WITCPlayer2` with optional `WITCPlayerUUID1` and `WITCPlayerUUID2`. Creature bindings retain the `WITCEntityIDm`, `WITCEntityIDl` and `WITCDisplayName` fields for each index.
 
 `witchery:grassper` reads its single legacy `Items` entry at `Slot:0b`. The rite heart retains legacy `Sacrifices` item entries and writes `GrassperPos` for offerings it takes from a Grassper. Critter Snare item damage 1 through 4 becomes the `critter` block state. The older bat subtype 9 also sets `stocked`, which restores `WitcheryShopStock` when that bat is released.

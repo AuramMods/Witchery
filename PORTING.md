@@ -11,6 +11,8 @@
 
 The copied Auram survival replay reached both rank-ten transformations and completed Torment, Mirror, Leonard, and Death using the fixture assistance recorded in each milestone. The November 27 multiplayer replay covers the original packet intents on an earlier package. The open work below tracks behavior and visuals against 0.24.1, specialized save fields, and the replay on the final JAR.
 
+Audit each remaining behavior family against the original inventory before building a candidate. Use focused local checks during implementation and group packaged clean Forge and copied Auram checks by milestone. Exercise isolated client profiles when a check requires rendering or a connected player.
+
 - [ ] Close the behavior rows under Phase 4 against the 0.24.1 inventory. For each open row, list the legacy actions and the matching modern handlers, cite the existing comparisons, and record any missing behavior or explicit adaptation. Fix the uncovered cases and verify their normal gameplay entry points. The crafting grids, Circle Magic offerings, and fixed workstation registry comparisons are recorded below.
   - [x] Close the Circle Magic behavior pass. The original recipe source matches all 96 IDs and 39 completion classes in the [completion comparison](PORTING_MANIFEST.md#circle-magic-completion-classes). Its 29 milestone links cover the handlers and their adaptations. The final package replay still exercises the normal Circle Magic path in survival.
   - [x] Account for the 169 Cauldron mixing keys and 15 fixed cast keys. The running 0.24.1 registry assigned all 184 entries to the action families listed in the manifest. The identity and cost comparison still matches all 168 flattened mixing entries.
@@ -558,6 +560,15 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 - [x] Keep the original dimension restriction by default. Restore legacy inventory and owner data. The 68 required Forge GameTests covered the recipe, legacy ward subtype, inventory priority, comparator and ticket removal. Java 17 data generation and reobfuscation succeeded.
 - [x] Cast with a Voodoo Poppet in the muted client and verify that the remote ward reflected it. Both poppets took 350 wear. The survival client broke the shelf with an axe, collected the shelf and the worn ward, and the chunk unloaded after the player left. A packaged restart retained a real shelf ticket and removed an injected stale ticket at an empty location.
 - [x] Restore the original six placement directions and redstone latch. A neighbor update checks both the shelf and the space above it. The GameTest covers the original vertical placement threshold and keeps the ward inventory while the power state changes.
+
+## Poppet Shelf lookup and break drops (2026-11-27)
+
+- [x] Compare nine ward selections in the released server and the reobfuscated clean Forge package. The carried ward wins before shelves. The first loaded shelf checks its lowest eligible slot, even when another shelf is nearer. The Overworld, Nether, End, and Dream supply wards in that order. Restricted lookup skips Torment and unrestricted lookup accepts it.
+- [x] Remove the ticking ticket from a distant shelf and let its chunk actually unload. The preceding JAR loaded that shelf again during protection lookup and spent its ward. The rebuilt package leaves the chunk unloaded. Both clean Forge and copied Auram save the ward with zero wear.
+- [x] Match the released server's break scatter. A shelf with a named 48-stack and a bound ward emitted three fragments of 27, 10, and 11 plus the intact ward. Clean Forge matched the original positions, motion, ordering, pickup delay, and next world roll of 713.
+- [x] Import the original Nether and End ticking tickets from a world with two remote named Death Protection Poppets. Both shelves loaded before any player joined and remained available through an ordinary dedicated restart. The returning muted survival player stayed in the Overworld through three lethal hits. The carried ward protected the first hit, the Nether ward the second, and the End ward the third.
+- [x] Replay all nine selections on copied Auram. Its dimension registry uses a different order and yields the same ward choices after the change. The four break drops matched its configured random source, with 523 as the next world roll.
+- [x] Reobfuscate the Java 17 package and pass all 670 required local Forge GameTests. The Grassper release fixture now observes the admitted drop even when the entity tracker has yet to index it.
 
 ## Specialized Protection Poppets (2026-11-20)
 
@@ -3529,6 +3540,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
+  - [x] Compare [Poppet Shelf priority across dimensions, loaded-chunk behavior, and original break drops](#poppet-shelf-lookup-and-break-drops-2026-11-27).
   - [x] Compare [Brazier ignition, comparator weighting, and the original break drops](#brazier-ignition-comparator-and-saved-offerings-2026-11-27), including saved offerings.
   - [x] Compare [Witch's Oven menu eligibility and routing, named output, and stack limits](#oven-menu-and-named-output-2026-11-27) alongside the original batch and funnel checks.
   - [x] Compare [Leech Chest access and redstone](#leech-chests-blood-roses-and-the-boline-2026-11-20) and the [Refilling Chest clock and loot placement](#torment-milestone-2026-11-19).

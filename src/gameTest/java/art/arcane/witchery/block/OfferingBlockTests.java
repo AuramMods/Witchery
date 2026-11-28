@@ -17,11 +17,15 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+
+import java.util.ArrayList;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
@@ -77,12 +81,24 @@ public final class OfferingBlockTests {
         state.use(level, player, InteractionHand.MAIN_HAND, hit);
         helper.assertTrue(player.getMainHandItem().getCount() == 2 && grassper.getItem(0).getCount() == 1,
                 "A player offers one item from the held stack");
-        state.use(level, player, InteractionHand.MAIN_HAND, hit);
-        var released = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos), item -> item.getItem().is(Items.DIAMOND));
-        helper.assertTrue(grassper.isEmpty() && released.size() == 1, "A second use releases only the offering");
-        helper.assertTrue(!released.get(0).hasPickUpDelay() && released.get(0).getItem().getCount() == 1
-                        && released.get(0).getItem().getHoverName().getString().equals("Grassper offering"),
-                "The released item keeps its tag and can be picked up immediately");
+        var released = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity item && item.getItem().is(Items.DIAMOND)
+                    && item.position().equals(new Vec3(pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5))) released.add(item);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            state.use(level, player, InteractionHand.MAIN_HAND, hit);
+            helper.assertTrue(grassper.isEmpty() && released.size() == 1 && released.get(0).isAddedToWorld(),
+                    "A second use admits exactly the stored offering to the world");
+            var drop = released.get(0);
+            helper.assertTrue(!drop.hasPickUpDelay() && drop.getItem().getCount() == 1
+                            && drop.getItem().getHoverName().getString().equals("Grassper offering"),
+                    "The released item keeps its tag and can be picked up immediately");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            released.forEach(ItemEntity::discard);
+        }
         helper.succeed();
     }
 

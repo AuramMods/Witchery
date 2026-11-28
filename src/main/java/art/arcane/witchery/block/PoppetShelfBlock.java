@@ -4,7 +4,6 @@ import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -115,7 +114,11 @@ public final class PoppetShelfBlock extends BaseEntityBlock {
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
         if (!state.is(replacement.getBlock()) && level instanceof ServerLevel server) {
-            if (level.getBlockEntity(pos) instanceof PoppetShelfBlockEntity shelf) Containers.dropContents(level, pos, shelf);
+            if (level.getBlockEntity(pos) instanceof PoppetShelfBlockEntity shelf) {
+                for (int slot = 0; slot < shelf.getContainerSize(); slot++) {
+                    LegacyContainerDrops.scatter(level, pos, shelf.getItem(slot));
+                }
+            }
             PoppetShelfBlockEntity.unforce(server, pos);
             level.updateNeighbourForOutputSignal(pos, this);
         }

@@ -1,6 +1,7 @@
 package art.arcane.witchery.block.entity;
 
 import art.arcane.witchery.block.BrazierBlock;
+import art.arcane.witchery.block.LegacyContainerDrops;
 import art.arcane.witchery.crafting.BrazierRecipe;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -15,7 +16,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -167,11 +167,13 @@ public final class BrazierBlockEntity extends BlockEntity {
 
     public void dropContents(Level level) {
         if (ignited && hasAllIngredients()) {
-            drop(level, new ItemStack(WitcheryIngredient.WOOD_ASH.item()));
+            LegacyContainerDrops.scatter(level, worldPosition, new ItemStack(WitcheryIngredient.WOOD_ASH.item()));
             return;
         }
-        for (int slot = 0; slot < INGREDIENT_SLOTS; slot++) drop(level, ingredients.getStackInSlot(slot));
-        if (ignited) drop(level, new ItemStack(WitcheryIngredient.WOOD_ASH.item()));
+        for (int slot = 0; slot < INGREDIENT_SLOTS; slot++) {
+            LegacyContainerDrops.scatter(level, worldPosition, ingredients.getStackInSlot(slot));
+        }
+        if (ignited) LegacyContainerDrops.scatter(level, worldPosition, new ItemStack(WitcheryIngredient.WOOD_ASH.item()));
     }
 
     public int comparatorSignal() {
@@ -183,23 +185,6 @@ public final class BrazierBlockEntity extends BlockEntity {
         }
         if (ignited) fullness += 1.0F / 64; // The fourth inventory slot holds the ignition ash.
         return Math.min(15, 1 + Mth.floor(fullness * (14.0F / 4)));
-    }
-
-    private void drop(Level level, ItemStack stack) {
-        if (stack.isEmpty()) return;
-        var random = level.random;
-        double x = worldPosition.getX() + (random.nextFloat() * 0.8F + 0.1F);
-        double y = worldPosition.getY() + (random.nextFloat() * 0.8F + 0.1F);
-        double z = worldPosition.getZ() + (random.nextFloat() * 0.8F + 0.1F);
-        int remaining = stack.getCount();
-        while (remaining > 0) {
-            int count = Math.min(remaining, 10 + random.nextInt(21));
-            var dropped = new ItemEntity(level, x, y, z, stack.copyWithCount(count),
-                    (float) random.nextGaussian() * 0.05F, (float) random.nextGaussian() * 0.05F + 0.2F,
-                    (float) random.nextGaussian() * 0.05F);
-            level.addFreshEntity(dropped);
-            remaining -= count;
-        }
     }
 
     private void setFlame(boolean flame) {

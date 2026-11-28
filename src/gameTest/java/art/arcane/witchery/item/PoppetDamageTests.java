@@ -1,12 +1,17 @@
 package art.arcane.witchery.item;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.PoppetShelfBlockEntity;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
+import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryItems;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -15,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -198,6 +204,65 @@ public final class PoppetDamageTests {
                         && bearer.getHealth() == 10,
                 "A transformed werewolf can still use a Hunger Protection Poppet at low health");
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_shelf_ward_priority")
+    public static void remoteWardsFollowInventorySlotAndLegacyDimensionOrder(GameTestHelper helper) {
+        var player = player(helper);
+        var world = helper.getLevel();
+        var server = world.getServer();
+        var nearby = helper.absolutePos(new BlockPos(5, 4, 5));
+        var samePosition = new BlockPos(nearby.getX(), 140, nearby.getZ());
+        var first = placeShelf(world, nearby.east(3));
+        var second = placeShelf(world, nearby);
+        var nether = placeShelf(server.getLevel(Level.NETHER), samePosition);
+        var end = placeShelf(server.getLevel(Level.END), samePosition);
+        var dream = placeShelf(server.getLevel(WitcheryDimensions.DREAM), samePosition);
+        var torment = placeShelf(server.getLevel(WitcheryDimensions.TORMENT), samePosition);
+        var restricted = WitcheryServerConfig.RESTRICT_POPPET_SHELVES;
+        boolean oldRestriction = restricted.get();
+        var type = WitcheryItems.getRequired("voodoo_protection_poppet").get();
+        try {
+            restricted.set(true);
+            for (var shelf : new PoppetShelfBlockEntity[]{first, second, nether, end, dream, torment}) {
+                var ward = new ItemStack(type);
+                TaglockItem.bindSignature(ward, player);
+                shelf.setItem(3, ward);
+            }
+            var earlierSlot = new ItemStack(type);
+            TaglockItem.bindSignature(earlierSlot, player);
+            first.setItem(1, earlierSlot);
+            var carried = equipPoppet(player, 5, "voodoo_protection_poppet");
+            helper.assertTrue(BoundPoppetItem.useWard(player, type, 350) && carried.getTag().getInt("WITCDamage") == 350,
+                    "The carried ward takes priority over every remote shelf");
+            player.getInventory().setItem(5, ItemStack.EMPTY);
+            helper.assertTrue(BoundPoppetItem.useWard(player, type, 350) && earlierSlot.getTag().getInt("WITCDamage") == 350,
+                    "The first loaded shelf uses its lowest matching slot");
+            first.setItem(1, ItemStack.EMPTY);
+            for (var shelf : new PoppetShelfBlockEntity[]{first, second, nether, end, dream}) {
+                helper.assertTrue(BoundPoppetItem.useWard(player, type, 350)
+                                && shelf.getItem(3).getTag().getInt("WITCDamage") == 350,
+                        "The next loaded shelf supplies the ward in " + shelf.getLevel().dimension().location());
+                shelf.setItem(3, ItemStack.EMPTY);
+            }
+            helper.assertTrue(!BoundPoppetItem.useWard(player, type, 350), "Restricted lookup skips Torment");
+            restricted.set(false);
+            helper.assertTrue(BoundPoppetItem.useWard(player, type, 350) && torment.getItem(3).getTag().getInt("WITCDamage") == 350,
+                    "Unrestricted lookup accepts a loaded Torment shelf");
+        } finally {
+            restricted.set(oldRestriction);
+            for (var shelf : new PoppetShelfBlockEntity[]{first, second, nether, end, dream, torment}) {
+                shelf.clearContent();
+                shelf.getLevel().removeBlock(shelf.getBlockPos(), false);
+            }
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    private static PoppetShelfBlockEntity placeShelf(ServerLevel world, BlockPos pos) {
+        world.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("poppetshelf").get().defaultBlockState());
+        return (PoppetShelfBlockEntity) world.getBlockEntity(pos);
     }
 
     private static FakePlayer player(GameTestHelper helper) {

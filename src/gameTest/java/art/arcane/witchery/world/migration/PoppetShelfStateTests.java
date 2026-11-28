@@ -11,25 +11,70 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class PoppetShelfStateTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_poppet_shelf_state")
+    public static void breakingShelfScattersItsSavedContents(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(5, 4, 5));
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("poppetshelf").get().defaultBlockState());
+        var shelf = (PoppetShelfBlockEntity) level.getBlockEntity(pos);
+        var gunpowder = new ItemStack(Items.GUNPOWDER, 48);
+        gunpowder.setHoverName(Component.literal("Saved Offering"));
+        shelf.setItem(0, gunpowder);
+        var ward = WitcheryItems.getRequired("death_protection_poppet").get().getDefaultInstance();
+        ward.getOrCreateTag().putInt("FixtureMarker", 42);
+        shelf.setItem(6, ward);
+
+        var drops = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity drop
+                    && drop.distanceToSqr(Vec3.atCenterOf(pos)) < 4) drops.add(drop);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            level.random.setSeed(42);
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            helper.assertTrue(drops.stream().map(drop -> drop.getItem().getCount()).toList().equals(List.of(27, 10, 11, 1))
+                            && drops.subList(0, 3).stream().allMatch(drop -> drop.getItem().getHoverName().getString().equals("Saved Offering"))
+                            && drops.get(3).getItem().getTag().getInt("FixtureMarker") == 42
+                            && drops.stream().allMatch(drop -> drop.saveWithoutId(new CompoundTag()).getShort("PickupDelay") == 0),
+                    "Break drops keep the original fragmentation, slot order, custom data and pickup delay");
+            helper.assertTrue(!PoppetShelfBlockEntity.activeShelves(level.getServer()).contains(shelf),
+                    "Breaking the shelf removes it from future ward searches");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            drops.forEach(ItemEntity::discard);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_poppet_shelf_state")
     public static void importsLegacyDirectionsAndUpdatesOnlyThePowerBit(GameTestHelper helper) throws Exception {
         var shelf = WitcheryBlocks.getRequired("poppetshelf");

@@ -10,10 +10,12 @@ import art.arcane.witchery.world.WitcheryDimensions;
 import com.google.gson.JsonParseException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.ContainerHelper;
@@ -27,7 +29,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.world.ForgeChunkManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -38,6 +42,8 @@ import java.util.WeakHashMap;
 
 public final class PoppetShelfBlockEntity extends RandomizableContainerBlockEntity {
     private static final int SLOTS = 9;
+    private static final List<ResourceKey<Level>> ORIGINAL_WORLD_ORDER = List.of(Level.OVERWORLD, Level.NETHER, Level.END,
+            WitcheryDimensions.DREAM, WitcheryDimensions.TORMENT, WitcheryDimensions.MIRROR);
     private static final Map<ServerLevel, Set<BlockPos>> SHELVES = new WeakHashMap<>();
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
 
@@ -64,6 +70,12 @@ public final class PoppetShelfBlockEntity extends RandomizableContainerBlockEnti
         keepChunkLoaded();
     }
 
+    @Override
+    public void onChunkUnloaded() {
+        if (level instanceof ServerLevel server) removeLoadedShelf(server, worldPosition);
+        super.onChunkUnloaded();
+    }
+
     public void keepChunkLoaded() {
         if (level instanceof ServerLevel server) {
             SHELVES.computeIfAbsent(server, ignored -> new LinkedHashSet<>()).add(worldPosition);
@@ -73,30 +85,40 @@ public final class PoppetShelfBlockEntity extends RandomizableContainerBlockEnti
     }
 
     public static void unforce(ServerLevel level, BlockPos pos) {
-        Set<BlockPos> positions = SHELVES.get(level);
-        if (positions != null) positions.remove(pos);
+        removeLoadedShelf(level, pos);
         ChunkPos chunk = new ChunkPos(pos);
         ForgeChunkManager.forceChunk(level, Witchery.MODID, pos, chunk.x, chunk.z, false, true);
     }
 
+    private static void removeLoadedShelf(ServerLevel level, BlockPos pos) {
+        Set<BlockPos> positions = SHELVES.get(level);
+        if (positions != null) positions.remove(pos);
+    }
+
     public static List<PoppetShelfBlockEntity> activeShelves(MinecraftServer server) {
         List<PoppetShelfBlockEntity> shelves = new ArrayList<>();
-        for (ServerLevel level : server.getAllLevels()) {
-            if (!canProtect(level)) continue;
-            Set<BlockPos> positions = SHELVES.get(level);
-            if (positions == null) continue;
-            for (BlockPos pos : List.copyOf(positions)) {
-                if (level.getBlockEntity(pos) instanceof PoppetShelfBlockEntity shelf) shelves.add(shelf);
+        boolean restricted = WitcheryServerConfig.RESTRICT_POPPET_SHELVES.get();
+        // Forge 1.7.10 put vanilla worlds first, then the original Witchery dimensions in their default order.
+        var worlds = restricted ? ORIGINAL_WORLD_ORDER.subList(0, 4) : ORIGINAL_WORLD_ORDER;
+        for (ResourceKey<Level> world : worlds) addLoadedShelves(server.getLevel(world), shelves);
+        if (!restricted) {
+            for (ServerLevel level : server.getAllLevels()) {
+                if (!ORIGINAL_WORLD_ORDER.contains(level.dimension())) addLoadedShelves(level, shelves);
             }
         }
         return shelves;
     }
 
-    private static boolean canProtect(ServerLevel level) {
-        if (!WitcheryServerConfig.RESTRICT_POPPET_SHELVES.get()) return true;
-        var dimension = level.dimension();
-        return dimension.equals(Level.OVERWORLD) || dimension.equals(Level.NETHER) || dimension.equals(Level.END)
-                || dimension.equals(WitcheryDimensions.DREAM);
+    private static void addLoadedShelves(@Nullable ServerLevel level, List<PoppetShelfBlockEntity> shelves) {
+        if (level == null) return;
+        Set<BlockPos> positions = SHELVES.get(level);
+        if (positions == null) return;
+        for (BlockPos pos : List.copyOf(positions)) {
+            LevelChunk chunk = level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(pos.getX()),
+                    SectionPos.blockToSectionCoord(pos.getZ()));
+            if (chunk != null && chunk.getBlockEntity(pos, LevelChunk.EntityCreationType.CHECK) instanceof PoppetShelfBlockEntity shelf
+                    && !shelf.isRemoved()) shelves.add(shelf);
+        }
     }
 
     @Override
