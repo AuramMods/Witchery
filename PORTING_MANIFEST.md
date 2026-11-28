@@ -941,7 +941,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 122 | `SOULFIRE` | `EntitySoulfire` | `soulfire` |
 | 123 | `IMP` | `EntityImp` | `imp` (rite, ownership, gift progression, power, and five signed spell contracts restored) |
 | 124 | `DARK_MARK` | `EntityDarkMark` | `darkmark` |
-| 125 | `MINDRAKE` | `EntityMindrake` | `mindrake` (Sprig mutation, three-second bulbs, owner-directed attacks and bursts) |
+| 125 | `MINDRAKE` | `EntityMindrake` | `mindrake` (Sprig mutation, three-second bulbs, reachable targets for wild Mindrakes, owner-directed attacks and bursts) |
 | 126 | `GOBLIN` | `EntityGoblin` | `goblin` |
 | 127 | `GOBLIN_MOG` | `EntityGoblinMog` | `goblinmog` (ranged patron boss, forward arrow origin and impulse-based shot speed, `Invul` and `WitcheryTarget` saved) |
 | 128 | `GOBLIN_GULG` | `EntityGoblinGulg` | `goblingulg` (melee patron boss, distance-based partner protection through the death animation, `Invul` and `WitcheryTarget` saved) |
@@ -952,7 +952,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 133 | `LEONARD` | `EntityLeonard` | `leonard` (cauldron summon, spells, shield and Urn loot) |
 | 134 | `LOST_SOUL` | `EntityLostSoul` | `lostsoul` (three vulnerabilities, legacy color and expiry) |
 | 135 | `WOLFMAN` | `EntityWolfman` | `wolfman` |
-| 136 | `HELLHOUND` | `EntityHellhound` | `hellhound` |
+| 136 | `HELLHOUND` | `EntityHellhound` | `hellhound` (reachable and visible prey, sheep priority, strict five-block player and Follower limit) |
 | 137 | `WERE_VILLAGER` | `EntityVillagerWere` | `werevillager` |
 | 138 | `VILLAGE_GUARD` | `EntityVillageGuard` | `villageguard` |
 | 139 | `VAMPIRE_VILLAGER` | `EntityVampire` | `vampire` |

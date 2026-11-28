@@ -35,7 +35,6 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
@@ -81,10 +80,10 @@ public final class Hellhound extends Monster {
         goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(5, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Sheep.class, 0, true, true, null));
-        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, true,
+        targetSelector.addGoal(2, new ReachableTargetGoal<>(this, Sheep.class, true, null));
+        targetSelector.addGoal(3, new ReachableTargetGoal<>(this, Player.class, true,
                 target -> distanceToSqr(target) < 25));
-        targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, WitcheryFollower.class, 0, true, true,
+        targetSelector.addGoal(4, new ReachableTargetGoal<>(this, WitcheryFollower.class, true,
                 target -> distanceToSqr(target) < 25));
     }
 

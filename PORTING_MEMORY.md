@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Hellhound and Mindrake target selection (2026-11-28)
+
+- The released 0.24.1 server exercised 15 targeting cases. Wild Mindrakes accepted reachable players beyond a wall, rejected a sealed target, and stopped their wild hunt when tamed. Hellhounds required sight and reachability for sheep, players and Followers. Players and Followers qualified at four blocks and failed at five. A blocked sheep gave way to a reachable player.
+- `ReachableTargetGoal` shares the Ent's navigation endpoint check. Hellhounds preserve their individual prey priorities. Both creatures exercised normal pursuit with a hidden, muted clean Forge survival client. The Mindrake rounded the wall and burst. The Hellhound attacked the player while the sheep across the gap retained its health. Java 17 packaging and all 685 required Forge GameTests passed locally. Read `build/qa-reachable-prey/`.
+- Both dedicated profiles matched all 15 native cases on the same package. The copied pack's original Mobtimizations configuration deferred some target scans. Its replay observed the sheep on the first scan and the reachable player fallback on the sixth. See `clean-stable/verify.log` and `pack-observed/verify.log`.
+
 ## Ent player targeting, fertilization and death rewards (2026-11-28)
 
 - The released 0.24.1 server found a player through a wall when its navigation could go around. It ignored the same player after the fixture sealed the enclosure. Forge now checks the modern path endpoint before selecting the nearest eligible player, with the original horizontal tolerance and face state.
