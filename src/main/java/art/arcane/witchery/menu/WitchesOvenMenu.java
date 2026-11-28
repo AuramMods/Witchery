@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.FurnaceResultSlot;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeType;
 
 import static art.arcane.witchery.block.entity.WitchesOvenBlockEntity.BURN_PROGRESS;
 import static art.arcane.witchery.block.entity.WitchesOvenBlockEntity.COOK_PROGRESS;
@@ -42,8 +43,8 @@ public final class WitchesOvenMenu extends AbstractContainerMenu {
         this.oven = oven;
         this.progress = progress;
 
-        addOvenSlot(INPUT_SLOT, 56, 17);
-        addOvenSlot(FUEL_SLOT, 56, 53);
+        addSlot(new Slot(oven, INPUT_SLOT, 56, 17));
+        addSlot(new Slot(oven, FUEL_SLOT, 56, 53));
         addSlot(new FurnaceResultSlot(inventory.player, oven, RESULT_SLOT, 118, 21) {
             @Override
             public void onTake(Player player, ItemStack stack) {
@@ -54,7 +55,12 @@ public final class WitchesOvenMenu extends AbstractContainerMenu {
             }
         });
         addSlot(new FurnaceResultSlot(inventory.player, oven, FUME_SLOT, 118, 53));
-        addOvenSlot(JAR_SLOT, 83, 53);
+        addSlot(new Slot(oven, JAR_SLOT, 83, 53) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return WitchesOvenBlockEntity.acceptsItem(JAR_SLOT, stack);
+            }
+        });
 
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
@@ -65,15 +71,6 @@ public final class WitchesOvenMenu extends AbstractContainerMenu {
             addSlot(new Slot(inventory, column, 8 + 18 * column, 142));
         }
         addDataSlots(progress);
-    }
-
-    private void addOvenSlot(int index, int x, int y) {
-        addSlot(new Slot(oven, index, x, y) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return WitchesOvenBlockEntity.acceptsItem(index, stack);
-            }
-        });
     }
 
     public int flameHeight(int height) {
@@ -99,10 +96,11 @@ public final class WitchesOvenMenu extends AbstractContainerMenu {
 
         ItemStack stack = slot.getItem();
         ItemStack original = stack.copy();
+        var level = player.level();
         boolean moved;
         if (index < SLOT_COUNT) {
             moved = moveItemStackTo(stack, SLOT_COUNT, INVENTORY_END, index == RESULT_SLOT || index == FUME_SLOT);
-        } else if (WitchesOvenBlockEntity.hasOvenRecipe(player.level(), stack)) {
+        } else if (level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SimpleContainer(stack), level).isPresent()) {
             moved = moveItemStackTo(stack, INPUT_SLOT, INPUT_SLOT + 1, false);
         } else if (WitchesOvenBlockEntity.acceptsItem(FUEL_SLOT, stack)) {
             moved = moveItemStackTo(stack, FUEL_SLOT, FUEL_SLOT + 1, false);

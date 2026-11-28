@@ -127,6 +127,7 @@ The copied Auram survival replay reached both rank-ten transformations and compl
 - [x] Place both funnels through their items in a muted packaged client. Open all three neighboring ovens in order, shift-click Wood Ash out of the first, and verify that an oven only on the facing axis remains closed. After an ordinary dedicated restart, both funnels reopened their saved ovens and the player kept the eight collected Wood Ash.
 - [x] Verify server-side oven behavior across a restart. An active batch resumed from 100 ticks of progress at shutdown and completed after reopening the same world. Hopper-fed tests exercised all seven fume outputs and verified that acacia ash leaves the jar intact.
 - [x] Preserve elapsed heat when replacing a runnable Oven input between ticks. Keep the original 63-fume stack limit and per-batch roll. Clean Forge and copied Auram matched all ten original measurements, and both save formats finished the resumed Birch batch. The muted survival client performed the ordinary menu swap and took the original Oak back into its hotbar. All 355 local Forge GameTests passed.
+- [x] Restore the original [oven menu and named output behavior](#oven-menu-and-named-output-2026-11-27).
 - [x] Restore the Forestry genome fumes for oak, spruce, and birch. Packaged Forge with Forestry CE and JEI produced the three original fumes and the same recipe entries. Larch produced ash and kept its jar. The clean Forge test also covers original genome tags without Forestry installed.
 - [x] Restore Hint of Rebirth for Biomes O' Plenty Fir. Packaged Forge with Auram's Biomes O' Plenty version and JEI verified the same results for a current sapling and one imported from the original numeric ID and metadata six. Pine gave the generic Foul Fume.
 - [x] Verify oven inventory conversion using legacy stacks after their item IDs have been resolved to namespaced strings. Known ingredient damage values map to modern IDs and preserve unrelated tags. Unconverted metadata survives another save.
@@ -210,6 +211,14 @@ The copied Auram survival replay reached both rank-ten transformations and compl
 - [x] Restore the original Dreamweave sleep threshold separately from the vanilla sleep rule. It defaults to 100% and excludes spectators. Check that one sleeper out of two misses the default threshold, and that lowering it to 50% grants the movement weave at dawn to nearby mortals and at dusk to nearby vampires.
 - [x] Verify both wake transitions on packaged Forge with a muted survival client. The player used a bed at night and gained Speed at dawn. After drinking Lilith's blood, the player used a coffin in daylight and gained Speed at dusk. The client remained hidden and the focus monitor recorded no activation.
 - [x] Compare original altar power and core state, all 39 Kettle recipes, all 27 fixed Cauldron recipes, and the offerings, time, weather, and dimension rules for all 96 Circle Magic rites. The individual milestones record the registry and runtime comparisons. The remaining action behavior is tracked under Phase 4.
+
+## Oven menu and named output (2026-11-27)
+
+- [x] Match the original manual input and fuel slots. A player can place a clay jar in the input or a sword in the fuel slot through the menu. Sided automation rejects both, and the dedicated jar slot accepts clay jars.
+- [x] Match manual Shift-click routing against the installed furnace recipes. Furnace inputs go to the input slot, fuel to the fuel slot, and jars to the jar slot. A tool without a smelting recipe moves between the hotbar and main inventory. The oven takes the Iron Ore into its input slot and leaves it there without consuming fuel.
+- [x] Complete a plain Wood Ash recipe into an existing named stack of 62 or 63. The output reaches 63 or 64 and keeps its name and custom data. Both fixtures with the boosted filtered funnel produce the fume. A full 64-stack leaves the next input and jar in place. The 63-item fume limit still applies separately.
+- [x] Reopen a dedicated save in the muted background survival client. The named 64-stack and waiting oak sapling are present. Collect the stack using the regular oven menu and verify the name and custom tag in the player's inventory.
+- [x] Replay the same JAR on copied Auram. Extreme Reactors registers Coal as a furnace input for Graphite, so the oven's original Shift-click priority sends Coal to its input slot. Coal still works when placed directly in the fuel slot, and Shift-click sends Blaze Rods to fuel. Registering a synthetic Coal smelting recipe in Forge 1.7.10 reproduced the same priority. All 667 required local Forge GameTests passed.
 
 ## Altar Core and Artifacts (2026-11-22)
 
@@ -3511,6 +3520,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
+  - [x] Compare [Witch's Oven menu eligibility and routing, named output, and stack limits](#oven-menu-and-named-output-2026-11-27) alongside the original batch and funnel checks.
   - [x] Compare [Leech Chest access and redstone](#leech-chests-blood-roses-and-the-boline-2026-11-20) and the [Refilling Chest clock and loot placement](#torment-milestone-2026-11-19).
   - [x] Compare [Silver Vat observations and Grassper offering release](#silver-vat-and-silver-sword-2026-11-20).
   - [x] Compare [area ward attribution and column recovery](#area-ward-attribution-and-column-recovery-2026-11-27) for Void Bramble and the three owner-recoverable statues.

@@ -20,7 +20,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Inventory;
@@ -123,7 +122,8 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
                 ? oven.recipes.getRecipeFor(oven, level).orElse(null) : null;
         ItemStack result = recipe == null ? ItemStack.EMPTY : recipe.assemble(oven, level.registryAccess());
 
-        boolean canCook = recipe != null && isOvenResult(result) && oven.canStore(RESULT_SLOT, result);
+        boolean canCook = recipe != null && isOvenResult(result)
+                && WorkstationOutput.fits(oven.getItem(RESULT_SLOT), result, oven.getMaxStackSize());
         if (canCook && oven.burnTime == 0) {
             inventoryChanged = oven.consumeFuel(fuel);
         }
@@ -158,13 +158,6 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
         } else if (previousBurn != oven.burnTime || previousCook != oven.cookTime) {
             level.blockEntityChanged(pos);
         }
-    }
-
-    public static boolean hasOvenRecipe(Level level, ItemStack input) {
-        SimpleContainer container = new SimpleContainer(input);
-        return level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, container, level)
-                .map(recipe -> isOvenResult(recipe.assemble(container, level.registryAccess())))
-                .orElse(false);
     }
 
     public static boolean isOvenResult(ItemStack result) {
@@ -243,15 +236,6 @@ public final class WitchesOvenBlockEntity extends BaseContainerBlockEntity imple
             return ForestrySaplings.fumeFor(input);
         }
         return WitcheryIngredient.FOUL_FUME;
-    }
-
-    private boolean canStore(int slot, ItemStack stack) {
-        if (stack.isEmpty()) {
-            return false;
-        }
-        ItemStack stored = getItem(slot);
-        return (stored.isEmpty() || ItemStack.isSameItemSameTags(stored, stack))
-                && stored.getCount() + stack.getCount() <= Math.min(getMaxStackSize(), stack.getMaxStackSize());
     }
 
     private void store(int slot, ItemStack stack) {
