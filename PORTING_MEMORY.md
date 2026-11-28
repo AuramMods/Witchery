@@ -2,11 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Pending Witchery village pieces (2026-11-28)
+
+- The original village plans reopen through ordinary Forge chunk generation. The Apothecary, Witch Hut, bookshop, Keep, and watchtower keep their original orientation and any established ground height. The import snapshots the shifted 1.7.10 population boxes so it can preserve a placed room even when the room's chunk still had population pending.
+- Clean Forge reopened three original saves. The first placed all five buildings. The second finished the Apothecary's chest with the original resident UUID. The third preserved an original floor edit and Coven Witch UUID in a chunk whose population was still pending. Ordinary dedicated restarts kept the actors and both versions of the floor edit. The [village fixtures](PORTING.md#pending-witchery-village-pieces-in-imported-worlds-2026-11-28) record the native seed, locations, saved state and package observations.
+- Copied Auram replayed the third source and verified the same landmarks, saved residents, merchandise and floor edit after a dedicated restart. Java 17 data generation, reobfuscation, and all 698 required Forge GameTests passed locally.
+
 ## Mog's Quiver and saved arrow impacts (2026-11-28)
 
 - The original server recorded six Bow releases, six nock cases, and eight marked and unmarked hit cases. Mog's Quiver now uses the original muzzle and roughly 4.5-block full-draw speed. Its saved marker gives Weakness I for 200 ticks and triples damage when the target's impulse flag is set.
 - Both packaged profiles passed 51 checks and kept four original arrow UUIDs and pickup rules through import and restart. The optional CoFH Core hook leaves the draw and release to Witchery while the quiver is equipped. The ordinary bow still consumed its ammunition. The Auram restart exercised both ordinary and guaranteed critical damage. Local data generation, reobfuscation and all 697 Forge GameTests passed. Read the [quiver comparison](PORTING.md#mogs-quiver-arrows-2026-11-28) and `build/qa-mog-quiver/`.
-- The save audit found a real 0.24.1 village with pending Apothecary and Witch Hut pieces. The native replay generated both, including the chest and residents. Importing the same source on clean Forge left all three missing once both locations loaded. The release checklist records the source and both runs.
 
 ## Naturally spawned Dream Spirit hunt (2026-11-28)
 

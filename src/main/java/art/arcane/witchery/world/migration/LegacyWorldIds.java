@@ -141,6 +141,7 @@ public final class LegacyWorldIds {
                 Witchery.LOGGER.info("Captured {} Witchery block IDs and {} item IDs for {}", ids.blocks.size(), ids.items.size(), world);
             }
             ids.dimensions.relocate(world);
+            LegacyVillagePieces.capturePopulation(world);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not prepare legacy Witchery save at " + world, e);
         }

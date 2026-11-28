@@ -40,10 +40,7 @@ public final class LegacyTargetingTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_targeting")
     public static void allLegacyPathCheckingMobsRejectUnreachableTargets(GameTestHelper helper) {
         Arena arena = new Arena(helper);
-        var corners = List.of(arena.origin.offset(-5, 0, -5), arena.origin.offset(11, 0, -5),
-                arena.origin.offset(-5, 0, 5), arena.origin.offset(11, 0, 5));
-        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
-                corners.stream().allMatch(arena.level::isPositionEntityTicking), "The targeting arena can track its prey"))
+        helper.startSequence().thenWaitUntil(arena::assertTracking)
                 .thenExecute(() -> {
                     for (var kind : hunters()) {
                         arena.check(kind, Layout.OPEN, kind.prey(), "normal", true, true);
@@ -54,23 +51,24 @@ public final class LegacyTargetingTests {
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_targeting_filters")
-    public static void legacyCreatureFiltersSurvivePathChecking(GameTestHelper helper) throws IllegalAccessException {
+    public static void legacyCreatureFiltersSurvivePathChecking(GameTestHelper helper) {
         Arena arena = new Arena(helper);
-        arena.check(Hunter.TREEFYD, Layout.OPEN, null, "owner", true, false);
-        arena.check(Hunter.IMP, Layout.OPEN, null, "tamed", true, false);
-        arena.check(Hunter.IMP, Layout.OPEN, EntityType.SHEEP, "commanded", true, true);
-        arena.check(Hunter.GOBLIN, Layout.OPEN, EntityType.VILLAGER, "small-party", true, false);
-        arena.check(Hunter.VAMPIRE, Layout.OPEN, EntityType.VILLAGER, "no-visit", true, false);
-        arena.check(Hunter.VAMPIRE, Layout.OPEN, null, "no-visit", true, false);
-        arena.check(Hunter.GUARD, Layout.OPEN, WitcheryEntities.GOBLIN.get(), "normal", true, true);
-        arena.check(Hunter.GUARD, Layout.OPEN, WitcheryEntities.VAMPIRE.get(), "normal", true, false);
-        arena.check(Hunter.GUARD, Layout.OPEN, EntityType.CREEPER, "normal", true, false);
-        arena.check(Hunter.GUARD, Layout.OPEN, WitcheryEntities.WITCH_HUNTER.get(), "normal", true, false);
-        arena.check(Hunter.BABA_YAGA, Layout.OPEN, null, "owner", true, false);
-        arena.check(Hunter.WITCH_HUNTER, Layout.OPEN, EntityType.SHEEP, "normal", true, false);
-        arena.check(Hunter.NIGHTMARE, Layout.OPEN, null, "other-victim", true, false);
-        arena.check(Hunter.NIGHTMARE, Layout.WALL, null, "named-victim", false, true);
-        helper.succeed();
+        helper.startSequence().thenWaitUntil(arena::assertTracking).thenExecute(() -> {
+            arena.check(Hunter.TREEFYD, Layout.OPEN, null, "owner", true, false);
+            arena.check(Hunter.IMP, Layout.OPEN, null, "tamed", true, false);
+            arena.check(Hunter.IMP, Layout.OPEN, EntityType.SHEEP, "commanded", true, true);
+            arena.check(Hunter.GOBLIN, Layout.OPEN, EntityType.VILLAGER, "small-party", true, false);
+            arena.check(Hunter.VAMPIRE, Layout.OPEN, EntityType.VILLAGER, "no-visit", true, false);
+            arena.check(Hunter.VAMPIRE, Layout.OPEN, null, "no-visit", true, false);
+            arena.check(Hunter.GUARD, Layout.OPEN, WitcheryEntities.GOBLIN.get(), "normal", true, true);
+            arena.check(Hunter.GUARD, Layout.OPEN, WitcheryEntities.VAMPIRE.get(), "normal", true, false);
+            arena.check(Hunter.GUARD, Layout.OPEN, EntityType.CREEPER, "normal", true, false);
+            arena.check(Hunter.GUARD, Layout.OPEN, WitcheryEntities.WITCH_HUNTER.get(), "normal", true, false);
+            arena.check(Hunter.BABA_YAGA, Layout.OPEN, null, "owner", true, false);
+            arena.check(Hunter.WITCH_HUNTER, Layout.OPEN, EntityType.SHEEP, "normal", true, false);
+            arena.check(Hunter.NIGHTMARE, Layout.OPEN, null, "other-victim", true, false);
+            arena.check(Hunter.NIGHTMARE, Layout.WALL, null, "named-victim", false, true);
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_wolfman_targeting")
@@ -147,6 +145,13 @@ public final class LegacyTargetingTests {
             this.helper = helper;
             this.level = helper.getLevel();
             this.origin = helper.absolutePos(new BlockPos(8, 0, 5)).atY(210);
+        }
+
+        private void assertTracking() {
+            var corners = List.of(origin.offset(-5, 0, -5), origin.offset(11, 0, -5),
+                    origin.offset(-5, 0, 5), origin.offset(11, 0, 5));
+            helper.assertTrue(corners.stream().allMatch(level::isPositionEntityTicking),
+                    "The targeting arena can track its prey");
         }
 
         private void prepare(Layout layout) {
