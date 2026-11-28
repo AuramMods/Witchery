@@ -59,7 +59,7 @@ public final class LegacySpawnerImportTests {
             Files.deleteIfExists(root);
         }
         var tiles = converted.getList("block_entities", Tag.TAG_COMPOUND);
-        LegacyChunkUpgrade.updateBlockEntityTypes(tiles);
+        LegacyChunkUpgrade.upgradeBlockEntities(tiles, false);
         helper.assertTrue(active(tiles.getCompound(0)).getString("id").equals("witchery:hellhound"),
                 "A spawner with only an original EntityId must keep its Hellhound");
         var weighted = tiles.getCompound(1);
@@ -92,7 +92,7 @@ public final class LegacySpawnerImportTests {
                      {weight:2,data:{entity:{id:"witchery:toad"}}}]}]}]}
                 """);
         var tiles = saved.getList("block_entities", Tag.TAG_COMPOUND);
-        LegacyChunkUpgrade.updateBlockEntityTypes(tiles);
+        LegacyChunkUpgrade.upgradeBlockEntities(tiles, false);
         var tile = tiles.getCompound(0);
         helper.assertTrue(active(tile).getString("id").equals("witchery:toad"), "Restore the saved dotted Toad ID");
         assertPotential(helper, tile, 0, "witchery:hellhound", 4);

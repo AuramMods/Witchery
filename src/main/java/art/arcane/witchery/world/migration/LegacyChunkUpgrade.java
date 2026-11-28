@@ -48,7 +48,6 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -205,15 +204,11 @@ public final class LegacyChunkUpgrade {
     private static void restoreLegacyTileTypes(CompoundTag level, LegacyWorldIds ids) {
         var sections = level.getList("Sections", Tag.TAG_COMPOUND);
         var tiles = level.getList("TileEntities", Tag.TAG_COMPOUND);
-        updateBlockEntityTypes(tiles);
+        upgradeBlockEntities(tiles, true);
         for (Tag entry : tiles) {
             CompoundTag tile = (CompoundTag) entry;
             LegacyEmbeddedBlocks.prepare(tile, ids);
             String tileId = tile.getString("id");
-            if ((tileId.equals("witchery:leechchest") || tileId.equals("witchery:refillingchest"))
-                    && tile.contains("CustomName", Tag.TAG_STRING)) {
-                tile.putString("CustomName", Component.Serializer.toJson(Component.literal(tile.getString("CustomName"))));
-            }
             Set<String> family = sharedTileFamily(tileId);
             if (family.isEmpty()) continue;
 
@@ -247,7 +242,7 @@ public final class LegacyChunkUpgrade {
         return Set.of();
     }
 
-    public static void updateBlockEntityTypes(ListTag tiles) {
+    public static void upgradeBlockEntities(ListTag tiles, boolean originalFormat) {
         // The decorative tiles were empty, and village wall plans were never saved in the marker.
         tiles.removeIf(entry -> switch (((CompoundTag) entry).getString("id")) {
             case "witchery:candelabra", "witchery:fumefunnel", "witchery:filteredfumefunnel",
@@ -259,6 +254,8 @@ public final class LegacyChunkUpgrade {
             switch (tile.getString("id")) {
                 case "witchery:wolftrap" -> tile.putString("id", "witchery:beartrap");
                 case "minecraft:mob_spawner" -> LegacyChunkEntities.restoreSpawner(tile);
+                case "witchery:leechchest", "witchery:refillingchest" ->
+                        LegacyWorldIds.upgradeStoredName(tile, "CustomName", originalFormat);
             }
         }
     }

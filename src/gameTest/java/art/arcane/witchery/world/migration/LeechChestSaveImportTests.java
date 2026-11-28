@@ -5,6 +5,8 @@ import art.arcane.witchery.block.LegacyPairingChestBlock;
 import art.arcane.witchery.block.entity.RefillingChestBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryDimensions;
+import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -12,25 +14,34 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import org.apache.commons.io.FileUtils;
 
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
@@ -44,6 +55,46 @@ public final class LeechChestSaveImportTests {
     @GameTest(template = "qa_coven_arena")
     public static void legacyRefillingChestHalvesReconnect(GameTestHelper helper) {
         verifyImportedPair(helper, "refillingchest");
+    }
+
+    @GameTest(template = "qa_coven_arena")
+    public static void earlierPortChestsKeepTheirNamesAndContents(GameTestHelper helper) throws Exception {
+        var original = TagParser.parseTag("""
+                {xPos:0,zPos:0,block_entities:[
+                  {id:"witchery:leechchest",x:1,y:4,z:1,CustomName:"Leech Samples",
+                    WITCPlayers:[{Player:"Keeper"}],Items:[{id:"minecraft:diamond",Count:2b,Slot:5b}]},
+                  {id:"witchery:refillingchest",x:2,y:4,z:1,CustomName:"Torment Cache",
+                    WITCLifeTicks:71998L,Items:[{id:"minecraft:diamond",Count:2b,Slot:5b}]},
+                  {id:"witchery:leechchest",x:3,y:4,z:1,CustomName:'{"text":"Styled Chest","color":"gold"}',
+                    Items:[{id:"minecraft:diamond",Count:2b,Slot:5b}]}]}
+                """);
+        original.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+        var level = helper.getLevel();
+        var root = Files.createTempDirectory("witchery-chest-names");
+        try (var storage = new ChunkStorage(root.resolve("region"), level.getServer().getFixerUpper(), true)) {
+            var repaired = storage.upgradeChunkTag(Level.OVERWORLD, level::getDataStorage, original, Optional.empty());
+            var tiles = repaired.getList("block_entities", Tag.TAG_COMPOUND);
+            var names = List.of(Component.literal("Leech Samples"), Component.literal("Torment Cache"),
+                    Component.literal("Styled Chest").withStyle(ChatFormatting.GOLD));
+            for (int index = 0; index < names.size(); index++) {
+                var tile = tiles.getCompound(index);
+                var state = WitcheryBlocks.getRequired(tile.getString("id").substring("witchery:".length())).get().defaultBlockState();
+                var chest = (ChestBlockEntity) BlockEntity.loadStatic(new BlockPos(tile.getInt("x"), 4, 1), state, tile);
+                helper.assertTrue(chest != null && names.get(index).equals(chest.getCustomName())
+                                && chest.getItem(5).is(Items.DIAMOND) && chest.getItem(5).getCount() == 2,
+                        "Keep the name and inventory of " + tile.getString("id") + " at " + index);
+                tiles.set(index, chest.saveWithFullMetadata());
+            }
+            helper.assertTrue(tiles.getCompound(0).getList("WITCPlayers", Tag.TAG_COMPOUND).getCompound(0)
+                            .getString("Player").equals("Keeper") && tiles.getCompound(1).getLong("WITCLifeTicks") == 71998L,
+                    "Keep the Leech Chest sample and the Refilling Chest timer on save");
+            var reopened = storage.upgradeChunkTag(Level.OVERWORLD, level::getDataStorage, repaired.copy(), Optional.empty());
+            helper.assertTrue(tiles.equals(reopened.getList("block_entities", Tag.TAG_COMPOUND)),
+                    "The corrected chest data survives another chunk load");
+        } finally {
+            FileUtils.deleteDirectory(root.toFile());
+        }
+        helper.succeed();
     }
 
     private static void verifyImportedPair(GameTestHelper helper, String path) {

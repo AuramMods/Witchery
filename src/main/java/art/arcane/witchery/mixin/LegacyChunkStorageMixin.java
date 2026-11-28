@@ -80,7 +80,7 @@ abstract class LegacyChunkStorageMixin {
         if (legacy) LegacyChunkUpgrade.finish(updated, dimension);
         else LegacyChunkUpgrade.restorePendingLeafChecks(updated);
         var tiles = updated.getList("block_entities", Tag.TAG_COMPOUND);
-        LegacyChunkUpgrade.updateBlockEntityTypes(tiles);
+        LegacyChunkUpgrade.upgradeBlockEntities(tiles, false);
         if (witchery$legacyIds != null) {
             witchery$legacyIds.repairBlockSpawnerEffects(tiles);
             if (!legacy) witchery$legacyIds.repairConvertedTileItems(tiles, fixer, version);

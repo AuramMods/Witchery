@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Named Witchery chests in converted saves (2026-11-28)
+
+- The original server wrote two named chests with two diamonds in slot five. The Leech Chest's literal name resembled a formatted component. The packaged Forge import preserved it as literal text and retained the Refilling Chest's name and elapsed refill time.
+- An earlier Forge-format copy carried unconverted names and no captured registry. On the preceding JAR both tiles failed to load and their replacements had empty inventories. The rebuilt JAR restored the two names, both diamond stacks, the Leech Chest's recorded player, and the Refilling Chest timer through a dedicated restart. The GameTest also checks that a current styled name keeps its formatting.
+- Both headless packaged fixtures passed after a dedicated restart, and all 707 required Forge GameTests passed locally. The reobfuscated candidate has SHA-256 `4ee49df6fa01f488af3db4dfcc65f19d318bb68b083554eb9e5d2f80911f58d3`. Fixture commands and logs are under `build/qa-chest-name-migration/`.
+
 ## Portal animation and repeated Torment contact (2026-11-28)
 
 - Spirit Portal dripping water and Torment Portal flames now sample the original coordinates, velocities and random stream. The muted rebuilt client matched all 20 original animation traces and both ambience samples. A dedicated restart retained all 16 saved portal cells on both axes, with the packaged tint, sprite, and thickness verified by the client.
