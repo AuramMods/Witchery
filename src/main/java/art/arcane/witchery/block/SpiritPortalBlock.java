@@ -143,10 +143,22 @@ public final class SpiritPortalBlock extends Block {
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         boolean runsAlongX = state.getValue(AXIS) == Direction.Axis.X;
         for (int particle = 0; particle < 2; particle++) {
-            double plane = 0.5 + (random.nextBoolean() ? 0.23 : -0.23);
-            double spread = random.nextDouble();
-            level.addParticle(ParticleTypes.DRIPPING_WATER, pos.getX() + (runsAlongX ? spread : plane),
-                    pos.getY() + random.nextDouble(), pos.getZ() + (runsAlongX ? plane : spread), 0, 0, 0);
+            double x = pos.getX() + random.nextFloat();
+            double y = pos.getY() + random.nextFloat();
+            double z = pos.getZ() + random.nextFloat();
+            int direction = random.nextInt(2) * 2 - 1;
+            double vx = (random.nextFloat() - 0.5D) * 0.5D;
+            double vy = (random.nextFloat() - 0.5D) * 0.5D;
+            double vz = (random.nextFloat() - 0.5D) * 0.5D;
+            double normalSpeed = random.nextFloat() * 2.0F * direction;
+            if (runsAlongX) {
+                z = pos.getZ() + 0.5D + 0.25D * direction;
+                vz = normalSpeed;
+            } else {
+                x = pos.getX() + 0.5D + 0.25D * direction;
+                vx = normalSpeed;
+            }
+            level.addParticle(ParticleTypes.DRIPPING_WATER, x, y, z, vx, vy, vz);
         }
     }
 

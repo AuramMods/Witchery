@@ -72,16 +72,21 @@ public final class LegacyTargetingTests {
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_wolfman_targeting")
-    public static void wolfmanAcquiresItsOriginalPrey(GameTestHelper helper) throws IllegalAccessException {
+    public static void wolfmanAcquiresItsOriginalPrey(GameTestHelper helper) {
         Arena arena = new Arena(helper);
-        for (Layout layout : Layout.values()) {
-            arena.checkWolfman(layout, EntityType.VILLAGER, 0, true);
-            arena.checkWolfman(layout, null, 0, layout != Layout.WALL);
-        }
-        arena.checkWolfman(Layout.OPEN, null, 1, false);
-        arena.checkWolfman(Layout.OPEN, null, 2, false);
-        arena.checkWolfman(Layout.OPEN, WitcheryEntities.WITCH_HUNTER.get(), 0, false);
-        helper.succeed();
+        helper.startSequence().thenWaitUntil(arena::assertTracking).thenExecute(() -> {
+            try {
+                for (Layout layout : Layout.values()) {
+                    arena.checkWolfman(layout, EntityType.VILLAGER, 0, true);
+                    arena.checkWolfman(layout, null, 0, layout != Layout.WALL);
+                }
+                arena.checkWolfman(Layout.OPEN, null, 1, false);
+                arena.checkWolfman(Layout.OPEN, null, 2, false);
+                arena.checkWolfman(Layout.OPEN, WitcheryEntities.WITCH_HUNTER.get(), 0, false);
+            } catch (IllegalAccessException exception) {
+                throw new IllegalStateException(exception);
+            }
+        }).thenSucceed();
     }
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_wolfman_melee")

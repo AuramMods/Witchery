@@ -2,8 +2,11 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryDamageTypes;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.world.TormentTravel;
+import art.arcane.witchery.world.WitcheryDimensions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -22,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -34,6 +38,36 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class TormentEncounterTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_torment_portal_contact")
+    public static void tormentPortalRollsOnEveryContactBeforeProcessingTravel(GameTestHelper helper) {
+        var overworld = helper.getLevel();
+        var tormentLevel = overworld.getServer().getLevel(WitcheryDimensions.TORMENT);
+        var portal = WitcheryBlocks.getRequired("tormentportal").get().defaultBlockState();
+        var visitor = new FakePlayer(tormentLevel, new GameProfile(UUID.randomUUID(), "TormentPortalVisitor"));
+        TormentTravel.requestBossEncounter(visitor, 4);
+        tormentLevel.random.setSeed(23);
+        var expected = new LegacyRandomSource(23);
+
+        portal.entityInside(tormentLevel, BlockPos.ZERO, visitor);
+        helper.assertTrue(torment(visitor).getInt("WITCForceTorment") == 3
+                        && !torment(visitor).contains("WITCForceTormentLevel") && expected.nextDouble() >= 0.05,
+                "The first contact schedules departure and clears the old preset floor");
+        portal.entityInside(tormentLevel, BlockPos.ZERO, visitor);
+        helper.assertTrue(torment(visitor).getInt("WITCForceTorment") == 1 && expected.nextDouble() < 0.05
+                        && tormentLevel.random.nextLong() == expected.nextLong(),
+                "A second contact can change the pending departure into another Torment visit");
+
+        var entrant = new FakePlayer(overworld, new GameProfile(UUID.randomUUID(), "TormentPortalEntrant"));
+        TormentTravel.requestBossEncounter(entrant, 4);
+        overworld.random.setSeed(23);
+        portal.entityInside(overworld, BlockPos.ZERO, entrant);
+        helper.assertTrue(torment(entrant).getInt("WITCForceTorment") == 1
+                        && torment(entrant).getInt("WITCForceTormentLevel") == 4
+                        && overworld.random.nextLong() == new LegacyRandomSource(23).nextLong(),
+                "An Overworld entrance replaces the pending action and retains its saved floor without drawing a roll");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_torment_transition")
     public static void rejectedHitStartsTormentForNearbyPlayersAndSavedAttackers(GameTestHelper helper) {
         var level = helper.getLevel();

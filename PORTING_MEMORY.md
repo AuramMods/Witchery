@@ -2,11 +2,16 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Portal animation and repeated Torment contact (2026-11-28)
+
+- Spirit Portal dripping water and Torment Portal flames now sample the original coordinates, velocities and random stream. The muted rebuilt client matched all 20 original animation traces and both ambience samples. A dedicated restart retained all 16 saved portal cells on both axes, with the packaged tint, sprite, and thickness verified by the client.
+- Each eligible Torment Portal contact can replace the pending action before the 20-tick travel step. The clean rebuilt JAR matched all five original contact observations. Copied Auram matched the equivalent rolls under its configured random source. Local Java 17 packaging and all 706 Forge GameTests passed. The [portal comparison](PORTING.md#spirit-and-torment-portal-animation-and-contact-2026-11-28) lists the actual fixtures and exact JAR hash.
+
 ## Continuous Dream Flowing Spirit and Spirit Portal ignition (2026-11-28)
 
 - The continuous save at `build/qa-natural-dreamwork/clean/server/player-fixture` reached Fanciful Thread and Flowing Spirit. The player crafted the six-block Altar, Spinning Wheel and Kettle, spun the four saved Wispy Cotton, and brewed the six original offerings. The [milestone](PORTING.md#flowing-spirit-in-the-continuous-dream-save-2026-11-28) records the existing ingredients, fixture supplies and positions.
 - The patched JAR reopened the Kettle with three servings. The muted client bottled them and woke with an earned Icy Needle. All three persisted in the Overworld inventory after shutdown. The Dream saves retained the Altar at 1,162 power, the empty Spinning Wheel and the drained Kettle. Repeat the saved route on the final release JAR.
-- Spirit Portal ignition selects the original snow axis and shifts into the first column only when it is air. The reobfuscated package matched the original in all ten headless cases. The muted survival client opened the valid snow frame and left a source in the perpendicular-snow case. The colors and frame bounds are covered in earlier checks. The visual audit still needs the original dripping particle sampling, which the current client simplifies. Read [Spirit Portal ignition](PORTING.md#spirit-portal-ignition-2026-11-28).
+- Spirit Portal ignition selects the original snow axis and shifts into the first column only when it is air. The reobfuscated package matched the original in all ten headless cases. The muted survival client opened the valid snow frame and left a source in the perpendicular-snow case. Read [Spirit Portal ignition](PORTING.md#spirit-portal-ignition-2026-11-28).
 - Local Java 17 packaging and all 705 required Forge GameTests passed. The completed survival checkpoint and the exact patched JAR hash are recorded in the porting plan.
 
 ## Direct Mutandis parity and the second Dream batch (2026-11-28)

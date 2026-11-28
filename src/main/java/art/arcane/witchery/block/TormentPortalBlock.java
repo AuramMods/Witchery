@@ -85,8 +85,8 @@ public final class TormentPortalBlock extends Block {
                     SoundEvents.PORTAL_AMBIENT, SoundSource.BLOCKS, 0.5F, random.nextFloat() * 0.4F + 0.8F, false);
         }
         for (int i = 0; i < 2; i++) {
-            level.addParticle(ParticleTypes.FLAME, pos.getX() + random.nextDouble(), pos.getY() + random.nextDouble(),
-                    pos.getZ() + random.nextDouble(), 0, 0, 0);
+            level.addParticle(ParticleTypes.FLAME, pos.getX() + random.nextFloat(), pos.getY() + random.nextFloat(),
+                    pos.getZ() + random.nextFloat(), 0, 0, 0);
         }
     }
 }

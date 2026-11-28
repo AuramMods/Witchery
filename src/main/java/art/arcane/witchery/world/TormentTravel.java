@@ -50,11 +50,10 @@ public final class TormentTravel {
 
     public static void touchPortal(ServerPlayer player) {
         CompoundTag data = data(player);
-        if (data.getInt(ACTION) == 0) {
-            boolean leave = player.level().dimension().equals(WitcheryDimensions.TORMENT)
-                    && player.level().getRandom().nextDouble() >= 0.05;
-            data.putInt(ACTION, leave ? LEAVE : ENTER);
-        }
+        boolean leave = player.level().dimension().equals(WitcheryDimensions.TORMENT)
+                && player.level().getRandom().nextDouble() >= 0.05;
+        data.putInt(ACTION, leave ? LEAVE : ENTER);
+        if (leave) data.remove(FLOOR);
     }
 
     public static boolean process(ServerPlayer player) {
