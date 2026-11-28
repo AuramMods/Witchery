@@ -1,29 +1,30 @@
 package art.arcane.witchery.item;
 
-import art.arcane.witchery.lycanthropy.WerewolfVillagers;
-
 import art.arcane.witchery.block.BloodRoseBlock;
+import art.arcane.witchery.block.CoffinBlock;
 import art.arcane.witchery.block.LeechChestBlock;
 import art.arcane.witchery.block.entity.BloodRoseBlockEntity;
 import art.arcane.witchery.block.entity.LeechChestBlockEntity;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -204,8 +205,8 @@ public final class TaglockItem extends Item {
         }
         if (collector instanceof ServerPlayer player) {
             if (target instanceof ServerPlayer other && (restricted(player, other) || !sneakSucceeded(player, other))) {
-                player.displayClientMessage(Component.translatable("message.witchery.taglock.failed").withStyle(ChatFormatting.RED), true);
-                other.displayClientMessage(Component.translatable("message.witchery.taglock.discovered").withStyle(ChatFormatting.GREEN), true);
+                player.sendSystemMessage(Component.translatable("message.witchery.taglock.failed").withStyle(ChatFormatting.RED));
+                other.sendSystemMessage(Component.translatable("message.witchery.taglock.discovered").withStyle(ChatFormatting.GREEN));
             } else {
                 bind(player, hand, target);
             }
@@ -230,36 +231,49 @@ public final class TaglockItem extends Item {
         }
         if (!(state.getBlock() instanceof BedBlock)) return InteractionResult.PASS;
         if (context.getPlayer() instanceof ServerPlayer player) {
-            if (player.isShiftKeyDown()) {
-                bind(player, context.getHand(), player);
-            } else {
-                BlockPos head = bedHead(state, clicked);
-                List<ServerPlayer> candidates = player.serverLevel().players().stream()
-                        .filter(candidate -> head.equals(candidate.getRespawnPosition())
-                                && candidate.getRespawnDimension().equals(level.dimension()))
-                        .sorted(Comparator.comparing(candidate -> candidate.getGameProfile().getName())).toList();
-                if (candidates.isEmpty()) {
-                    failureSound(player);
-                } else {
-                    ServerPlayer next = candidates.get(0);
-                    CompoundTag binding = stack.getTag();
-                    String previous = binding == null ? "" : binding.getString(PLAYER_NAME);
-                    for (int index = 0; index < candidates.size(); index++) {
-                        if (candidates.get(index).getGameProfile().getName().equals(previous)) {
-                            next = candidates.get((index + 1) % candidates.size());
-                            break;
-                        }
-                    }
-                    if (restricted(player, next)) failureSound(player);
-                    else bind(player, context.getHand(), next);
-                }
-            }
+            collectFromBed(stack, context.getHand(), player, state, clicked);
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
-    private static BlockPos bedHead(BlockState state, BlockPos position) {
-        return state.getValue(BedBlock.PART) == BedPart.HEAD ? position : position.relative(state.getValue(BedBlock.FACING));
+    private static void collectFromBed(ItemStack stack, InteractionHand hand, ServerPlayer player, BlockState bed, BlockPos clicked) {
+        var level = player.serverLevel();
+        var facing = bed.getValue(BedBlock.FACING);
+        boolean foot = bed.getValue(BedBlock.PART) == BedPart.FOOT;
+        BlockPos other = clicked.relative(foot ? facing : facing.getOpposite());
+        BlockState partner = level.getBlockState(other);
+        boolean paired = partner.is(bed.getBlock()) && partner.getValue(BedBlock.FACING) == facing
+                && partner.getValue(BedBlock.PART) != bed.getValue(BedBlock.PART);
+        boolean coffin = bed.getBlock() instanceof CoffinBlock;
+        if (foot && !coffin && !paired) {
+            failureSound(player);
+        } else if (player.isShiftKeyDown()) {
+            bind(player, hand, player);
+        } else if (!coffin) {
+            if (!bindFromRespawn(stack, hand, player, foot ? other : clicked)) failureSound(player);
+        } else if (!bindFromRespawn(stack, hand, player, clicked)
+                && (!paired || !bindFromRespawn(stack, hand, player, other))) {
+            failureSound(player);
+        }
+    }
+
+    private static boolean bindFromRespawn(ItemStack stack, InteractionHand hand, ServerPlayer player, BlockPos respawn) {
+        var level = player.serverLevel();
+        List<ServerPlayer> candidates = level.players().stream()
+                .filter(candidate -> respawn.equals(candidate.getRespawnPosition())
+                        && candidate.getRespawnDimension().equals(level.dimension()))
+                .sorted(Comparator.comparing(candidate -> candidate.getGameProfile().getName())).toList();
+        if (candidates.isEmpty()) return false;
+        ServerPlayer next = candidates.get(0);
+        for (int index = 0; index < candidates.size(); index++) {
+            if (isBoundTo(stack, candidates.get(index))) {
+                next = candidates.get((index + 1) % candidates.size());
+                break;
+            }
+        }
+        if (restricted(player, next)) return false;
+        bind(player, hand, next);
+        return true;
     }
 
     private static boolean restricted(ServerPlayer collector, ServerPlayer target) {
@@ -270,23 +284,29 @@ public final class TaglockItem extends Item {
     }
 
     private static boolean sneakSucceeded(ServerPlayer collector, ServerPlayer target) {
-        boolean sameFacing = Math.abs(Mth.wrapDegrees(collector.getYRot() - target.getYRot())) < 45;
+        double collectorFacing = (collector.getYHeadRot() + 90F) % 360F;
+        double targetFacing = (target.getYHeadRot() + 90F) % 360F;
+        boolean sameFacing = Math.abs(Mth.wrapDegrees(collectorFacing - targetFacing)) < 45;
         double chance;
         if (sameFacing) chance = collector.isShiftKeyDown() ? 0.6 : 0.3;
         else chance = (collector.isShiftKeyDown() ? 0.1 : 0.01) + (collector.isInvisible() ? 0.1 : 0);
-        return collector.getRandom().nextDouble() < chance;
+        return collector.serverLevel().random.nextDouble() < chance;
     }
 
     private static void bind(ServerPlayer collector, InteractionHand hand, LivingEntity target) {
         ItemStack held = collector.getItemInHand(hand);
-        ItemStack filled = held.getCount() == 1 ? held : held.copyWithCount(1);
+        ItemStack filled = held.getCount() == 1 ? held : new ItemStack(held.getItem());
         bindSignature(filled, target);
+        WitcherySounds.playLegacyPlayerCue(collector, SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F);
         if (filled != held) {
             held.shrink(1);
-            if (!collector.getInventory().add(filled)) collector.drop(filled, false);
+            if (!collector.getInventory().add(filled)) {
+                var level = collector.serverLevel();
+                level.addFreshEntity(new ItemEntity(level, collector.getX() + 0.5, collector.getY() + 1.5,
+                        collector.getZ() + 0.5, filled));
+            }
         }
-        collector.serverLevel().playSound(null, collector.getX(), collector.getY(), collector.getZ(),
-                SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 0.5F);
+        collector.containerMenu.broadcastChanges();
     }
 
     public static void bindSignature(ItemStack stack, LivingEntity target) {
@@ -314,6 +334,6 @@ public final class TaglockItem extends Item {
     }
 
     private static void failureSound(ServerPlayer player) {
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 0.6F, 1);
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
     }
 }

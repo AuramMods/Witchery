@@ -1439,6 +1439,13 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Return the Atlas and its selected biome, bookmark, and custom data through Forge's crafting remainder hook. Take two Biome Notes from the crafting result slot in a single grid and preserve the original four Atlases and their data. Verify the spear repair and level debit through the anvil result slot.
 - [x] Compare eight single- and two-serving Meaty Stew cases in Survival and Creative, plus fourteen portions of the original edible Ingredient subtypes. Both stews spend one serving and return the bowl directly to inventory. A full inventory drops the bowl at the original offset. The vanilla Raw Mutton mapping accounts for the difference in its saturation.
 
+## Taglock collection (2026-11-27)
+
+- [x] Compare the 32 released 0.24.1 stealth outcomes around the original thresholds. Collecting from a player uses head rotation, a strict 45-degree arc, crouching and invisibility. A failed roll advances the world's random stream once. A success also samples the orb pitch.
+- [x] Restore the kit split, overflow drop and collection cues. A pair of kits leaves the source stack's custom data behind and gives the new single kit only the sample. A one-count stack keeps its custom data. A full inventory drops the filled sample at the original offset. Both cues use volume 0.5 and the original pitch draw.
+- [x] Verify the two player chat notices, both bed halves, a saved UUID with an obsolete profile name, and Blood Rose contact and collection in a muted, background clean Forge replay. A Leech Chest keeps its sample while the subject is in the Nether. After the dedicated restart, both players kept their respawn points and the collector claimed the retained sample. A lone vanilla bed foot rejects even a crouched collection.
+- [x] Replay the headless suite and run the same reobfuscated JAR on copied Auram. All 658 required GameTests passed, and Auram matched all 32 stealth outcomes using its configured world random stream.
+
 ## Water and Lava Diviners (2026-11-22)
 
 - [x] Craft the Water Diviner with four sticks, four Water Bottles, and Tear of the Goddess in the original pattern. Craft the Lava Diviner with three Blaze Rods and either a fresh or worn Water Diviner. Restore the original names and use the existing original item sprites.
@@ -3488,6 +3495,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [block collision, lighting and redstone](#block-collision-lighting-and-redstone-2026-11-27) across the original block inventory and repair the collision and emission mismatches found in valid placed states.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare [item stack and anvil behavior](#item-stack-and-anvil-behavior-2026-11-27) for all original IDs and sampled subtypes, with live anvil, crafting, and food interactions.
+  - [x] Compare [Taglock collection](#taglock-collection-2026-11-27) for stealth chances, kits, sample sources, and cue delivery.
+  - [ ] Compare the Player Compass's client inventory update, directional frames and handling of unloaded targets with the original.
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.

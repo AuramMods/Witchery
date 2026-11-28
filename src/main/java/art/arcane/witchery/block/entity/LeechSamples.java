@@ -36,8 +36,8 @@ public final class LeechSamples {
     ServerPlayer take(ServerPlayer collector, boolean excludeCollector) {
         String collectorName = collector.getGameProfile().getName();
         if (excludeCollector && players.size() == 1 && players.get(0).equals(collectorName)) {
-            collector.displayClientMessage(Component.translatable("message.witchery.leechchest.self")
-                    .withStyle(ChatFormatting.RED), true);
+            collector.sendSystemMessage(Component.translatable("message.witchery.leechchest.self")
+                    .withStyle(ChatFormatting.RED));
             return null;
         }
         List<String> missing = new ArrayList<>();
@@ -52,8 +52,8 @@ public final class LeechSamples {
             missing.add(name);
         }
         if (!missing.isEmpty()) {
-            collector.displayClientMessage(Component.translatable("message.witchery.leechchest.absent", String.join(", ", missing))
-                    .withStyle(ChatFormatting.RED), true);
+            collector.sendSystemMessage(Component.translatable("message.witchery.leechchest.absent", String.join(", ", missing))
+                    .withStyle(ChatFormatting.RED));
         }
         return null;
     }
