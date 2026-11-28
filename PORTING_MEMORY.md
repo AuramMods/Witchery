@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Survival supplies for the Nightmares weave (2026-11-28)
+
+- The clean Forge survival save continues in `build/qa-natural-weave/clean/server/player-fixture` on `f3075b0b`. The player crafted five Item Frames with leather from naturally spawned cattle, harvested White Wool and two Feathers, and parked the Spirits and Disturbed Cotton in the workshop Chest. The nearby Nether fortress supplied 20 Nether Wart and four Blaze Rods. A Wither Skeleton death exercised ordinary respawn and recovery of the actual carried items. Read the [weave supply checkpoint](PORTING.md#survival-supplies-for-the-nightmares-weave-2026-11-28).
+- The player crafted and installed the Spinning Wheel at `-258 64 282` from mined diamond, generated lava, Rowan fume, White Wool, and four Item Frames. The Brewing Stand at `-255 64 283` used one Fortress rod and three mined stone. The returning player opened both menus after an ordinary dedicated restart. The workstations, three String harvested from generated cobwebs, Fortress supplies, and stored Dream ingredients persisted.
+- Blaze Powder and Gunpowder can produce Reek of Misfortune in the Distillery. Use the three remaining Blaze Rods for the Distillery and Brewing Stand. The Nightmares weave still needs three Tormented Twine and the extended splash potions of Poison and Night Vision.
+
 ## Dream Spirits and cotton for the Nightmares weave (2026-11-28)
 
 - The seed-`209376` survival checkpoint continues in `build/qa-natural-congealed/clean/server/player-fixture` on `f3075b0b`. The player brewed another batch of Sleeping from harvested and saved ingredients, recovered the parked Wooden Sword, and harvested 11 generated cotton plants.
