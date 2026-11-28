@@ -15,6 +15,7 @@ import art.arcane.witchery.item.CircleBookIndex;
 import art.arcane.witchery.infusion.SpellKnowledge;
 import art.arcane.witchery.lycanthropy.WolfTrials;
 import art.arcane.witchery.registry.LegacyRegistryData;
+import art.arcane.witchery.registry.LegacySoundEffect;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -537,6 +538,11 @@ public final class WitcheryNetwork {
     public static void sendWolfTrapLure(ServerLevel level, LivingEntity wolf) {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_WOLFMAN_TALK_SOUND_ID,
                 wolf.position(), 1, wolf.getBbHeight(), 16);
+    }
+
+    public static void sendWolfsbaneTestCue(ServerLevel level, Vec3 position) {
+        sendParticlesAround(level, LEGACY_FLAME_PARTICLE_ID, LegacySoundEffect.WITCHERY_MOB_WOLFMAN_HOWL.ordinal(),
+                position, 0.5, 1.5, 16);
     }
 
     public static void sendVolcanoStart(ServerLevel level, BlockPos target) {

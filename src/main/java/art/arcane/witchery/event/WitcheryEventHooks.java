@@ -31,6 +31,7 @@ import art.arcane.witchery.infusion.InfusedBrews;
 import art.arcane.witchery.infusion.ImpContractEffects;
 import art.arcane.witchery.infusion.OverworldInfusion;
 import art.arcane.witchery.item.DeathClothingItem;
+import art.arcane.witchery.item.BatBallItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.CaneSwordItem;
 import art.arcane.witchery.item.TaglockItem;
@@ -80,6 +81,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -446,9 +448,7 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof ServerPlayer viewer) ScryingView.close(viewer);
         if (event.getEntity() instanceof net.minecraft.world.entity.animal.Chicken chicken
                 && event.getSource().getEntity() instanceof ServerPlayer player) GlassGobletItem.onChickenOffering(chicken, player);
-        if (event.getEntity() instanceof ServerPlayer player && !player.getAbilities().instabuild
-                && (player.level().dimension().equals(WitcheryDimensions.DREAM) || DreamTravel.isGhost(player))
-                && DreamTravel.isSpiritWalking(player)) {
+        if (event.getEntity() instanceof ServerPlayer player && wakesOnDeath(player)) {
             event.setCanceled(true);
             player.setHealth(1);
             DreamTravel.requestWake(player);
@@ -467,6 +467,12 @@ public final class WitcheryEventHooks {
             Vampirism.onKilled(event.getEntity(), killer, event.getSource());
             WolfTrials.onKilled(event.getEntity(), killer, event.getSource());
         }
+    }
+
+    private static boolean wakesOnDeath(ServerPlayer player) {
+        return !player.getAbilities().instabuild
+                && (player.level().dimension().equals(WitcheryDimensions.DREAM) || DreamTravel.isGhost(player))
+                && DreamTravel.isSpiritWalking(player);
     }
 
     @SubscribeEvent
@@ -504,6 +510,10 @@ public final class WitcheryEventHooks {
         if (event.getEntity() instanceof ServerPlayer player) {
             DeathClothingItem.protect(player, event);
             if (event.isCanceled()) return;
+            if (event.getAmount() > 0 && !wakesOnDeath(player)
+                    && !(event.getSource().is(DamageTypes.STARVE) && Vampirism.isVampire(player))) {
+                BatBallItem.dropCarried(player);
+            }
             if (InfusionEnergy.type(player) == InfernalInfusion.ID) {
                 CreaturePower power = CreaturePower.forId(CreaturePower.activeId(player));
                 if (power != null) power.hurt(player, event);
@@ -583,6 +593,11 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void protectFromLethalDamage(LivingDamageEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && event.getAmount() > 0
+                && event.getAmount() < player.getHealth() && wakesOnDeath(player)
+                && !(event.getSource().is(DamageTypes.STARVE) && Vampirism.isVampire(player))) {
+            BatBallItem.dropCarried(player);
+        }
         if (event.getAmount() > 0 && event.getEntity() instanceof ServerPlayer player
                 && ParasyticLouseItem.spendOnHit(player, event.getSource())) {
             event.setAmount(event.getAmount() + 1);
@@ -623,8 +638,8 @@ public final class WitcheryEventHooks {
             event.setCanceled(true);
             return;
         }
-        if (event.getItemStack().getItem() instanceof WolfsbaneFlowerItem flower && event.getTarget() instanceof LivingEntity target) {
-            InteractionResult result = flower.interactLivingEntity(event.getItemStack(), event.getEntity(), target, event.getHand());
+        if (event.getItemStack().getItem() instanceof WolfsbaneFlowerItem flower) {
+            InteractionResult result = flower.test(event.getEntity(), event.getHand());
             if (result.consumesAction()) {
                 event.setCanceled(true);
                 event.setCancellationResult(result);
@@ -705,6 +720,17 @@ public final class WitcheryEventHooks {
                 && click.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START) {
             ImpContractEffects.touch(player, event.getPos(), event.getFace(), true);
         }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void consumeLegacyItemsInCreative(PlayerInteractEvent.RightClickItem event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || !player.isCreative()) return;
+        var item = event.getItemStack().getItem();
+        if (!(item instanceof BatBallItem || item instanceof WolfsbaneFlowerItem)) return;
+        // ServerPlayerGameMode would otherwise restore the original count after use.
+        InteractionResult result = item.use(event.getLevel(), player, event.getHand()).getResult();
+        event.setCancellationResult(result);
+        event.setCanceled(true);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

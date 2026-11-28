@@ -1447,6 +1447,14 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Run normal held consumption with two muted, hidden survival clients. The observer received one cue per item for Redstone Soup, Wormy Apple, Purified Milk, Rowan Berries, and the Brew of Sleeping. The consumer went to Dream and returned with a supplied Icy Needle. The second brew serving and its custom data survived the dedicated restart. All 661 required local Forge GameTests passed.
 - [x] Run the same package through all 62 cases on copied Auram. TT20 gave the five ordinary foods and the vanilla Apple control a one-tick duration at the sampled server load. Effects, rarity, nutrition, stack changes, and completion behavior matched across the full comparison using Auram's configured random source.
 
+## Bat Ball and Wolfsbane interactions (2026-11-27)
+
+- [x] Restore the Bat Ball's single loose-item throw in Survival and Creative. The original server measured four headings in both modes. The thrown ball starts by the player's eye, takes three world Gaussian draws for spread, carries no copy of the original stack's custom data, and becomes collectible after five ticks.
+- [x] Restore the forward damage drops with their original stack data and 40-tick pickup delay. The port includes the offhand in the carried inventory and retains the item when Forge vetoes the toss or the spawn. The headless tests cover both vetoes and nonlethal and lethal damage while manifested.
+- [x] Restore the Wolfsbane Flower's two-block entity trace independently of the block crosshair. The original server chose the nearer pig and used the snare at half volume. Removing the pig revealed the Wolfman through stone with white Flame and a howl packet at the target's feet. No target preserves the flower. The two successful tests spend a flower even in Creative.
+- [x] Test normal held use and damage with two muted background clean Forge clients. The viewer at 15.75 blocks received the Flame and Hostile howl. The viewer at 16 blocks received neither. The nearer pig produced one Records snare. The saved flower and all three tagged, player-owned damage drops survived a dedicated restart.
+- [x] Match eight original launches and the three Wolfsbane aim cases on the packaged clean Forge server. Replay the item callbacks on copied Auram with its configured world RNG. Clean Forge covered the ordinary interaction pipeline and Auram checked the held-item callbacks directly because WorldEdit's interaction listener rejected the synthetic player. Java 17 packaging, reobfuscation and all 665 required local GameTests passed.
+
 ## Taglock collection (2026-11-27)
 
 - [x] Compare the 32 released 0.24.1 stealth outcomes around the original thresholds. Collecting from a player uses head rotation, a strict 45-degree arc, crouching and invisibility. A failed roll advances the world's random stream once. A success also samples the orb pitch.
@@ -3522,7 +3530,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [Player Compass's client inventory update, directional frames and handling of unloaded targets](#player-compass-tracking-2026-11-27) with the original.
   - [x] Compare the [Poppet Shelf Compass's original random refresh and the Water and Lava Diviners' cues](#shelf-compass-refresh-and-diviner-scan-cues-2026-11-27).
   - [x] Compare the [original Ingredient drinks and edible brews](#ingredient-consumption-2026-11-27) with their Forge completion effects, cues, and stack changes.
-  - [ ] Compare Bat Ball use and damage drops and the Wolfsbane Flower's entity trace and feedback.
+  - [x] Compare [Bat Ball use and damage drops and the Wolfsbane Flower's entity trace and feedback](#bat-ball-and-wolfsbane-interactions-2026-11-27).
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.

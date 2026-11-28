@@ -639,13 +639,16 @@ The `mutandisAdditionalBlocks` server setting ports `MutandisAdditionalBlocks`. 
 | 101 | `witchery:tormented_twine` |
 | 102 | `witchery:golden_thread` |
 | 105 | `witchery:purified_milk` |
+| 108 | `witchery:bat_ball` |
 | 111 | `witchery:wormwood_leaf` |
 | 153 | `witchery:anointing_paste` |
 | 156 | `witchery:wolfsbane_flower` |
 | 160 | `witchery:torn_vampire_page` |
 | 161 | `witchery:dark_cloth` |
 
-Variant 156 consumes one flower when the tester targets a living entity within two blocks. Cursed targets emit flames and the Wolfman howl, including cursed humans and unshifted werevillagers. The `witchery:potion.wolfsbane` effect is a separate use of the same ingredient through general cauldron brewing.
+Variant 108 spends one ball on use in Survival or Creative and throws a fresh collectible item with five ticks of pickup delay. Damage spills the carried stacks forward with their custom tags, thrower, and 40-tick pickup delay. Forge vetoes preserve the stack. The port includes the offhand in carried inventory. Lethal damage that wakes a Dream traveler preserves the carried Bat Balls.
+
+Variant 156 consumes one flower when the two-block trace finds a pickable entity, including behind a block. Cursed humans, Werevillagers, Wolfmen, wolf-shaped Reflections, and matching werewolf mobs emit Flame and the half-volume Wolfman howl at their feet. An ordinary entity plays a half-volume snare at the tester. A miss preserves the flower. The `witchery:potion.wolfsbane` effect uses the ingredient through general Cauldron brewing.
 
 | Meta | Unlocalized Key |
 |---:|---|

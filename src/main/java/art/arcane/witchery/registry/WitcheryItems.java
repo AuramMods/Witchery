@@ -1,6 +1,7 @@
 package art.arcane.witchery.registry;
 
 import art.arcane.witchery.item.BrewBucketItem;
+import art.arcane.witchery.item.BatBallItem;
 import art.arcane.witchery.item.DivinerItem;
 import art.arcane.witchery.item.StatueGoddessItem;
 import art.arcane.witchery.item.AreaWardItem;
@@ -310,6 +311,7 @@ public final class WitcheryItems {
             case "mooncharm" -> new MoonCharmItem();
             case "wolftoken" -> new WolfTokenItem();
             case "dupstaff" -> new DuplicationStaffItem();
+            case "bat_ball" -> new BatBallItem();
             case "wolfsbane_flower" -> new WolfsbaneFlowerItem();
             case "hornofthehunt" -> new HornOfTheHuntItem();
             case "huntsmanspear" -> new HuntsmanSpearItem();
