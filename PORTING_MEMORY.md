@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Naturally spawned Dream Spirit hunt (2026-11-28)
+
+- The clean seed-`209376` survival save in `build/qa-natural-spectra/clean/server/player-fixture` reopened on `670553bb`. The player drank two saved Sleeping servings across a forced wake, built a Wooden Sword from Dream Oak, and collected one naturally spawned Subdued Spirit near `-333 79 435` at spawn weight one. The [replay](PORTING.md#naturally-spawned-dream-spirit-hunt-2026-11-28) records the positioning and Resistance used in the hunt.
+- An ordinary dedicated restart kept the Spirit and Dream inventory. The player used a harvested Icy Needle to wake. The final world save kept one Spirit, one Needle and the original Disturbed Cotton in the Overworld, with the Wooden Sword and three sticks parked in Dream. The archived checkpoint `build/qa-natural-spectra/one-spirit-parked-world` retains the sleeping body, and the post-wake comparison confirmed its removal. Four more Spirits and a Brew of Hollow Tears are required for Congealed Spirit.
+- Both launches stayed muted and unfocused, and offline Java 17 `runData` passed with no generated changes. See `build/qa-natural-spectra/clean/{restarted-natural-hunt-and-wake,waking-on-disk}.log` and `build/qa-natural-spectra/datagen.log`.
+
 ## Alluring Skull recovery and Witchwood growth retries (2026-11-28)
 
 - Marked Rowan, Alder and Hawthorn saplings reset to their initial stage after blocked growth. The next successful bone meal use marks the same species again.
