@@ -1439,6 +1439,14 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Return the Atlas and its selected biome, bookmark, and custom data through Forge's crafting remainder hook. Take two Biome Notes from the crafting result slot in a single grid and preserve the original four Atlases and their data. Verify the spear repair and level debit through the anvil result slot.
 - [x] Compare eight single- and two-serving Meaty Stew cases in Survival and Creative, plus fourteen portions of the original edible Ingredient subtypes. Both stews spend one serving and return the bowl directly to inventory. A full inventory drops the bowl at the original offset. The vanilla Raw Mutton mapping accounts for the difference in its saturation.
 
+## Ingredient consumption (2026-11-27)
+
+- [x] Compare 31 original Ingredient subtypes in Survival and Creative. The released server and clean Forge package agree on all 62 cases for use animation and duration, rarity, stack count, hunger, saturation, and immediate effects. The set covers edible ingredients, the hearts and apples, simple potions, infusion and Soul Brews, and both blood items.
+- [x] Restore one completion burp on the Players mixer at volume 0.5, using the world pitch roll after effects. Clean Forge matches the original pitch and next random roll in 60 cases. Both Creeper Heart cases use Forge's explosion implementation before sampling the burp, so their random sequence differs.
+- [x] Restore the Purified Milk chance before sampling its effect and the completion pitch. The original and Forge speed and slowness fixture removes Slowness and leaves Speed. Forge orders the current registry effects before selecting from them. A Wormy Apple still uses the eat animation and applies 60 ticks of poison without affecting hunger.
+- [x] Run normal held consumption with two muted, hidden survival clients. The observer received one cue per item for Redstone Soup, Wormy Apple, Purified Milk, Rowan Berries, and the Brew of Sleeping. The consumer went to Dream and returned with a supplied Icy Needle. The second brew serving and its custom data survived the dedicated restart. All 661 required local Forge GameTests passed.
+- [x] Run the same package through all 62 cases on copied Auram. TT20 gave the five ordinary foods and the vanilla Apple control a one-tick duration at the sampled server load. Effects, rarity, nutrition, stack changes, and completion behavior matched across the full comparison using Auram's configured random source.
+
 ## Taglock collection (2026-11-27)
 
 - [x] Compare the 32 released 0.24.1 stealth outcomes around the original thresholds. Collecting from a player uses head rotation, a strict 45-degree arc, crouching and invisibility. A failed roll advances the world's random stream once. A success also samples the orb pitch.
@@ -3513,7 +3521,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Taglock collection](#taglock-collection-2026-11-27) for stealth chances, kits, sample sources, and cue delivery.
   - [x] Compare the [Player Compass's client inventory update, directional frames and handling of unloaded targets](#player-compass-tracking-2026-11-27) with the original.
   - [x] Compare the [Poppet Shelf Compass's original random refresh and the Water and Lava Diviners' cues](#shelf-compass-refresh-and-diviner-scan-cues-2026-11-27).
-  - [ ] Compare the original Ingredient drinks and edible brews with their Forge completion effects, cues, and stack changes.
+  - [x] Compare the [original Ingredient drinks and edible brews](#ingredient-consumption-2026-11-27) with their Forge completion effects, cues, and stack changes.
+  - [ ] Compare Bat Ball use and damage drops and the Wolfsbane Flower's entity trace and feedback.
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.

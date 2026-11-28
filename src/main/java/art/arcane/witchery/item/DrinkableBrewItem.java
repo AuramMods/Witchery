@@ -2,6 +2,7 @@ package art.arcane.witchery.item;
 
 import art.arcane.witchery.config.WitcheryServerConfig;
 import art.arcane.witchery.infusion.ImpContractEffects;
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -27,12 +28,8 @@ public final class DrinkableBrewItem extends Item {
     private final Consumer<LivingEntity> effect;
     private final UseAnim useAnimation;
 
-    public DrinkableBrewItem(Supplier<MobEffect> effect, int duration, int amplifier) {
-        this(drinker -> drinker.addEffect(new MobEffectInstance(effect.get(), duration, amplifier)));
-    }
-
-    public DrinkableBrewItem(Consumer<LivingEntity> effect) {
-        this(new Properties(), UseAnim.DRINK, effect);
+    public DrinkableBrewItem(Rarity rarity, Supplier<MobEffect> effect, int duration, int amplifier) {
+        this(rarity, drinker -> drinker.addEffect(new MobEffectInstance(effect.get(), duration, amplifier)));
     }
 
     public DrinkableBrewItem(Rarity rarity, Consumer<LivingEntity> effect) {
@@ -66,14 +63,20 @@ public final class DrinkableBrewItem extends Item {
             CriteriaTriggers.CONSUME_ITEM.trigger(player, stack);
             player.awardStat(Stats.ITEM_USED.get(this));
         }
-        if (!level.isClientSide) {
-            effect.accept(drinker);
-            drinker.gameEvent(useAnimation == UseAnim.EAT ? GameEvent.EAT : GameEvent.DRINK);
-        }
         if (!(drinker instanceof Player player) || !player.getAbilities().instabuild) {
             stack.shrink(1);
         }
+        if (!level.isClientSide) {
+            effect.accept(drinker);
+            drinker.gameEvent(useAnimation == UseAnim.EAT ? GameEvent.EAT : GameEvent.DRINK);
+            if (drinker instanceof Player) WitcherySounds.playIngredientBurp(level, drinker);
+        }
         return stack;
+    }
+
+    public static DrinkableBrewItem wormyApple() {
+        return new DrinkableBrewItem(new Properties(), UseAnim.EAT,
+                eater -> eater.addEffect(new MobEffectInstance(MobEffects.POISON, 60)));
     }
 
     public static DrinkableBrewItem frozenHeart() {

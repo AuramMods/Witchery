@@ -7,7 +7,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -87,6 +90,12 @@ public final class WitcherySounds {
 
     public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, float volume) {
         playLegacyPlayerCue(player, sound, SoundSource.PLAYERS, volume);
+    }
+
+    public static void playIngredientBurp(Level level, LivingEntity eater) {
+        float pitch = level.random.nextFloat() * 0.1F + 0.9F;
+        level.playSeededSound(null, eater.getX(), eater.getY(), eater.getZ(), SoundEvents.PLAYER_BURP,
+                SoundSource.PLAYERS, 0.5F, pitch, ThreadLocalRandom.current().nextLong());
     }
 
     public static void playLegacyPlayerCue(ServerPlayer player, SoundEvent sound, SoundSource fallbackSource, float volume) {

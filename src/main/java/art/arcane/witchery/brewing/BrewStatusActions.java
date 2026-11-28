@@ -19,14 +19,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Comparator;
 
 public final class BrewStatusActions {
     private BrewStatusActions() {}
 
     public static void drinkPurifiedMilk(LivingEntity drinker) {
-        var effects = List.copyOf(drinker.getActiveEffects());
-        if (effects.isEmpty() || drinker.getRandom().nextInt(2) != 0) return;
-        MobEffectInstance chosen = effects.get(drinker.getRandom().nextInt(effects.size()));
+        var random = drinker.level().random;
+        if (random.nextInt(2) != 0 || drinker.getActiveEffects().isEmpty()) return;
+        var effects = drinker.getActiveEffects().stream()
+                .sorted(Comparator.comparingInt(effect -> MobEffect.getId(effect.getEffect()))).toList();
+        MobEffectInstance chosen = effects.get(random.nextInt(effects.size()));
         if (!retainedByPlayer(drinker, chosen)) drinker.removeEffect(chosen.getEffect());
     }
 

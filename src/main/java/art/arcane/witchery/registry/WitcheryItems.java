@@ -70,6 +70,7 @@ import art.arcane.witchery.item.LeonardsUrnItem;
 import art.arcane.witchery.item.DeathProtectionPoppetItem;
 import art.arcane.witchery.item.FetishItem;
 import art.arcane.witchery.item.DrinkableBrewItem;
+import art.arcane.witchery.item.IngredientFoodItem;
 import art.arcane.witchery.item.DuplicationStaffItem;
 import art.arcane.witchery.item.DreamWeaveItem;
 import art.arcane.witchery.item.FilledChaliceItem;
@@ -385,10 +386,9 @@ public final class WitcheryItems {
             case "attuned_stone" -> new SpiritOfferingItem(DreamSpirit.Kind.GUIDE);
             case "subdued_spirit" -> new SpiritOfferingItem(DreamSpirit.Kind.SPIRIT);
             case "subdued_village_spirit" -> new SpiritOfferingItem(DreamSpirit.Kind.VILLAGE);
-            case "wormy_apple" -> new Item(new Item.Properties().food(new FoodProperties.Builder().alwaysEat()
-                    .effect(() -> new MobEffectInstance(MobEffects.POISON, 60), 1).build()));
+            case "wormy_apple" -> DrinkableBrewItem.wormyApple();
             case "sleeping_apple" -> new SleepingAppleItem();
-            case "congealed_spirit" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 600, 1);
+            case "congealed_spirit" -> new DrinkableBrewItem(Rarity.UNCOMMON, () -> MobEffects.NIGHT_VISION, 600, 1);
             case "brew_of_ink" -> new ThrowableBrewItem(BrewImpacts::splashInk);
             case "brew_of_vines" -> new ThrowableBrewItem(BrewTerrain::vines);
             case "brew_of_webs" -> new ThrowableBrewItem(BrewTerrain::webs);
@@ -406,9 +406,9 @@ public final class WitcheryItems {
             case "quicklime" -> new QuicklimeItem();
             case "brew_of_bats" -> new ThrowableBrewItem(BrewCreatureEffects::bats);
             case "brew_of_wasting" -> new ThrowableBrewItem(BrewCreatureEffects::wasting);
-            case "brew_of_grotesque" -> new DrinkableBrewItem(GrotesqueEffect::drinkBrew);
-            case "brew_of_the_depths" -> new DrinkableBrewItem(BrewOfTheDepths::drink);
-            case "brew_of_sleeping" -> new DrinkableBrewItem(DreamTravel::requestSleep);
+            case "brew_of_grotesque" -> new DrinkableBrewItem(Rarity.UNCOMMON, GrotesqueEffect::drinkBrew);
+            case "brew_of_the_depths" -> new DrinkableBrewItem(Rarity.UNCOMMON, BrewOfTheDepths::drink);
+            case "brew_of_sleeping" -> new DrinkableBrewItem(Rarity.UNCOMMON, DreamTravel::requestSleep);
             case "brew_of_flowing_spirit" -> new ThrowableBrewItem(BrewImpacts::depositSpirit);
             case "brew_of_hollow_tears" -> new ThrowableBrewItem(BrewImpacts::depositHollowTears);
             case "brew_of_solid_rock" -> new ThrowableBrewItem((brew, hit) -> BrewSolidification.impact(brew, hit, Blocks.STONE));
@@ -417,10 +417,10 @@ public final class WitcheryItems {
             case "brew_of_solid_sandstone" -> new ThrowableBrewItem((brew, hit) -> BrewSolidification.impact(brew, hit, Blocks.SANDSTONE));
             case "brew_of_solid_erosion" -> new ThrowableBrewItem((brew, hit) -> BrewSolidification.impact(brew, hit, Blocks.AIR));
             case "brew_of_substitution" -> new ThrowableBrewItem(BrewSubstitution::impact);
-            case "brew_of_soul_hunger" -> new DrinkableBrewItem(SpellKnowledge.CARNOSA_DIEM::learn);
-            case "brew_of_soul_anguish" -> new DrinkableBrewItem(SpellKnowledge.IGNIANIMA::learn);
-            case "brew_of_soul_fear" -> new DrinkableBrewItem(SpellKnowledge.MORSMORDRE::learn);
-            case "brew_of_soul_torment" -> new DrinkableBrewItem(SpellKnowledge.TORMENTUM::learn);
+            case "brew_of_soul_hunger" -> new DrinkableBrewItem(Rarity.UNCOMMON, SpellKnowledge.CARNOSA_DIEM::learn);
+            case "brew_of_soul_anguish" -> new DrinkableBrewItem(Rarity.UNCOMMON, SpellKnowledge.IGNIANIMA::learn);
+            case "brew_of_soul_fear" -> new DrinkableBrewItem(Rarity.UNCOMMON, SpellKnowledge.MORSMORDRE::learn);
+            case "brew_of_soul_torment" -> new DrinkableBrewItem(Rarity.UNCOMMON, SpellKnowledge.TORMENTUM::learn);
             case "contract_of_ownership" -> new OwnershipContractItem();
             case "contract_of_torment" -> new TormentContractItem();
             case "contract_living_flame" -> new ImpSpellContractItem(ImpSpellContractItem.Spell.LIVING_FLAME);
@@ -436,29 +436,27 @@ public final class WitcheryItems {
             case "vampiric_poppet" -> new VampiricPoppetItem();
             case "poppet_protection" -> new PoppetProtectionItem();
             case "poppet" -> new Item(new Item.Properties().stacksTo(1));
-            case "odd_porkchop_raw" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
-                    .nutrition(3).saturationMod(0.3F).build()));
-            case "odd_porkchop_cooked" -> new Item(new Item.Properties().food(new FoodProperties.Builder()
-                    .nutrition(8).saturationMod(0.8F).build()));
+            case "odd_porkchop_raw" -> new IngredientFoodItem(new FoodProperties.Builder().nutrition(3).saturationMod(0.3F).build());
+            case "odd_porkchop_cooked" -> new IngredientFoodItem(new FoodProperties.Builder().nutrition(8).saturationMod(0.8F).build());
             case "brew.fuel" -> new BrewFuelItem();
             case "brew.water" -> new EndlessWaterBrewItem();
             case "playercompass" -> new PlayerCompassItem();
             case "shelfcompass" -> new PoppetShelfCompassItem();
-            case "redstone_soup" -> new DrinkableBrewItem(() -> MobEffects.HEALTH_BOOST, 2400, 1);
-            case "flying_ointment" -> new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 2);
-            case "infused_brew_base" -> new DrinkableBrewItem(() -> MobEffects.WITHER, 200, 3);
-            case "brew_of_soaring" -> new DrinkableBrewItem(InfusedBrews::applySoaring);
-            case "brew_of_the_grave" -> new DrinkableBrewItem(InfusedBrews::applyGrave);
+            case "redstone_soup" -> new DrinkableBrewItem(Rarity.UNCOMMON, () -> MobEffects.HEALTH_BOOST, 2400, 1);
+            case "flying_ointment" -> new DrinkableBrewItem(Rarity.RARE, () -> MobEffects.POISON, 1200, 2);
+            case "infused_brew_base" -> new DrinkableBrewItem(Rarity.RARE, () -> MobEffects.WITHER, 200, 3);
+            case "brew_of_soaring" -> new DrinkableBrewItem(Rarity.RARE, InfusedBrews::applySoaring);
+            case "brew_of_the_grave" -> new DrinkableBrewItem(Rarity.RARE, InfusedBrews::applyGrave);
             case "ghost_of_the_light", "soul_of_the_world", "spirit_of_otherwhere" ->
-                    new DrinkableBrewItem(() -> MobEffects.POISON, 1200, 1);
-            case "infernal_animus" -> new DrinkableBrewItem(drinker -> {
+                    new DrinkableBrewItem(Rarity.RARE, () -> MobEffects.POISON, 1200, 1);
+            case "infernal_animus" -> new DrinkableBrewItem(Rarity.RARE, drinker -> {
                 drinker.addEffect(new MobEffectInstance(MobEffects.POISON, 1200, 1));
                 drinker.addEffect(new MobEffectInstance(MobEffects.WITHER, 3600, 2));
             });
-            case "happenstance_oil" -> new DrinkableBrewItem(() -> MobEffects.NIGHT_VISION, 1200, 0);
-            case "mystic_unguent" -> new DrinkableBrewItem(() -> MobEffects.WEAKNESS, 1200, 1);
+            case "happenstance_oil" -> new DrinkableBrewItem(Rarity.UNCOMMON, () -> MobEffects.NIGHT_VISION, 1200, 0);
+            case "mystic_unguent" -> new DrinkableBrewItem(Rarity.RARE, () -> MobEffects.WEAKNESS, 1200, 1);
             case "seer_stone" -> new SeerStoneItem();
-            case "purified_milk" -> new DrinkableBrewItem(BrewStatusActions::drinkPurifiedMilk);
+            case "purified_milk" -> new DrinkableBrewItem(Rarity.UNCOMMON, BrewStatusActions::drinkPurifiedMilk);
             case "warm_blood" -> new DrinkableBrewItem(Rarity.UNCOMMON, Vampirism::drinkWarmBlood);
             case "liliths_blood" -> new DrinkableBrewItem(Rarity.RARE, Vampirism::drinkLilithsBlood);
             case "icy_needle" -> new IcyNeedleItem();
@@ -478,8 +476,7 @@ public final class WitcheryItems {
             case "chalkotherwhere" -> new RitualChalkItem("circleglyphotherwhere");
             case "chalkinfernal" -> new RitualChalkItem("circleglyphinfernal");
             case "chalkheart" -> new RitualChalkItem("circle");
-            case "rowan_berries" -> new Item(new Item.Properties()
-                    .food(new FoodProperties.Builder().nutrition(1).saturationMod(6.0F).build()));
+            case "rowan_berries" -> new IngredientFoodItem(new FoodProperties.Builder().nutrition(1).saturationMod(6.0F).build());
             case "globe_artichoke" -> new ArtichokeItem();
             case "creeper_heart" -> DrinkableBrewItem.creeperHeart();
             case "earmuffs" -> new EarmuffsItem();

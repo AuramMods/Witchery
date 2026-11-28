@@ -1,9 +1,8 @@
 package art.arcane.witchery.item;
 
+import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -24,7 +23,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 public final class DemonHeartItem extends BlockItem {
     private final boolean blockItem;
@@ -75,9 +73,7 @@ public final class DemonHeartItem extends BlockItem {
             user.addEffect(new MobEffectInstance(MobEffects.HUNGER, 3600, 1));
             user.setSecondsOnFire(2640);
             user.gameEvent(GameEvent.EAT);
-            level.playSeededSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.PLAYER_BURP,
-                    SoundSource.PLAYERS, 0.5F, level.random.nextFloat() * 0.1F + 0.9F,
-                    ThreadLocalRandom.current().nextLong());
+            WitcherySounds.playIngredientBurp(level, user);
         }
         if (!(user instanceof Player player) || !player.getAbilities().instabuild) {
             stack.shrink(1);
