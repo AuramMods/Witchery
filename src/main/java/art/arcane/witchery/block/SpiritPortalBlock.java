@@ -64,23 +64,27 @@ public final class SpiritPortalBlock extends Block {
         }
         Block portal = WitcheryBlocks.getRequired("spiritportal").get();
         Block fluid = WitcheryBlocks.getRequired("spiritflowing").get();
-        for (Direction direction : new Direction[]{Direction.EAST, Direction.SOUTH}) {
-            for (int shift = 0; shift < SPAN; shift++) {
-                BlockPos bottom = source.relative(direction, -shift);
-                if (!matchesFrame(level, bottom, direction,
-                        interior -> interior.isAir() || interior.is(fluid))) {
-                    continue;
-                }
-                BlockState state = portal.defaultBlockState().setValue(AXIS, direction.getAxis());
-                for (int along = 0; along < SPAN; along++) {
-                    for (int vertical = 0; vertical < SPAN; vertical++) {
-                        level.setBlock(bottom.relative(direction, along).above(vertical), state, UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE);
-                    }
-                }
-                return true;
+        boolean alongX = hasSnowBeside(level, source, Direction.EAST);
+        boolean alongZ = hasSnowBeside(level, source, Direction.SOUTH);
+        if (alongX == alongZ) return false;
+        Direction direction = alongX ? Direction.EAST : Direction.SOUTH;
+        BlockPos preceding = source.relative(direction.getOpposite());
+        BlockPos bottom = level.isEmptyBlock(preceding) ? preceding : source;
+        if (!matchesFrame(level, bottom, direction, interior -> interior.isAir() || interior.is(fluid))) {
+            return false;
+        }
+        BlockState state = portal.defaultBlockState().setValue(AXIS, direction.getAxis());
+        for (int along = 0; along < SPAN; along++) {
+            for (int vertical = 0; vertical < SPAN; vertical++) {
+                level.setBlock(bottom.relative(direction, along).above(vertical), state, UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE);
             }
         }
-        return false;
+        return true;
+    }
+
+    private static boolean hasSnowBeside(BlockGetter level, BlockPos source, Direction direction) {
+        return level.getBlockState(source.relative(direction)).is(Blocks.SNOW_BLOCK)
+                || level.getBlockState(source.relative(direction.getOpposite())).is(Blocks.SNOW_BLOCK);
     }
 
     @Override
