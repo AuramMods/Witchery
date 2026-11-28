@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Vanilla creature Taglock and leash recovery (2026-11-27)
+
+- The 0.24.1 fixture ran the real Taglock binder on a named pig, cow and chicken and saved the three samples in one Chest. It saved the pig tied to the cow. The previous reobfuscated build passed the original region import. An earlier Forge-format version of that world retained split UUIDs and literal names for the pig and cow. Both received new UUIDs on load, so the samples lost their targets and the pig lost its lead.
+- Base entity identity repair now applies to vanilla creatures too. Clean Forge matched all 13 native import cases and 14 mixed cases, with the same counts after ordinary restarts. The mixed save also passed twice without a captured numeric registry. The chicken kept its explicit modern UUID and aqua name. The Java 17 reobfuscated archive is SHA-256 `7896bd7049fa895888d68404f39dfeeb9c82be29fc84cd28d540885061e4a74d`. Read `build/qa-vanilla-bound-creatures/` for the baseline, fixed and restart logs.
+- Copied Auram matched all 14 mixed-format cases on first load and restart using the same package. All 680 required Forge GameTests passed locally.
+- The manifest now records the 25 original `WitcheryExtendedPlayer` fields, their gameplay readers and saved-state verification. The rank, form, Mirror, trial, death backup, vision, blood and skill fixtures remain linked from Legacy Save Fixtures.
+
 ## Naturally sourced Oven replay (2026-11-27)
 
 - The seed-`209376` survival player started empty and made the work table, tools, Furnace, Witch's Oven, and four fired Clay Jars from naturally mined log, stone, iron, coal and clay drops. The driver moved the player between sites and to their dropped stacks. It advanced daylight once and used Peaceful and disabled fall damage for parts of the replay. The player respawned and picked up the real cave death drops.

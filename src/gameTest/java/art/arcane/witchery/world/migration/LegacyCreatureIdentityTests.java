@@ -1,6 +1,8 @@
 package art.arcane.witchery.world.migration;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.item.TaglockItem;
+import art.arcane.witchery.registry.WitcheryItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -11,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -69,6 +72,48 @@ public final class LegacyCreatureIdentityTests {
             toad.discard();
             goblin.discard();
             owl.discard();
+        });
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_earlier_vanilla_taglocks")
+    public static void restoresVanillaCreatureIdentityForTaglocks(GameTestHelper helper) throws Exception {
+        var level = helper.getLevel();
+        var pigId = UUID.randomUUID();
+        var cowId = UUID.randomUUID();
+        var original = TagParser.parseTag("""
+                {Entities:[
+                  {id:"minecraft:pig",CustomName:"Orchard Pig",NoAI:1b,UUIDMost:%dL,UUIDLeast:%dL,
+                   Leash:{UUIDMost:%dL,UUIDLeast:%dL}},
+                  {id:"minecraft:cow",NoAI:1b,UUIDMost:1L,UUIDLeast:2L}
+                ]}
+                """.formatted(pigId.getMostSignificantBits(), pigId.getLeastSignificantBits(),
+                cowId.getMostSignificantBits(), cowId.getLeastSignificantBits()));
+        var records = original.getList("Entities", Tag.TAG_COMPOUND);
+        var cowName = Component.literal("Kestrel Cow").withStyle(ChatFormatting.AQUA);
+        records.getCompound(1).putUUID("UUID", cowId);
+        records.getCompound(1).putString("CustomName", Component.Serializer.toJson(cowName));
+
+        LegacyChunkEntities.restore(records);
+        var pig = (Mob) EntityType.loadEntityRecursive(records.getCompound(0), level, Function.identity());
+        var cow = (Mob) EntityType.loadEntityRecursive(records.getCompound(1), level, Function.identity());
+        var position = helper.absolutePos(new BlockPos(4, 2, 4));
+        pig.setPos(Vec3.atBottomCenterOf(position));
+        cow.setPos(Vec3.atBottomCenterOf(position.east()));
+        level.addFreshEntity(pig);
+        level.addFreshEntity(cow);
+
+        var sample = new ItemStack(WitcheryItems.getRequired("taglockkit").get());
+        var signature = sample.getOrCreateTag();
+        signature.putLong("WITCEntityIDm1", pigId.getMostSignificantBits());
+        signature.putLong("WITCEntityIDl1", pigId.getLeastSignificantBits());
+        signature.putString("WITCDisplayName1", "Orchard Pig");
+        helper.succeedWhen(() -> {
+            helper.assertTrue(TaglockItem.resolveTarget(level, sample) == pig && pig.getName().getString().equals("Orchard Pig"),
+                    "The old Taglock still finds its original named vanilla creature");
+            helper.assertTrue(pig.getLeashHolder() == cow && cow.getUUID().equals(cowId) && cowName.equals(cow.getCustomName()),
+                    "The old leash resolves to the current holder, whose saved UUID and styled name take precedence");
+            pig.discard();
+            cow.discard();
         });
     }
 }

@@ -263,8 +263,9 @@ public final class LegacyChunkEntities {
             }
         }
         String type = entity.getString("id");
+        // Taglocks and leashes can refer to any creature through its base entity UUID.
+        restoreOriginalIdentity(entity);
         if (type.startsWith(NAMESPACE)) {
-            restoreOriginalIdentity(entity);
             restoreOriginalEquipment(entity);
         }
         restoreOriginalLivingData(entity);
