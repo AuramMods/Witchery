@@ -11,7 +11,6 @@ import art.arcane.witchery.item.BrewFuelItem;
 import art.arcane.witchery.item.BrewBagItem;
 import art.arcane.witchery.item.CircleTalismanItem;
 import art.arcane.witchery.item.SpectralStoneItem;
-import art.arcane.witchery.item.PlayerCompassItem;
 import art.arcane.witchery.client.screen.AltarScreen;
 import art.arcane.witchery.client.particle.AltarPowerParticle;
 import art.arcane.witchery.client.particle.CauldronParticle;
@@ -492,7 +491,7 @@ public final class WitcheryClient {
                     (stack, level, entity, seed) -> BrewBottleItem.isSplash(stack) ? 1 : 0);
             ItemProperties.register(WitcheryItems.getRequired("playercompass").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "needle"),
-                    (stack, level, entity, seed) -> PlayerCompassItem.needle(stack));
+                    PlayerCompassProperty.INSTANCE);
             ItemProperties.register(WitcheryItems.getRequired("shelfcompass").get(),
                     ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "shelf_proximity"),
                     new PoppetShelfCompassProperty());

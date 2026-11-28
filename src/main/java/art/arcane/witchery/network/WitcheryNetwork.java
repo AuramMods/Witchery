@@ -48,7 +48,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class WitcheryNetwork {
-    private static final String PROTOCOL_VERSION = "102";
+    private static final String PROTOCOL_VERSION = "103";
     private static final int MAX_USERNAME_LENGTH = 64;
     private static final int MAX_PLAYER_SKIN_LENGTH = 256;
     private static final int MAX_MARKUP_CHAPTER_LENGTH = 32;
@@ -186,11 +186,24 @@ public final class WitcheryNetwork {
                     context.get().setPacketHandled(true);
                 })
                 .add();
-        CHANNEL.messageBuilder(BrewJumpPacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+        CHANNEL.messageBuilder(BrewJumpPacket.class, discriminator++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder((message, buffer) -> {})
                 .decoder(buffer -> new BrewJumpPacket())
                 .consumerMainThread((message, context) -> {
                     runClient(() -> art.arcane.witchery.client.ClientBrewMovement.jump());
+                    context.get().setPacketHandled(true);
+                })
+                .add();
+        CHANNEL.messageBuilder(CreatureIdentityPacket.class, discriminator, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((message, buffer) -> {
+                    buffer.writeVarInt(message.entityId());
+                    buffer.writeUUID(message.entityUuid());
+                    buffer.writeUUID(message.originalUuid());
+                })
+                .decoder(buffer -> new CreatureIdentityPacket(buffer.readVarInt(), buffer.readUUID(), buffer.readUUID()))
+                .consumerMainThread((message, context) -> {
+                    runClient(() -> art.arcane.witchery.client.PlayerCompassProperty.receiveTrackedIdentity(
+                            message.entityId(), message.entityUuid(), message.originalUuid()));
                     context.get().setPacketHandled(true);
                 })
                 .add();
@@ -237,6 +250,11 @@ public final class WitcheryNetwork {
 
     public static void sendBloodTarget(ServerPlayer player, int entityId, int blood) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ExtendedVillagerSyncPacket(entityId, blood));
+    }
+
+    public static void sendCreatureIdentity(ServerPlayer viewer, Entity creature, UUID originalUuid) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> viewer),
+                new CreatureIdentityPacket(creature.getId(), creature.getUUID(), originalUuid));
     }
 
     public static void sendPartialExtendedPlayerSync(ServerPlayer player, WitcheryPlayerData data) {
@@ -1447,6 +1465,8 @@ public final class WitcheryNetwork {
     }
 
     private record BrewJumpPacket() {}
+
+    private record CreatureIdentityPacket(int entityId, UUID entityUuid, UUID originalUuid) {}
 
     public record SyncEntitySizePacket(int entityId, float scale) {
         public static SyncEntitySizePacket placeholder() {

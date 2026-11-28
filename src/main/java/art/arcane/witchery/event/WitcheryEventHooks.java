@@ -241,7 +241,11 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event) {
-        if (event.getEntity() instanceof ServerPlayer viewer && event.getTarget() instanceof ServerPlayer target) {
+        if (!(event.getEntity() instanceof ServerPlayer viewer)) return;
+        if (event.getTarget() instanceof Mob creature) {
+            var originalId = WerewolfVillagers.originalIdentity(creature);
+            if (!originalId.equals(creature.getUUID())) WitcheryNetwork.sendCreatureIdentity(viewer, creature, originalId);
+        } else if (event.getTarget() instanceof ServerPlayer target) {
             WitcheryPlayerDataProvider.get(target).ifPresent(data -> {
                 if (data.isGhost() || data.getNightmareLevel() > 0 || data.getCreatureTypeOrdinal() != 0
                         || data.getGrotesqueTicks() > 0) {

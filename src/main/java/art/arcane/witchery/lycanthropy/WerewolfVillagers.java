@@ -40,6 +40,10 @@ public final class WerewolfVillagers {
         return persistent.hasUUID(ORIGINAL_ID) ? persistent.getUUID(ORIGINAL_ID) : creature.getUUID();
     }
 
+    public static void setOriginalIdentity(Mob creature, UUID identity) {
+        creature.getPersistentData().putUUID(ORIGINAL_ID, identity);
+    }
+
     public static void track(ServerLevel level, Mob creature) {
         if (!creature.getPersistentData().hasUUID(ORIGINAL_ID)) return;
         BY_ORIGINAL.computeIfAbsent(level.getServer(), server -> new HashMap<>())
@@ -127,7 +131,7 @@ public final class WerewolfVillagers {
     private static boolean replace(ServerLevel level, Mob original, Mob replacement) {
         if (!original.isAlive()) return false;
         replacement.copyPosition(original);
-        replacement.getPersistentData().putUUID(ORIGINAL_ID, originalIdentity(original));
+        setOriginalIdentity(replacement, originalIdentity(original));
         replacement.setPersistenceRequired();
         if (!level.addFreshEntity(replacement)) {
             untrack(level, replacement);

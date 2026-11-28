@@ -1446,6 +1446,14 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Verify the two player chat notices, both bed halves, a saved UUID with an obsolete profile name, and Blood Rose contact and collection in a muted, background clean Forge replay. A Leech Chest keeps its sample while the subject is in the Nether. After the dedicated restart, both players kept their respawn points and the collector claimed the retained sample. A lone vanilla bed foot rejects even a crouched collection.
 - [x] Replay the headless suite and run the same reobfuscated JAR on copied Auram. All 658 required GameTests passed, and Auram matched all 32 stealth outcomes using its configured world random stream.
 
+## Player Compass tracking (2026-11-27)
+
+- [x] Compare 99 directional frames from the released 0.24.1 client callback, including negative and multi-turn yaw. Sample on client inventory ticks when world day time modulo 10 equals 2. The rendered pointer uses the original 32 directions and neutral sprite.
+- [x] Bind a Player Compass in the survival inventory grid with a Taglock obtained from a pig. Verify that the pointer follows the same pig after the holder turns, wanders while only the server has the pig loaded, and points to the pig again when it returns. Dropping and picking up the compass restores the neutral and active sprites in order.
+- [x] Resolve original name-only player signatures and saved UUIDs with an obsolete name. While a second player is in the Nether, the needle wanders. The reading becomes directional again when the player returns to tracking range.
+- [x] Recover an older Forge compass carrying a saved creature alias and `Needle` field. Protocol 103 supplies that alias when the client starts tracking the creature. A dedicated restart retains the saved binding and custom tags and restores the live reading. All 659 required local Forge GameTests passed.
+- [x] Run the same reobfuscated JAR on the copied Auram client and dedicated server. The hidden, muted client matched all 99 directional references. Its compass pointed to the converted villager by saved UUID, wandered while the server kept the villager loaded beyond client tracking range, and returned to the correct sprite when the villager came back.
+
 ## Water and Lava Diviners (2026-11-22)
 
 - [x] Craft the Water Diviner with four sticks, four Water Bottles, and Tear of the Goddess in the original pattern. Craft the Lava Diviner with three Blaze Rods and either a fresh or worn Water Diviner. Restore the original names and use the existing original item sprites.
@@ -3496,7 +3504,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
   - [x] Compare [item stack and anvil behavior](#item-stack-and-anvil-behavior-2026-11-27) for all original IDs and sampled subtypes, with live anvil, crafting, and food interactions.
   - [x] Compare [Taglock collection](#taglock-collection-2026-11-27) for stealth chances, kits, sample sources, and cue delivery.
-  - [ ] Compare the Player Compass's client inventory update, directional frames and handling of unloaded targets with the original.
+  - [x] Compare the [Player Compass's client inventory update, directional frames and handling of unloaded targets](#player-compass-tracking-2026-11-27) with the original.
+  - [ ] Compare the Poppet Shelf Compass's original random refresh and the Water and Lava Diviners' success, failure, and invalid-aim cues.
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.
