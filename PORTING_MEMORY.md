@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Ent player targeting, fertilization and death rewards (2026-11-28)
+
+- The released 0.24.1 server found a player through a wall when its navigation could go around. It ignored the same player after the fixture sealed the enclosure. Forge now checks the modern path endpoint before selecting the nearest eligible player, with the original horizontal tolerance and face state.
+- Restore the world roll and the block directly below the Ent's fractional position for fertilization. The controlled native success grew wheat from age zero to two without a separate burst. One world roll chooses the sapling that accompanies the Ent Branch. Both packaged servers matched the targeting, growth and drop cases. A hidden and muted clean Forge survival client verified a real Ent walked around the fixture wall and dealt four damage. Read `build/qa-ent-behavior/`.
+- All 683 required Forge GameTests passed locally on the reobfuscated build. The Phase 4 creature behavior row remains open for other entities.
+
 ## Naturally sourced Rite of Charging (2026-11-28)
 
 - The seed-`209376` survival player repaired the generated Ruined Portal at `-1170 79 194` with chest obsidian and four mined blocks, used it to enter the Nether, mined Glowstone at `-189 55 24`, and brought two Glowstone Dust through the return portal. See `restore-natural-portal.log` and `harvest-glowstone.log` under `build/qa-natural-altar/clean/`.

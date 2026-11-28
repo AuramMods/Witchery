@@ -28,7 +28,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.MoveTowardsTargetGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -42,6 +42,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Comparator;
 
 public final class Ent extends Monster {
     private static final EntityDataAccessor<Boolean> SCREAMING = SynchedEntityData.defineId(Ent.class, EntityDataSerializers.BOOLEAN);
@@ -98,11 +100,41 @@ public final class Ent extends Monster {
         goalSelector.addGoal(1, new FloatGoal(this));
         goalSelector.addGoal(2, new MeleeAttackGoal(this, 1, true));
         goalSelector.addGoal(3, new MoveTowardsTargetGoal(this, 0.9, 32));
-        goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 0.6));
+        goalSelector.addGoal(4, new RandomStrollGoal(this, 0.6));
         goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6));
         goalSelector.addGoal(6, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        targetSelector.addGoal(2, new EntPlayerTargetGoal(this));
+    }
+
+    private static final class EntPlayerTargetGoal extends NearestAttackableTargetGoal<Player> {
+        private EntPlayerTargetGoal(Ent ent) {
+            super(ent, Player.class, 0, false, false, null);
+            targetConditions.ignoreLineOfSight();
+        }
+
+        @Override
+        protected void findTarget() {
+            double range = getFollowDistance();
+            var search = getTargetSearchArea(range);
+            targetConditions.range(range);
+            // The original filters for reachability before choosing the nearest eligible player.
+            target = mob.level().players().stream()
+                    .filter(player -> search.intersects(player.getBoundingBox()) && mob.isWithinRestriction(player.blockPosition())
+                            && targetConditions.test(mob, player))
+                    .sorted(Comparator.comparingDouble(mob::distanceToSqr))
+                    .filter(this::canReach)
+                    .findFirst().orElse(null);
+        }
+
+        private boolean canReach(Player player) {
+            var path = mob.getNavigation().createPath(player, 0);
+            var end = path == null ? null : path.getEndNode();
+            if (end == null) return false;
+            int dx = end.x - player.getBlockX();
+            int dz = end.z - player.getBlockZ();
+            return dx * dx + dz * dz <= 2.25;
+        }
     }
 
     @Override
@@ -117,12 +149,9 @@ public final class Ent extends Monster {
         if (attackTicks > 0) attackTicks--;
         if (level() instanceof ServerLevel server && isAlive()) {
             entityData.set(SCREAMING, getTarget() != null);
-            if (random.nextInt(300) == 0) {
-                BlockPos ground = getOnPos();
-                if (BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), server, ground,
-                        FakePlayerFactory.getMinecraft(server))) {
-                    server.levelEvent(1505, ground, 0);
-                }
+            if (server.getRandom().nextInt(300) == 0) {
+                BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), server, blockPosition().below(),
+                        FakePlayerFactory.getMinecraft(server));
             }
         } else if (level().isClientSide && getDeltaMovement().horizontalDistanceSqr() > 2.5E-7 && random.nextInt(5) == 0) {
             BlockState ground = level().getBlockState(getOnPos());
@@ -175,7 +204,7 @@ public final class Ent extends Monster {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         spawnAtLocation(new ItemStack(WitcheryIngredient.ENT_BRANCH.item()));
         WitchWoodType[] woods = WitchWoodType.values();
-        spawnAtLocation(woods[random.nextInt(woods.length)].stack(WitcheryBlocks.getRequired("witchsapling").get()));
+        spawnAtLocation(woods[level().getRandom().nextInt(woods.length)].stack(WitcheryBlocks.getRequired("witchsapling").get()));
     }
 
     @Nullable

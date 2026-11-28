@@ -916,7 +916,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 97 | `TREEFYD` | `EntityTreefyd` | `treefyd` (planted guardian, Taglock training, Boline patrol, heart upgrades) |
 | 98 | `HUNTSMAN` | `EntityHornedHuntsman` | `hornedHuntsman` → `witchery:hornedhuntsman` (Horn of the Hunt, entrance, boss combat and rank-five trial) |
 | 99 | `SPELL` | `EntitySpellEffect` | `spellEffect` → `witchery:spelleffect` |
-| 100 | `ENT` | `EntityEnt` | `ent` (Witchwood harvest awakening, legacy `Owner` field retained) |
+| 100 | `ENT` | `EntityEnt` | `ent` (Witchwood harvest awakening, reachable player targeting, world-roll fertilization and sapling drop, legacy `Owner` field retained) |
 | 101 | `ILLUSION_CREEPER` | `EntityIllusionCreeper` | `illusioncreeper` (silent, named victim, signed `IllusionType`) |
 | 102 | `ILLUSION_SPIDER` | `EntityIllusionSpider` | `illusionspider` (private Spider cue, named victim, signed `IllusionType`) |
 | 103 | `ILLUSION_ZOMBIE` | `EntityIllusionZombie` | `illusionzombie` (private Zombie cue, named victim, signed `IllusionType`) |

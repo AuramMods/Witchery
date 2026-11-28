@@ -638,11 +638,18 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 ## Ent and Ent Branch (2026-11-20)
 
 - [x] Restore the Ent at `witchery:ent`. Harvesting Witchwood can awaken one in the surrounding forest. The rate starts at 1% and increases with adjacent Witchwood logs up to 5%. Awakening needs supported space in a loaded chunk.
-- [x] Restore the original Ent model, attack animation, axe vulnerability, Ent Branch drop and Witchwood sapling drop. The branch supplies the existing Mystic Branch rite and the Mutating Sprig recipe still to be ported.
+- [x] Restore the original Ent model, attack animation, axe vulnerability, Ent Branch drop and Witchwood sapling drop. The branch supplies the Mystic Branch rite and the Mutating Sprig recipe.
 - [x] Verify the packaged Ent in muted survival. The player harvested Hawthorn with an axe and awakened a hostile Ent, which attacked and killed the player. The respawned player defeated the same Ent with a supplied axe after it was positioned in the test arena, then picked up its Ent Branch and Alder Sapling.
 - [x] Package on Java 17 and pass all 80 required Forge GameTests. The tests cover harvesting, spawn distance, the 15-damage cap before the triple axe bonus, both drops, and legacy ownership.
 - [x] Restart the dedicated server and verify the saved branch, Alder Sapling variant and legacy Ent owner. The muted client offered the collected Ent Branch and Mystic Unguent inside two white rings at night, and the rite produced a Mystic Branch.
 - [x] Restore the original Ent awakening roll and both cues. The log's instant-spell particles and harp originate at its lower corner with an eight-block audience. The smoke and skeletal-horse sound originate at the Ent's feet with a sixteen-block audience. Seed 5123 found the same landing offset as Witchery 0.24.1. The muted survival client received both cues nearby, only the Ent cue beyond the log's range, and neither cue beyond both ranges.
+
+### Ent player targeting, fertilization and death rewards (2026-11-28)
+
+- Witchery 0.24.1 selected the exposed player and the player behind a short wall it could walk around. The Ent opened its face in both cases. A sealed enclosure prevented selection. The port uses the modern navigation path to check each candidate within the original search area. It accepts a path that ends within the original horizontal tolerance and keeps the face linked to the active target.
+- The original world took one 1-in-300 draw before applying bone meal directly one block below the Ent's position. At a fractional height of 0.54, the successful roll grew the wheat from age zero to two without a separate bone-meal burst. The port restores that position and roll while using Forge's bone-meal hook. The original death callback dropped one Ent Branch and used one world draw to choose Rowan, Alder, or Hawthorn. The reobfuscated port matches all three sapling results.
+- The preceding package failed the three grouped checks. Clean Forge and copied Auram passed them on the exact reobfuscated JAR, SHA-256 `2783dcbcea865c5b0fbbfa08fc4d809e8f9d5dffeecd1df05baaaa03e5c27db1`. A live Ent rounded the prepared wall and took the survival player's health from 20 to 16. The fixture supplied the terrain and the Ent. The muted background client stayed unfocused. Read `build/qa-ent-behavior/{native/final,replay-baseline/verify,clean-fixed/verify,pack-fixed/verify,play/detour-live}.log`.
+- Local Java 17 packaging and all 683 required Forge GameTests passed. The regressions cover open, detour and sealed terrain, successful and missed world growth rolls, and all three sapling variants. Read `build/qa-ent-behavior/gametest-replay.log`.
 
 ## Mutating Sprig, Grassper and Critter Snare (2026-11-20)
 
@@ -3754,6 +3761,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [Ent targeting, fertilization and death rewards](#ent-player-targeting-fertilization-and-death-rewards-2026-11-28), including a live survival pursuit around a wall.
   - [x] Compare [natural spawn eligibility](#natural-spawn-eligibility-2026-11-27) for Coven Witches, Dream Spirits, Hobgoblins, and Hellhounds.
   - [x] Compare [biome membership and effective spawn weights](#natural-biome-spawn-weights-2026-11-27) against the 0.24.1 registry for all four natural spawners, including overlapping habitats and replaced biomes.
   - [x] Compare [Broom steering, bonus timing, contact, and client interpolation](#broom-movement-and-collisions-2026-11-27).
