@@ -71,10 +71,18 @@ public final class ThrownBrew extends ThrowableItemProjectile {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         legacyOwnerName = tag.hasUUID("Owner") ? "" : tag.getString("ownerName");
-        boolean fixedRecipe = getType() == WitcheryEntities.LEGACY_FIXED_BREW.get();
-        if ((fixedRecipe || getType() == WitcheryEntities.LEGACY_CUSTOM_BREW.get()) && getItem().isEmpty()) {
-            setItem(readLegacyPayload(tag, fixedRecipe));
-            if (!fixedRecipe && tag.getBoolean("Spell")) setNoGravity(true);
+        boolean fixedRecipe = getType() == WitcheryEntities.LEGACY_FIXED_BREW.get()
+                || getType() == WitcheryEntities.THROWN_BREW.get() && !tag.contains("Brew", Tag.TAG_COMPOUND);
+        boolean hasLegacyPayload = fixedRecipe ? tag.contains("damageValue", Tag.TAG_ANY_NUMERIC) : tag.contains("Brew", Tag.TAG_COMPOUND);
+        // The canonical entity can render the default Ink stack even when no Item was saved.
+        if (hasLegacyPayload && getItemRaw().isEmpty() && ItemStack.of(tag.getCompound("Item")).isEmpty()) {
+            var payload = readLegacyPayload(tag, fixedRecipe);
+            if (!payload.isEmpty()) {
+                setItem(payload);
+                if (!fixedRecipe && !tag.contains("NoGravity", Tag.TAG_ANY_NUMERIC) && tag.getBoolean("Spell")) {
+                    setNoGravity(true);
+                }
+            }
         }
     }
 

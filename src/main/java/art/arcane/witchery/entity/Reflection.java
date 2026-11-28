@@ -183,6 +183,10 @@ public final class Reflection extends Monster implements RangedAttackMob {
     public boolean isVampireCopy() { return vampire; }
     public int attackTicks() { return attackTicks; }
 
+    public boolean hasTimedLife() {
+        return lifetime > 0;
+    }
+
     private boolean holdsModRangedWeapon() {
         return getMainHandItem().getItem() instanceof MysticBranchItem || getMainHandItem().getItem() instanceof HandBowItem;
     }

@@ -120,7 +120,7 @@ public final class WingedMonkey extends TamableAnimal {
         return attackTicks;
     }
 
-    boolean isTemporary() {
+    public boolean isTemporary() {
         return timeToLive >= 0;
     }
 

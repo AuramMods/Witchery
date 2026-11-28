@@ -280,6 +280,10 @@ public final class CovenWitch extends PathfinderMob implements RangedAttackMob {
         return isAlive() && covenOwner != null && level().getPlayerByUUID(covenOwner) != null;
     }
 
+    public boolean hasTimedSummon() {
+        return covenOwner != null && summonTicks >= 0;
+    }
+
     private static ListTag members(ServerPlayer player) {
         return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getList(COVEN, Tag.TAG_COMPOUND);
     }

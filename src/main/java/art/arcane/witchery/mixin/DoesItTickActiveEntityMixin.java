@@ -1,6 +1,8 @@
 package art.arcane.witchery.mixin;
 
+import art.arcane.witchery.entity.AttackBat;
 import art.arcane.witchery.entity.BrewDroplet;
+import art.arcane.witchery.entity.CovenWitch;
 import art.arcane.witchery.entity.DarkMark;
 import art.arcane.witchery.entity.DreamSpirit;
 import art.arcane.witchery.entity.GrenadeProjectile;
@@ -10,8 +12,10 @@ import art.arcane.witchery.entity.HornedHuntsman;
 import art.arcane.witchery.entity.Illusion;
 import art.arcane.witchery.entity.InfernoSplatter;
 import art.arcane.witchery.entity.Leonard;
+import art.arcane.witchery.entity.Lilith;
 import art.arcane.witchery.entity.LostSoul;
 import art.arcane.witchery.entity.MirrorFace;
+import art.arcane.witchery.entity.Reflection;
 import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
@@ -19,6 +23,7 @@ import art.arcane.witchery.entity.WingedMonkey;
 import art.arcane.witchery.entity.WitcheryBolt;
 import art.arcane.witchery.entity.WitcheryFollower;
 import art.arcane.witchery.entity.WitchOwl;
+import art.arcane.witchery.entity.WitchPet;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -34,14 +39,19 @@ abstract class DoesItTickActiveEntityMixin {
     private static void witchery$keepActiveEntitiesTicking(Entity entity, CallbackInfoReturnable<Boolean> result) {
         if (entity.level().isClientSide()) return;
         if ((entity instanceof WitchOwl owl && owl.hasActiveDelivery())
-                || (entity instanceof WingedMonkey monkey && monkey.hasActiveFlight())
+                || (entity instanceof WingedMonkey monkey && (monkey.hasActiveFlight() || monkey.isTemporary()))
+                || (entity instanceof WitchPet pet && pet.isTemporary())
+                || (entity instanceof CovenWitch witch && witch.hasTimedSummon())
                 || (entity instanceof Hellhound hound && hound.isConverting())
                 || (entity instanceof HornedHuntsman huntsman && huntsman.hasActiveEntrance())
                 || (entity instanceof HobgoblinGod god && god.hasActiveEntrance())
                 || (entity instanceof Leonard leonard && leonard.hasActiveEntrance())
+                || (entity instanceof Lilith lilith && lilith.hasActiveEntrance())
+                || (entity instanceof Reflection reflection && reflection.hasTimedLife())
                 || (entity instanceof DreamSpirit spirit && spirit.hasTimedLife())
                 || (entity instanceof LostSoul soul && soul.hasTimedLife())
                 || (entity instanceof SpectralUndead undead && undead.temporary())
+                || entity instanceof AttackBat
                 || entity instanceof DarkMark
                 || entity instanceof Illusion
                 || entity instanceof MirrorFace

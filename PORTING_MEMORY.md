@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Resumed entity saves and timers (2026-11-28)
+
+- The source audit maps all 52 original [entity save overrides](PORTING_MANIFEST.md#entity-serializer-inventory). Ordinary entity storage restores the heading of dotted Broom IDs and recovers a saved fixed payload or custom bottle even when the entity ID was already converted to `witchery:thrown_brew`.
+- The packaged fixtures observed the recovered Thrown Web place a cobweb and confirmed that an explicit existing item or gravity value keeps precedence. Clean Forge and copied Auram resumed five countdowns by UUID and completed them after a headless restart with no players online. Auram kept its idle companion policy throughout. See [entity saves and timers](PORTING.md#resumed-entity-saves-and-timers-2026-11-28).
+- Local Java 17 reobfuscation and all 726 required Forge GameTests passed. The tested JAR has SHA-256 `be0878ea8130024aa9b4a4d41b371f5105f2f9e928fdfa3709f4f5bd76759083`. Fixture sources and logs are under `build/qa-resumed-entities/`.
+
 ## Mounted skull state in earlier Forge saves (2026-11-28)
 
 - Ordinary Forge chunk loads recover missing Alluring Skull and Wolf Head properties from `SkullType` and `Rot`. Current properties stay authoritative. The repaired section is repacked and marked for saving. The manifest accounts for all 34 original [block-entity save overrides](PORTING_MANIFEST.md#block-entity-serializer-inventory).

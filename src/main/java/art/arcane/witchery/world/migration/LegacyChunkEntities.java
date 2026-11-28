@@ -106,12 +106,7 @@ public final class LegacyChunkEntities {
         switch (name.getPath()) {
             case "droplet" -> ids.upgradeUntypedItems(entity.getCompound("Brew"), fixer, from, targetVersion);
             case "brew", "brew2" -> name = prepareBrewProjectile(entity, name, ids, fixer, from, targetVersion);
-            case "broom" -> {
-                if (oldType.startsWith("witchery.") || oldType.startsWith("minecraft:witchery.")) {
-                    var rotation = entity.getList("Rotation", Tag.TAG_FLOAT);
-                    if (!rotation.isEmpty()) rotation.set(0, FloatTag.valueOf(rotation.getFloat(0) + 90));
-                }
-            }
+            case "broom" -> restoreBroomHeading(entity, oldType);
         }
         if (!ForgeRegistries.ENTITY_TYPES.containsKey(name)) return;
         if (name.getPath().equals("bolt")) LegacyBoltAnchors.prepare(entity, ids, originalChunk);
@@ -245,6 +240,7 @@ public final class LegacyChunkEntities {
             String type = entity.getString("id");
             ResourceLocation legacy = WitcheryEntities.legacyEntityId(type);
             if (legacy != null && !legacy.toString().equals(type) && ForgeRegistries.ENTITY_TYPES.containsKey(legacy)) {
+                if (legacy.equals(WitcheryEntities.BROOM.getId())) restoreBroomHeading(entity, type);
                 entity.putString("id", legacy.toString());
             }
         }
@@ -277,6 +273,13 @@ public final class LegacyChunkEntities {
             restoreSpawner(entity);
         }
         restore(entity.getList("Passengers", Tag.TAG_COMPOUND));
+    }
+
+    private static void restoreBroomHeading(CompoundTag entity, String originalType) {
+        if (originalType.startsWith("witchery.") || originalType.startsWith("minecraft:witchery.")) {
+            var rotation = entity.getList("Rotation", Tag.TAG_FLOAT);
+            if (!rotation.isEmpty()) rotation.set(0, FloatTag.valueOf(rotation.getFloat(0) + 90));
+        }
     }
 
     private static void restoreApothecary(CompoundTag villager) {

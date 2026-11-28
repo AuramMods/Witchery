@@ -95,6 +95,10 @@ public final class Lilith extends Monster implements RangedAttackMob {
         return entityData.get(FRIENDLY);
     }
 
+    public boolean hasActiveEntrance() {
+        return invulnerableTicks > 0 && !friendly();
+    }
+
     @Override
     public void aiStep() {
         super.aiStep();
