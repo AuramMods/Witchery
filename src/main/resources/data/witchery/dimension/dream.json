@@ -1,7 +1,7 @@
 {
   "type": "witchery:dream",
   "generator": {
-    "type": "minecraft:noise",
+    "type": "witchery:dream",
     "biome_source": {
       "type": "minecraft:multi_noise",
       "preset": "minecraft:overworld"

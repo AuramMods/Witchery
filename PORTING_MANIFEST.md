@@ -1934,7 +1934,7 @@ Implementation anchors:
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/torment.json`
 - `/Users/cyberpwn/development/workspace/AuramMods/Witchery/src/main/resources/data/witchery/dimension/mirror.json`
 
-The bundled Dream dimension uses the modern Overworld noise preset. The original `WorldProviderDreamWorld` selected the actual Overworld terrain type. The packaged flat-world comparison leaves inheritance for nondefault Overworld presets open.
+The bundled Dream dimension inherits the selected Overworld generator when Minecraft resolves the dimensions, matching the terrain selection in `WorldProviderDreamWorld`. It keeps the Dream dimension type and saves the resolved generator in `level.dat`. An existing saved generator is retained when the bundled definition applies. A higher-priority Dream datapack can supply a concrete generator. See the [packaged world generation checks](PORTING.md#dream-terrain-inheritance-2026-11-28).
 
 ### 1.20.1 Dimension Travel
 Implementation anchors:

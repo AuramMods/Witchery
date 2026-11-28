@@ -10,6 +10,7 @@ import art.arcane.witchery.data.SmeltingTouchLootModifier;
 import art.arcane.witchery.data.WolfBoneLootModifier;
 import art.arcane.witchery.entity.HobgoblinMiningLootModifier;
 import art.arcane.witchery.particle.CauldronParticleOptions;
+import art.arcane.witchery.world.DreamChunkGenerator;
 import art.arcane.witchery.world.DreamCottonFeature;
 import art.arcane.witchery.world.DreamSpiritSpawnModifier;
 import art.arcane.witchery.world.HellhoundSpawnModifier;
@@ -105,6 +106,7 @@ public final class WitcheryRegistries {
         FEATURES.register("wicker_man", WickerManFeature::new);
         FEATURES.register("surface_structures", SurfaceStructuresFeature::new);
         FEATURES.register("witchwood_tree", WitchwoodTreeFeature::new);
+        CHUNK_GENERATORS.register("dream", () -> DreamChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("mirror", () -> MirrorChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("torment", () -> TormentChunkGenerator.CODEC);
     }
