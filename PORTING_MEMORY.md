@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Localized Fetish alarm saves (2026-11-27)
+
+- The 0.24.1 headless server saved 13 Screamers spread across the Scarecrow, Trent Effigy and Witch's Ladder. It loaded each released translation for both Witchery groups and checked vanilla Mooshroom. The signal was zero for the default group member and 15 for a differently named individual or an unrelated pig. It saved one original Witch's Ladder drop with the Spanish Hobgoblin group in its nested `TileData`. Read `build/qa-fetish-group-saves/native/verified.log`.
+- The older JAR gave eight false alarms and missed five alarms for custom-named creatures. The repair shares the legacy creature label matcher with Treefyds, keeps the visible label and an explicit stable entity type, and evaluates a custom name when the mob has one. The Witchery labels cover all six release languages.
+- Clean Forge and copied Auram each matched all 39 signal observations at import and after an ordinary restart. An earlier converted region loaded directly and passed the same two runs on clean Forge. The named Witch's Ladder in the chest retained its original nested label. See `build/qa-fetish-group-saves/{clean-baseline-legacy,clean-legacy,clean-mixed,pack-legacy}/`. The Java 17 reobfuscated candidate SHA-256 is `4533ae69477fc5355aa0271a670f81e619109aac485a725dfa7793d6e35b3ab9`.
+- The first full suite saved the Felling fixture's correct one-count Hawthorn log 108 blocks below the cut. The GameTest now places a stone floor under its test logs so the item stays inside the real entity query while waiting for the Ent to enter its chunk. All 679 required Forge GameTests passed on the replay. Read `build/qa-fetish-group-saves/{gametest,gametest-replay}.log`.
+
 ## Witch's Hand drops and failure cues (2026-11-27)
 
 - The 0.24.1 controlled release and attack cases show that the uninfused Hand and an exhausted cast play a half-volume Snare without advancing world randomness. A valid but unaffordable Otherwhere recall or companion recall plays two. The previous package omitted the uninfused cues, advanced the world RNG for overdrafts and supplied only one Snare on each exhausted recall.

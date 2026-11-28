@@ -671,6 +671,9 @@ public final class CauldronBrewParityTests {
         var outsideLog = center.east(4);
         var witchLog = WitcheryBlocks.getRequired("witchlog").get();
         var hawthorn = witchLog.defaultBlockState().setValue(WitchWoodType.PROPERTY, WitchWoodType.HAWTHORN);
+        for (var floor : BlockPos.betweenClosed(center.offset(-2, -2, -2), center.offset(2, -2, 2))) {
+            level.setBlockAndUpdate(floor, Blocks.STONE.defaultBlockState());
+        }
         level.setBlockAndUpdate(center, hawthorn);
         level.setBlockAndUpdate(protectedLog, hawthorn);
         level.setBlockAndUpdate(edgeLog, Blocks.OAK_WOOD.defaultBlockState());

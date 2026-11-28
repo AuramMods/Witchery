@@ -48,6 +48,60 @@ public final class FetishBehaviorTests {
     private static final String TEMPLATE = "qa_rite_terrain";
     private static final BlockPos CENTER = new BlockPos(19, 220, 19);
 
+    @GameTest(template = TEMPLATE, batch = "witchery_localized_alarm", setupTicks = 5, timeoutTicks = 160)
+    public static void localizedAlarmGroupsSurvivePlacementAndReload(GameTestHelper helper) {
+        floor(helper);
+        helper.setBlock(CENTER, WitcheryBlocks.getRequired("scarecrow").get());
+        helper.setBlock(CENTER.east(), Blocks.REDSTONE_LAMP);
+        var fetish = (FetishBlockEntity) helper.getBlockEntity(CENTER);
+        var data = alarm(FetishEffect.SCREAMER);
+        var groups = new ListTag();
+        for (String name : List.of("Duende", "Шабашная ведьма", "Mooshroom", "妖精")) {
+            var group = new CompoundTag();
+            group.putString("CreatureTypeName", name);
+            if (name.equals("妖精")) group.putString("CreatureTypeId", "minecraft:sheep");
+            groups.add(group);
+        }
+        data.put("KnownCreatureTypes", groups);
+        var item = new ItemStack(WitcheryBlocks.getRequired("scarecrow").get());
+        item.getOrCreateTag().put("TileData", data);
+        fetish.loadItem(item);
+        var saved = fetish.saveWithoutMetadata();
+        var records = saved.getList("KnownCreatureTypes", Tag.TAG_COMPOUND);
+        var ids = List.of("witchery:goblin", "witchery:covenwitch", "minecraft:mooshroom", "minecraft:sheep");
+        for (int index = 0; index < ids.size(); index++) {
+            helper.assertTrue(ids.get(index).equals(records.getCompound(index).getString("CreatureTypeId"))
+                            && groups.getCompound(index).getString("CreatureTypeName")
+                                    .equals(records.getCompound(index).getString("CreatureTypeName")),
+                    "The saved label and its stable entity type round trip together");
+        }
+        fetish.load(saved);
+        var level = helper.getLevel();
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.isPositionEntityTicking(helper.absolutePos(CENTER.south(3)))
+                        && level.isPositionEntityTicking(helper.absolutePos(CENTER.north(3))),
+                "The alarm fixture accepts ticking subjects")).thenExecute(() -> {
+            var goblin = placeMob(helper, WitcheryEntities.GOBLIN.get(), CENTER.south(3));
+            var witch = placeMob(helper, WitcheryEntities.COVEN_WITCH.get(), CENTER.north(3));
+            placeMob(helper, EntityType.MOOSHROOM, CENTER.south(4));
+            placeMob(helper, EntityType.SHEEP, CENTER.north(4));
+            helper.startSequence().thenIdle(24).thenExecute(() -> {
+                helper.assertFalse(lampLit(helper), "All four loaded groups leave the alarm quiet");
+                goblin.setCustomName(Component.literal("Named Hobgoblin"));
+            }).thenWaitUntil(() -> helper.assertTrue(lampLit(helper), "A named individual still needs its own binding"))
+                    .thenExecute(() -> {
+                        var taglock = new ItemStack(WitcheryItems.getRequired("taglockkit").get());
+                        TaglockItem.bindSignature(taglock, goblin);
+                        use(helper, actor(helper, "LocalizedAlarmTester"), taglock);
+                        helper.assertTrue(taglock.isEmpty(), "A normal Taglock use registers the named individual");
+                        fetish.load(fetish.saveWithoutMetadata());
+                    }).thenWaitUntil(() -> helper.assertFalse(lampLit(helper), "The saved individual binding clears the alarm"))
+                    .thenExecute(() -> witch.setCustomName(Component.literal("Named Coven Witch")))
+                    .thenWaitUntil(() -> helper.assertTrue(lampLit(helper), "The previous group has no named witch binding"))
+                    .thenSucceed();
+        });
+    }
+
     @GameTest(template = TEMPLATE, batch = "witchery_screamer_alarm", setupTicks = 5, timeoutTicks = 160)
     public static void screamerUsesLegacySpeciesAndAlarmControls(GameTestHelper helper) {
         floor(helper);

@@ -7,6 +7,7 @@ import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.world.migration.LegacyCreatureNames;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -73,7 +74,8 @@ final class FetishAlarm {
                 String name = mob.getDisplayName().getString();
                 boolean known = false;
                 for (Group group : groups) {
-                    if (group.id != null ? group.id.equals(type) : group.name.equals(name)) {
+                    if (group.id != null ? group.id.equals(type) && (!mob.hasCustomName() || group.name.equals(name))
+                            : group.name.equals(name)) {
                         observedGroups.add(group);
                         known = true;
                     }
@@ -140,10 +142,9 @@ final class FetishAlarm {
     private static Group groupFor(@Nullable ResourceLocation type, String name) {
         for (EntityType<?> candidate : List.of(EntityType.VILLAGER, EntityType.SHEEP, EntityType.COW, EntityType.MOOSHROOM,
                 EntityType.CHICKEN, EntityType.PIG, EntityType.HORSE, EntityType.BAT, EntityType.SQUID,
-                WitcheryEntities.COVEN_WITCH.get(), WitcheryEntities.all().get("goblin").get())) {
+                WitcheryEntities.COVEN_WITCH.get(), WitcheryEntities.GOBLIN.get())) {
             ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(candidate);
-            if (type != null ? type.equals(id) : candidate.getDescription().getString().equals(name)
-                    || candidate == EntityType.MOOSHROOM && name.equals("Mooshroom")) {
+            if (type != null ? type.equals(id) : LegacyCreatureNames.matches(candidate, name)) {
                 return new Group(id, name);
             }
         }

@@ -3,6 +3,7 @@ package art.arcane.witchery.entity;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.lycanthropy.WerewolfVillagers;
 import art.arcane.witchery.registry.WitcheryEntities;
+import art.arcane.witchery.world.migration.LegacyCreatureNames;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -19,13 +20,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 final class TreefydAllowlist {
     private static final List<EntityType<?>> VANILLA_HERDS = List.of(EntityType.VILLAGER, EntityType.SHEEP, EntityType.COW,
             EntityType.MOOSHROOM, EntityType.CHICKEN, EntityType.PIG, EntityType.HORSE);
-    private static final Set<String> LEGACY_HOBGOBLIN_NAMES = Set.of("Duende", "Хобгоблин", "妖精");
     private final Map<String, UUID> players = new LinkedHashMap<>();
     private final Map<String, ResourceLocation> species = new LinkedHashMap<>();
     private final Map<UUID, String> creatures = new LinkedHashMap<>();
@@ -66,10 +65,10 @@ final class TreefydAllowlist {
             return VANILLA_HERDS.contains(type) || type == WitcheryEntities.GOBLIN.get() ? type : null;
         }
         for (EntityType<?> type : VANILLA_HERDS) {
-            if (type.getDescription().getString().equals(name)) return type;
+            if (LegacyCreatureNames.matches(type, name)) return type;
         }
         EntityType<?> goblin = WitcheryEntities.GOBLIN.get();
-        return goblin.getDescription().getString().equals(name) || LEGACY_HOBGOBLIN_NAMES.contains(name) ? goblin : null;
+        return LegacyCreatureNames.matches(goblin, name) ? goblin : null;
     }
 
     private static <T> boolean updateNamed(Map<String, T> values, String name, @Nullable T id, boolean remove) {
