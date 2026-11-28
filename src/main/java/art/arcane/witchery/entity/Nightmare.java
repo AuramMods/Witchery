@@ -15,6 +15,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -27,13 +28,18 @@ import net.minecraft.world.entity.ai.goal.BreakDoorGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsTargetGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
 import java.util.UUID;
@@ -75,7 +81,10 @@ public final class Nightmare extends Monster {
         goalSelector.addGoal(1, new FloatGoal(this));
         goalSelector.addGoal(2, new BreakDoorGoal(this, difficulty -> difficulty == Difficulty.HARD));
         goalSelector.addGoal(3, new MeleeAttackGoal(this, 1, true));
-        goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1));
+        goalSelector.addGoal(4, new MoveTowardsTargetGoal(this, 0.9, 32));
+        goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 1));
+        goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1, false, 4, () -> true));
+        goalSelector.addGoal(7, new RandomStrollGoal(this, 1));
         goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
@@ -137,8 +146,8 @@ public final class Nightmare extends Monster {
                 return;
             }
         }
-        if (getTarget() instanceof ServerPlayer player && !DreamTravel.hasNightmare(player)
-                && !WakingNightmareEffect.isHaunted(player) && random.nextInt(5) == 0) {
+        if (level.random.nextInt(5) == 0 && getTarget() instanceof ServerPlayer player
+                && !DreamTravel.hasNightmare(player) && !WakingNightmareEffect.isHaunted(player)) {
             disappear(level);
         }
     }
@@ -154,20 +163,48 @@ public final class Nightmare extends Monster {
     }
 
     @Override
+    public boolean canBreatheUnderwater() {
+        return true;
+    }
+
+    @Override
     public boolean doHurtTarget(Entity target) {
         swipeTicks = SWIPE_TICKS;
         level().broadcastEntityEvent(this, SWIPE_EVENT);
-        if (target instanceof ServerPlayer player
-                && player.getInventory().items.stream().noneMatch(stack -> stack.is(WitcheryIngredient.CHARM_OF_DISRUPTED_DREAMS.item()))) {
-            EquipmentSlot slot = ARMOR_SLOTS[random.nextInt(ARMOR_SLOTS.length)];
-            ItemStack armor = player.getItemBySlot(slot);
-            if (!armor.isEmpty()) {
-                player.setItemSlot(slot, ItemStack.EMPTY);
-                player.drop(armor, true, false);
-            }
+        if (target instanceof ServerPlayer player) knockArmorOff(player);
+
+        float damage = level().dimension().equals(WitcheryDimensions.DREAM)
+                ? (float) getAttributeValue(Attributes.ATTACK_DAMAGE) : 0.5F;
+        if (target instanceof LivingEntity living) {
+            damage += EnchantmentHelper.getDamageBonus(getMainHandItem(), living.getMobType());
         }
-        return level().dimension().equals(WitcheryDimensions.DREAM)
-                ? super.doHurtTarget(target) : target.hurt(damageSources().mobAttack(this), 0.5F);
+        if (!target.hurt(damageSources().mobAttack(this), damage)) return false;
+        int knockback = EnchantmentHelper.getKnockbackBonus(this);
+        if (target instanceof LivingEntity && knockback > 0) {
+            float heading = getYRot() * Mth.DEG_TO_RAD;
+            target.push(-Mth.sin(heading) * knockback * 0.5F, 0.1, Mth.cos(heading) * knockback * 0.5F);
+            setDeltaMovement(getDeltaMovement().multiply(0.6, 1, 0.6));
+        }
+        int fire = EnchantmentHelper.getFireAspect(this);
+        if (fire > 0) target.setSecondsOnFire(fire * 4);
+        setLastHurtMob(target);
+        return true;
+    }
+
+    private void knockArmorOff(ServerPlayer player) {
+        if (player.getInventory().items.stream().anyMatch(stack -> stack.is(WitcheryIngredient.CHARM_OF_DISRUPTED_DREAMS.item()))) {
+            return;
+        }
+        ServerLevel level = player.serverLevel();
+        EquipmentSlot slot = ARMOR_SLOTS[level.random.nextInt(ARMOR_SLOTS.length)];
+        ItemStack armor = player.getItemBySlot(slot);
+        if (armor.isEmpty()) return;
+        float speed = level.random.nextFloat() * 0.5F;
+        float angle = level.random.nextFloat() * Mth.TWO_PI;
+        var drop = new ItemEntity(level, player.getX(), player.getEyeY() - 0.3F, player.getZ(), armor.copy(),
+                -Mth.sin(angle) * speed, 0.2F, Mth.cos(angle) * speed);
+        drop.setPickUpDelay(40);
+        if (level.addFreshEntity(drop)) player.setItemSlot(slot, ItemStack.EMPTY);
     }
 
     @Override
@@ -214,7 +251,8 @@ public final class Nightmare extends Monster {
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         if (level().dimension().equals(WitcheryDimensions.DREAM)) {
-            int count = looting > 0 && random.nextInt(Math.max(10 - looting, 5)) == 0 ? 2 : 1;
+            int roll = random.nextInt(Math.max(10 - looting, 5));
+            int count = looting > 0 && roll == 0 ? 2 : 1;
             spawnAtLocation(new ItemStack(WitcheryIngredient.MELLIFLUOUS_HUNGER.item(), count));
         }
     }

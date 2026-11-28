@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Nightmare armor swipes and enchanted strikes (2026-11-28)
+
+- The original server measured an armor toss 0.3 blocks below the player's eyes with 0.2 upward motion and a 40-tick pickup delay. The main inventory charm skips the armor roll. The Forge port takes those rolls from the world, preserves the named and worn stack, and leaves it equipped if Forge denies the drop.
+- The original, clean Forge, and copied Auram runs used four base damage in Dream and half a point outside. Both modern profiles use their own enchantment helper's Sharpness II bonus. Their Fire Aspect and Knockback measurements match the original. The restored pursuit goals, underwater air, world departure roll, and Dream loot roll are recorded in the [strike comparison](PORTING.md#nightmare-armor-swipes-and-enchanted-strikes-2026-11-28).
+- Local Java 17 reobfuscation and all 719 required Forge GameTests passed. The exact reobfuscated JAR `cb078dcbe51d976c96a58099ac3c08ebb9cd1ba6863877cbd3327fc95d6b61a0` passed both headless profiles. The registered melee goals produced the named armor drops in both realms, and both restarted profiles kept the names and wear. Fixture logs are under `build/qa-nightmare-strike/`.
+
 ## Dream Spirit guides and Lost Soul pursuit (2026-11-28)
 
 - Dream Spirits use the original Focused Will approach and startle boundary, and regular releases return to the clicked column. The original village lookup returned a waypoint at Y=71. Forge's default structure search can return a chunk at Y=0. The port uses the first structure piece's position for village and fortress flight and preserves saved destinations.
