@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Soulfire billboard and Zombie apparition pose (2026-11-27)
+
+- The 0.24.1 Zombie model trace covers four idle, walk and attack poses. The previous package matched 22 of 48 arm values. The rebuilt client matched all 48, including both shoulder pivots. The assigned viewer rendered 168 vertices, and the apparition assigned to another player rendered zero.
+- Original Soulfire inherits the Small Fireball's half-block, full-bright quad and Smoke. The previous package submitted 72 item vertices, withheld the newborn draw near the camera, and selected Soul Fire Flame. The rebuilt package submitted the four original positions, UVs, normals and packed light at both sampled ages and selected Smoke. The modern renderer binds the 1.20.1 Fire Charge resource. The old saved Ignianima mode retains Flame.
+- The muted clean Forge profile used the candidate SHA-256 `4e5bdfed6acb2036ce46f71c1e93c7c781b02922af28943fd755637e0780f07a` on both sides. The test spawned the entities near the player for inspection. The local reobfuscated build and all 680 required Forge GameTests passed. See `build/qa-soulfire-apparitions/{native,baseline,clean}/`.
+- Copied Auram ran the same JAR and matched the shoulder positions, privacy check, fireball quad, lighting, and Smoke. The largest arm angle difference was 0.000002265 radians. The fixture used a force-loaded platform and increased apparition health because they expired before the copied client's recipe index finished. See `build/qa-soulfire-apparitions/pack/{check-replay,fixture-recovery,focus-replay}.log`.
+
 ## Vanilla creature Taglock and leash recovery (2026-11-27)
 
 - The 0.24.1 fixture ran the real Taglock binder on a named pig, cow and chicken and saved the three samples in one Chest. It saved the pig tied to the cow. The previous reobfuscated build passed the original region import. An earlier Forge-format version of that world retained split UUIDs and literal names for the pig and cow. Both received new UUIDs on load, so the samples lost their targets and the pig lost its lead.

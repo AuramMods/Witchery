@@ -52,6 +52,7 @@ import art.arcane.witchery.client.renderer.BrewProjectileRenderer;
 import art.arcane.witchery.client.renderer.BrewOverlayLayer;
 import art.arcane.witchery.client.renderer.GrenadeRenderer;
 import art.arcane.witchery.client.renderer.QuartzProjectileRenderer;
+import art.arcane.witchery.client.renderer.SoulfireRenderer;
 import net.minecraft.client.model.CreeperModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
@@ -167,7 +168,6 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.VillagerRenderer;
 import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
-import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -370,8 +370,7 @@ public final class WitcheryClient {
                 new IllusionRenderer<>(context, new CreeperModel<>(context.bakeLayer(ModelLayers.CREEPER)), "creeper"));
         event.registerEntityRenderer(WitcheryEntities.ILLUSION_SPIDER.get(), context ->
                 new IllusionRenderer<>(context, new SpiderModel<>(context.bakeLayer(ModelLayers.SPIDER)), "spider"));
-        event.registerEntityRenderer(WitcheryEntities.ILLUSION_ZOMBIE.get(), context ->
-                new IllusionRenderer<>(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.ZOMBIE)), "zombie"));
+        event.registerEntityRenderer(WitcheryEntities.ILLUSION_ZOMBIE.get(), IllusionRenderer::zombie);
         event.registerEntityRenderer(WitcheryEntities.SPECTRE.get(), context -> new SpectralUndeadRenderer(context, "spectre", false));
         event.registerEntityRenderer(WitcheryEntities.BANSHEE.get(), context -> new SpectralUndeadRenderer(context, "banshee", false));
         event.registerEntityRenderer(WitcheryEntities.POLTERGEIST.get(), context -> new SpectralUndeadRenderer(context, "poltergeist", true));
@@ -381,7 +380,7 @@ public final class WitcheryClient {
         event.registerEntityRenderer(WitcheryEntities.ENT.get(), EntRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.IMP.get(), ImpRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.LORD_OF_TORMENT.get(), LordOfTormentRenderer::new);
-        event.registerEntityRenderer(WitcheryEntities.SOULFIRE.get(), ThrownItemRenderer::new);
+        event.registerEntityRenderer(WitcheryEntities.SOULFIRE.get(), SoulfireRenderer::new);
         event.registerEntityRenderer(WitcheryEntities.BREW_DROPLET.get(), context -> new QuartzProjectileRenderer<>(context, BrewDroplet::color));
         event.registerEntityRenderer(WitcheryEntities.INFERNO_SPLATTER.get(), context -> new QuartzProjectileRenderer<>(context, InfernoSplatter::color));
         event.registerEntityRenderer(WitcheryEntities.BOLT.get(), WitcheryBoltRenderer::new);

@@ -47,7 +47,7 @@ public final class Soulfire extends SmallFireball {
 
     @Override
     protected ParticleOptions getTrailParticle() {
-        return entityData.get(IGNITION) ? ParticleTypes.FLAME : ParticleTypes.SOUL_FIRE_FLAME;
+        return entityData.get(IGNITION) ? ParticleTypes.FLAME : super.getTrailParticle();
     }
 
     @Override
