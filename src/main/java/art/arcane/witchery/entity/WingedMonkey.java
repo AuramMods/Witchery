@@ -29,11 +29,9 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
-import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
-import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
@@ -85,8 +83,6 @@ public final class WingedMonkey extends TamableAnimal {
             }
         });
         FlyingCompanionGoals.register(goalSelector, this);
-        goalSelector.addGoal(4, new TemptGoal(this, 0.6, FOOD, true));
-        goalSelector.addGoal(8, new BreedGoal(this, 0.8));
         goalSelector.addGoal(11, new LookAtPlayerGoal(this, Player.class, 10, 0.2F));
         targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
         targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
@@ -215,7 +211,10 @@ public final class WingedMonkey extends TamableAnimal {
     @Override
     public WingedMonkey getBreedOffspring(ServerLevel level, AgeableMob other) {
         var baby = WitcheryEntities.WINGED_MONKEY.get().create(level);
-        if (baby != null) baby.setColor(color());
+        if (baby != null) {
+            baby.setColor(color());
+            baby.setPersistenceRequired();
+        }
         return baby;
     }
 

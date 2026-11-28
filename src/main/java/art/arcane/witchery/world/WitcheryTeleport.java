@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.portal.PortalInfo;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -46,9 +47,15 @@ public final class WitcheryTeleport {
     }
 
     public static boolean randomSurface(Entity actor, ServerLevel level, BlockPos origin, int radius) {
+        Vec3 arrival = findRandomSurface(actor, level, origin, radius);
+        return arrival != null && move(actor, level, arrival);
+    }
+
+    @Nullable
+    public static Vec3 findRandomSurface(Entity actor, ServerLevel level, BlockPos origin, int radius) {
         RandomSource random = level.getRandom();
         BlockPos ground = origin.offset(random.nextInt(radius * 2) - radius, 0, random.nextInt(radius * 2) - radius);
-        if (!level.getWorldBorder().isWithinBounds(ground)) return false;
+        if (!level.getWorldBorder().isWithinBounds(ground)) return null;
         while (ground.getY() > level.getMinBuildHeight() && !level.getBlockState(ground).blocksMotion()) {
             ground = ground.below();
         }
@@ -59,11 +66,11 @@ public final class WitcheryTeleport {
             if (state.isFaceSturdy(level, ground, Direction.UP) && !state.is(Blocks.BEDROCK)
                     && level.isEmptyBlock(ground.above()) && level.isEmptyBlock(ground.above(2))
                     && level.isEmptyBlock(ground.above(3)) && canArrive(actor, level, landing)) {
-                return move(actor, level, landing);
+                return landing;
             }
             ground = ground.above();
         }
-        return false;
+        return null;
     }
 
     public static boolean move(Entity actor, ServerLevel destination, Vec3 target) {

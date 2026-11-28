@@ -101,16 +101,14 @@ final class OwlDeliveryGoal extends Goal {
             }
             return;
         }
-        if (distance >= 128 * 128 && owl.tickCount % 10 == 0) {
-            Vec3 arrival = target.add(0, 2, 0);
-            BlockPos pos = BlockPos.containing(arrival);
-            if (level.getWorldBorder().isWithinBounds(pos) && !level.isOutsideBuildHeight(pos)) {
-                holdChunk(level, new ChunkPos(pos));
-                level.getChunkAt(pos);
-                if (WitcheryTeleport.canArrive(owl, level, arrival) && WitcheryTeleport.move(owl, level, arrival)) {
-                    owl.getNavigation().stop();
-                    return;
-                }
+        if ((float) Math.sqrt(distance) >= 128) {
+            // The old waypoint jump uses the Void Bramble's surface search around the destination.
+            BlockPos column = new BlockPos((int) target.x, (int) target.y, (int) target.z);
+            Vec3 arrival = WitcheryTeleport.findRandomSurface(owl, level, column, 16);
+            if (arrival != null && WitcheryTeleport.moveWithPortalCues(owl, level, arrival)) {
+                holdChunk(level, owl.chunkPosition());
+                owl.getNavigation().stop();
+                return;
             }
         }
         FlyingCompanionNavigation.flyToward(owl, level, target, SPEED);

@@ -742,8 +742,15 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 ### Owl and Winged Monkey defense, owner following, and perching (2026-11-28)
 
 - Both species add the original pursuit impulse on a clear course and back off when an obstacle blocks it. Contact deals two damage and waits 20 ticks before another strike. Following begins at 14 blocks, continues beyond five, and tries to rejoin the owner at 16. The landing search tries the diagonal columns in order and checks five heights in each one.
-- Idle flyers search loaded leaf canopies for a perch and fall back to descending toward the ground. Their flight uses the original drag in air, water and lava. On selecting a new roaming waypoint, the port uses its direction immediately so the first movement is relative to the chosen destination. Modern path navigation drives the existing Waystone, Taglock, food temptation and breeding paths.
+- Idle flyers search loaded leaf canopies for a perch and fall back to descending toward the ground. Their flight uses the original drag in air, water and lava. On selecting a new roaming waypoint, the port uses its direction immediately so the first movement is relative to the chosen destination. Modern path navigation drives the Waystone and Taglock routes.
 - Reobfuscated clean Forge and copied Auram matched all 28 follow, pursuit, strike and canopy samples from the original dedicated server. In both profiles, regular server ticks brought the companions to their owners and each companion struck the owner's target for two damage. All 709 required Forge GameTests passed locally, including the existing Winged Monkey and Owl transport cases. The scratch fixtures and logs are under `build/qa-flying-companion-behavior/`.
+
+### Flying companion courtship and long-range Owl delivery (2026-11-28)
+
+- Untamed Owls and Winged Monkeys approach the nearest player holding raw pork or beef in the main hand. Their flight gains the original forward impulse and its short upward boost. Within six blocks, moving more than a tenth of a block interrupts the lure for 100 eligibility checks. Turning in place does not interrupt it. Forge starts tracking the player's current position on the first update.
+- Tamed pairs approach the closest eligible partner in the eight-block search box at ten-tick intervals. After sixty ticks, a pair less than three blocks apart breeds. The persistent hatchling inherits the initiating parent's color. Parents wait 6,000 ticks before breeding again. Birth uses Forge's child-spawn event and 1.20.1 advancement and experience rules.
+- An Owl at least 128 blocks from its parcel destination or launch point samples the destination surface within the original 16-block radius and plays the portal cues. The search uses the modern dimension height bounds. A nearby clear approach uses direct flight so the Owl can take off again from the sampled ground.
+- Packaged clean Forge matched all 32 original lure, breeding, and landing measurements. Copied Auram matched 31 directly and landed on the column selected by its own random source in the remaining case. Both profiles delivered one named parcel 192 blocks from the launch point and sat back at home with empty hands. Clean Forge replayed the exact landing that stalled on the earlier build. Both world saves contained one courier and one parcel after shutdown.
 
 ## Treefyd (2026-11-21)
 
@@ -3981,7 +3988,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
   - [x] Compare [Owl and Winged Monkey defense, owner following, and perching](#owl-and-winged-monkey-defense-owner-following-and-perching-2026-11-28) against both original creature classes.
-  - [ ] Compare the Owl and Winged Monkey's original food temptation and breeding goals and the long-range Owl waypoint landing.
+  - [x] Compare [the Owl and Winged Monkey's original food temptation and breeding goals and the long-range Owl waypoint landing](#flying-companion-courtship-and-long-range-owl-delivery-2026-11-28).
   - [x] Compare [Demon melee and Lilith ranged combat](#demon-melee-and-lilith-ranged-combat-2026-11-28), including the Devil's Tongue Charm, seeded attack choices, and shared fireball trajectories.
   - [x] Compare [Demon village movement, pursuit, and completed bargains](#demon-bargains-and-mob-cast-symbols-2026-11-28), including the 51st-tick escape.
   - [x] Compare [mob-cast Mystic Branch symbols](#demon-bargains-and-mob-cast-symbols-2026-11-28) for random draw ownership, launch position, and both Soulfire volley sizes.

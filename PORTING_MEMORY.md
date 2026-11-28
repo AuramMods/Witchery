@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Flying companion courtship and long-range Owl delivery (2026-11-28)
+
+- Clean Forge matched 32 original runtime samples for both flyers' food and breeding goals and the Owl's 128-block landing boundary. Copied Auram's landing matched its configured world random draws, and its other 31 samples matched the original. [Porting comparison](PORTING.md#flying-companion-courtship-and-long-range-owl-delivery-2026-11-28)
+- The verified clean replay launched through the ordinary parcel and Waystone interactions and used the exact surface where the previous candidate stalled. The Owl delivered its parcel 192 blocks away and sat back at home after 120 ticks. Copied Auram completed the route after 212 ticks. The saved entity regions contain one returned Owl with its owner UUID and one named parcel in each profile.
+- The copied Auram server saved all dimensions and stopped. The fixture runner then terminated the remaining worker threads.
+- Local Java 17 packaging and all 711 required Forge GameTests passed. The reobfuscated JAR has SHA-256 `6b9cc70796f1b0674811f6048bc7b9d526fe1dc936e0c6974937c2b7e6b9c19c`. Fixture sources and logs are under `build/qa-flying-companion-courtship/`.
+
 ## Owl and Winged Monkey flight behavior (2026-11-28)
 
 - The shared flight goals restore defense, owner following, and canopy landing. The original and both packaged profiles matched 28 measurements. Regular server ticks in clean Forge and copied Auram reproduced both owner rejoins and both owner-defense hits. The [comparison](PORTING.md#owl-and-winged-monkey-defense-owner-following-and-perching-2026-11-28) records the flight adaptations and remaining companion checks.

@@ -40,6 +40,95 @@ public final class FlyingCompanionTests {
     private static final InteractionHand HAND = InteractionHand.MAIN_HAND;
 
     @GameTest(template = TEMPLATE)
+    public static void flyingCompanionsApproachFoodAndStartleAtCloseMovement(GameTestHelper helper) {
+        var level = helper.getLevel();
+        Vec3 start = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(8, 0, 8)).atY(188));
+        for (var type : List.of(WitcheryEntities.OWL.get(), WitcheryEntities.WINGED_MONKEY.get())) {
+            TamableAnimal pet = type.create(level);
+            pet.setPos(start);
+            var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FlyingTempt"));
+            player.setPos(start.add(7, 0, 0));
+            level.addNewPlayer(player);
+            try {
+                var tempt = new FlyingCompanionGoals.Tempt(pet);
+                player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.BEEF));
+                helper.assertTrue(!tempt.canUse(), "Food in the off hand does not lure the companion");
+                player.setItemInHand(HAND, new ItemStack(Items.PORKCHOP));
+                helper.assertTrue(tempt.canUse(), "The untamed companion recognizes raw food");
+                tempt.start();
+                tempt.tick();
+                helper.assertTrue(pet.getDeltaMovement().distanceTo(new Vec3(0.05, 0.025, 0)) < 0.00001,
+                        "The companion approaches the food with the original forward and upward impulse");
+                player.setPos(start.add(8, 0, 0));
+                helper.assertTrue(tempt.canContinueToUse(), "Movement beyond six blocks updates the tracked point");
+                pet.setPos(start.add(3, 0, 0));
+                player.setYRot(180);
+                helper.assertTrue(tempt.canContinueToUse(), "Turning in place does not startle the companion");
+                player.setPos(start.add(8.11, 0, 0));
+                helper.assertTrue(!tempt.canContinueToUse(), "Moving over a tenth of a block nearby interrupts the lure");
+                tempt.stop();
+                for (int tick = 0; tick < 100; tick++) {
+                    helper.assertTrue(!tempt.canUse(), "An interrupted lure waits through the original retry count");
+                }
+                helper.assertTrue(tempt.canUse(), "A wild companion can approach the food again");
+                pet.tame(player);
+                helper.assertTrue(!tempt.canUse(), "Raw food no longer controls an owned companion's flight");
+            } finally {
+                level.removePlayerImmediately(player, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void flyingCompanionsBreedAfterSixtyTicksWithinThreeBlocks(GameTestHelper helper) {
+        var level = helper.getLevel();
+        Vec3 start = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(8, 0, 8)).atY(188));
+        for (var type : List.of(WitcheryEntities.OWL.get(), WitcheryEntities.WINGED_MONKEY.get())) {
+            TamableAnimal parent = type.create(level);
+            TamableAnimal partner = type.create(level);
+            var owner = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FlyingBreeder"));
+            parent.tame(owner);
+            partner.tame(owner);
+            parent.setPos(start);
+            partner.setPos(start.add(3, 0, 0));
+            level.addFreshEntity(partner);
+            parent.setInLove(null);
+            partner.setInLove(null);
+            var mate = new FlyingCompanionGoals.Mate(parent);
+            helper.assertTrue(mate.canUse(), "Two tamed companions in love should pair");
+            mate.start();
+            mate.tick();
+            helper.assertTrue(parent.getDeltaMovement().distanceTo(new Vec3(0.25, 0, 0)) < 0.00001,
+                    "Courtship begins with the original clear-flight impulse");
+            for (int tick = 1; tick < 60; tick++) mate.tick();
+            helper.assertTrue(parent.isInLove() && partner.isInLove(),
+                    "The original three-block boundary is outside breeding distance");
+
+            mate.stop();
+            partner.setPos(start.add(2, 0, 0));
+            owner.setItemInHand(HAND, new ItemStack(Items.PINK_DYE));
+            parent.mobInteract(owner, HAND);
+            helper.assertTrue(mate.canUse(), "The same pair can retry from closer range");
+            mate.start();
+            for (int tick = 0; tick < 59; tick++) mate.tick();
+            helper.assertTrue(parent.isInLove() && partner.isInLove(), "Courtship lasts sixty ticks");
+            mate.tick();
+            var offspring = level.getEntitiesOfClass(TamableAnimal.class, new AABB(start, start).inflate(2),
+                    baby -> baby.getType() == type && baby.isBaby());
+            helper.assertTrue(offspring.size() == 1 && parent.getAge() == 6000 && partner.getAge() == 6000,
+                    "One hatchling is born and both parents receive the original cooldown");
+            var baby = offspring.get(0);
+            int color = baby instanceof WitchOwl owl ? owl.color() : ((WingedMonkey) baby).color();
+            helper.assertTrue(color == 6 && baby.isPersistenceRequired() && !baby.isTame(),
+                    "The persistent hatchling inherits the initiating parent's color");
+            baby.discard();
+            partner.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
     public static void flyingCompanionsFollowAndRejoinAtOriginalDistances(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos origin = helper.absolutePos(new BlockPos(8, 0, 8)).atY(185);

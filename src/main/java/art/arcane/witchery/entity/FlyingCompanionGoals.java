@@ -12,6 +12,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -23,9 +24,138 @@ final class FlyingCompanionGoals {
 
     static void register(GoalSelector selector, TamableAnimal companion) {
         selector.addGoal(3, new Defend(companion));
+        selector.addGoal(4, new Tempt(companion));
         selector.addGoal(5, new Follow(companion));
+        selector.addGoal(8, new Mate(companion));
         selector.addGoal(9, new Land(companion));
         selector.addGoal(10, new Wander(companion));
+    }
+
+    static final class Tempt extends Goal {
+        private final TamableAnimal companion;
+        @Nullable private Player player;
+        private Vec3 trackedPosition = Vec3.ZERO;
+        private int cooldown;
+
+        Tempt(TamableAnimal companion) {
+            this.companion = companion;
+            setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (companion.isTame()) return false;
+            if (cooldown > 0) {
+                cooldown--;
+                return false;
+            }
+            player = companion.level().getNearestPlayer(companion, 10);
+            return player != null && companion.isFood(player.getMainHandItem());
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            if (player == null || !player.isAlive()) return false;
+            if (companion.distanceToSqr(player) < 36) {
+                if (player.distanceToSqr(trackedPosition) > 0.010000000000000002D) return false;
+            } else {
+                trackedPosition = player.position();
+            }
+            return canUse();
+        }
+
+        @Override
+        public boolean requiresUpdateEveryTick() {
+            return true;
+        }
+
+        @Override
+        public void start() {
+            trackedPosition = player.position();
+            companion.getNavigation().stop();
+        }
+
+        @Override
+        public void stop() {
+            player = null;
+            cooldown = 100;
+        }
+
+        @Override
+        public void tick() {
+            if (player == null || companion.distanceToSqr(player) < 3) return;
+            Vec3 course = trackedPosition.subtract(companion.position());
+            if (clearCourse(companion, course)) {
+                steer(companion, course, 0.05, companion.getY() < trackedPosition.y + 1 ? 0.025 : 0);
+            }
+            faceVelocity(companion);
+        }
+    }
+
+    static final class Mate extends Goal {
+        private final TamableAnimal companion;
+        @Nullable private TamableAnimal partner;
+        private int courtshipTicks;
+        private int courseDelay;
+
+        Mate(TamableAnimal companion) {
+            this.companion = companion;
+            setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (!companion.isInLove() || companion.isOrderedToSit()) return false;
+            double nearest = Double.POSITIVE_INFINITY;
+            partner = null;
+            for (TamableAnimal candidate : companion.level().getEntitiesOfClass(TamableAnimal.class,
+                    companion.getBoundingBox().inflate(8), companion::canMate)) {
+                double distance = companion.distanceToSqr(candidate);
+                if (distance < nearest) {
+                    nearest = distance;
+                    partner = candidate;
+                }
+            }
+            return partner != null;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return partner != null && partner.isAlive() && companion.canMate(partner)
+                    && !companion.isOrderedToSit() && courtshipTicks < 60;
+        }
+
+        @Override
+        public boolean requiresUpdateEveryTick() {
+            return true;
+        }
+
+        @Override
+        public void start() {
+            companion.getNavigation().stop();
+        }
+
+        @Override
+        public void stop() {
+            partner = null;
+            courtshipTicks = 0;
+            courseDelay = 0;
+        }
+
+        @Override
+        public void tick() {
+            if (partner == null || !companion.canMate(partner)) return;
+            if (--courseDelay <= 0) {
+                Vec3 course = partner.position().subtract(companion.position());
+                if (clearCourse(companion, course)) steer(companion, course, 0.25, 0);
+                courseDelay = 10;
+            }
+            faceVelocity(companion);
+            if (++courtshipTicks == 60 && companion.distanceToSqr(partner) < 9
+                    && companion.level() instanceof ServerLevel level) {
+                companion.spawnChildFromBreeding(level, partner);
+            }
+        }
     }
 
     static void travel(TamableAnimal companion, Vec3 input) {
