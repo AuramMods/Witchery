@@ -1,10 +1,13 @@
 package art.arcane.witchery.block;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.material.PushReaction;
@@ -12,6 +15,11 @@ import net.minecraft.world.level.material.PushReaction;
 public final class SnowSlabBlock extends SlabBlock {
     public SnowSlabBlock() {
         super(Properties.copy(Blocks.SNOW_BLOCK).pushReaction(PushReaction.DESTROY));
+    }
+
+    @Override
+    public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return level.getMaxLightLevel();
     }
 
     @Override
@@ -35,6 +43,17 @@ public final class SnowSlabBlock extends SlabBlock {
     public static boolean canStackOnFace(BlockState state, Direction face) {
         return state.getValue(TYPE) == SlabType.BOTTOM && face == Direction.UP
                 || state.getValue(TYPE) == SlabType.TOP && face == Direction.DOWN;
+    }
+
+    public static final class Stairs extends StairBlock {
+        public Stairs() {
+            super(Blocks.SNOW_BLOCK::defaultBlockState, Properties.copy(Blocks.SNOW_BLOCK));
+        }
+
+        @Override
+        public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+            return level.getMaxLightLevel();
+        }
     }
 
     public static final class DoubleSlab extends Block {

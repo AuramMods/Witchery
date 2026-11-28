@@ -24,6 +24,11 @@ public final class WitchWoodSlabBlock extends SlabBlock {
     }
 
     @Override
+    public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return level.getMaxLightLevel();
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(WitchWoodType.PROPERTY);

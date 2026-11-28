@@ -7,6 +7,7 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
@@ -23,6 +24,11 @@ public final class FrozenPressurePlateBlock extends PressurePlateBlock {
                 ? Properties.copy(Blocks.OAK_PRESSURE_PLATE).strength(2, 3).sound(SoundType.GLASS)
                 : Properties.copy(Blocks.STONE_PRESSURE_PLATE).strength(0.2F), BlockSetType.STONE);
         this.ice = ice;
+    }
+
+    @Override
+    public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return ice ? PerpetualIceBlock.LIGHT_ATTENUATION : super.getLightBlock(state, level, pos);
     }
 
     @Override

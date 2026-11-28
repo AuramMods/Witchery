@@ -11,6 +11,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SnowyDirtBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -23,6 +24,11 @@ public final class PitDirtBlock extends Block {
     public PitDirtBlock() {
         super(Properties.copy(Blocks.DIRT).noOcclusion().noCollission());
         registerDefaultState(defaultBlockState().setValue(PODZOL, false).setValue(COVER, Cover.NONE));
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return true;
     }
 
     @Override
@@ -62,6 +68,17 @@ public final class PitDirtBlock extends Block {
 
     public static void setPodzol(ItemStack stack) {
         stack.getOrCreateTagElement(BlockItem.BLOCK_STATE_TAG).putString(PODZOL.getName(), "true");
+    }
+
+    public static final class Grass extends SnowyDirtBlock {
+        public Grass() {
+            super(Properties.copy(Blocks.GRASS_BLOCK).noOcclusion().noCollission());
+        }
+
+        @Override
+        public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+            return true;
+        }
     }
 
     public enum Cover implements StringRepresentable {

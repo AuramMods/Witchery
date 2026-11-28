@@ -71,6 +71,11 @@ public final class CoffinBlock extends BedBlock {
     }
 
     @Override
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return true;
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(OPEN, PAIRED);

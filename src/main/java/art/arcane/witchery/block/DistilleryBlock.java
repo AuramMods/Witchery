@@ -3,6 +3,7 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.block.entity.DistilleryBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
@@ -37,6 +38,11 @@ public final class DistilleryBlock extends BaseEntityBlock {
     public DistilleryBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(LIT, false).setValue(VISIBLE_JARS, 0));
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return true;
     }
 
     @Override

@@ -78,7 +78,7 @@ public final class BrewDispersalBlock extends LiquidBlock implements EntityBlock
 
     @Override
     public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
-        return gas;
+        return true;
     }
 
     @Override

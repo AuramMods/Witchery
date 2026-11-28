@@ -28,6 +28,7 @@ import art.arcane.witchery.block.CritterSnareBlock;
 import art.arcane.witchery.block.CursedControls;
 import art.arcane.witchery.block.BrambleBlock;
 import art.arcane.witchery.block.BrazierBlock;
+import art.arcane.witchery.block.BrewBlock;
 import art.arcane.witchery.block.BrewDispersalBlock;
 import art.arcane.witchery.block.BrewPlantBlocks;
 import art.arcane.witchery.block.BloodRoseBlock;
@@ -81,16 +82,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FenceGateBlock;
-import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.WoodType;
-import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -200,20 +196,17 @@ public final class WitcheryBlocks {
             case "stairswoodrowan" -> new WitchWoodStairBlock(WitchWoodType.ROWAN);
             case "stairswoodalder" -> new WitchWoodStairBlock(WitchWoodType.ALDER);
             case "stairswoodhawthorn" -> new WitchWoodStairBlock(WitchWoodType.HAWTHORN);
-            case "icestairs" -> new StairBlock(() -> getRequired("perpetualice").get().defaultBlockState(),
-                    BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE).friction(0.98F).strength(2, 3));
-            case "snowstairs" -> new StairBlock(Blocks.SNOW_BLOCK.defaultBlockState(),
-                    BlockBehaviour.Properties.copy(Blocks.SNOW_BLOCK));
+            case "icestairs" -> new PerpetualIceBlock.Stairs();
+            case "snowstairs" -> new SnowSlabBlock.Stairs();
             case "witchwoodslab", "witchwooddoubleslab" -> new WitchWoodSlabBlock(path.equals("witchwooddoubleslab"));
-            case "iceslab" -> new SlabBlock(BlockBehaviour.Properties.copy(Blocks.GLASS).mapColor(MapColor.ICE)
-                    .sound(SoundType.STONE).strength(2, 3));
+            case "iceslab" -> new PerpetualIceBlock.Slab();
             case "snowslab" -> new SnowSlabBlock();
-            case "icedoubleslab" -> new Block(BlockBehaviour.Properties.copy(Blocks.ICE).strength(2, 3));
+            case "icedoubleslab" -> new PerpetualIceBlock.DoubleSlab();
             case "snowdoubleslab" -> new SnowSlabBlock.DoubleSlab();
             case "stockade" -> new StockadeBlock.Wooden();
             case "icestockade" -> new StockadeBlock(true);
             case "icefence" -> new PerpetualIceFenceBlock();
-            case "icefencegate" -> new FenceGateBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE_GATE).strength(2, 3), WoodType.OAK);
+            case "icefencegate" -> new PerpetualIceBlock.Gate();
             case "icepressureplate" -> new FrozenPressurePlateBlock(true);
             case "snowpressureplate" -> new FrozenPressurePlateBlock(false);
             case "cwoodpressureplate" -> new CursedControls.Plate(CursedControls.Kind.WOODEN_PLATE);
@@ -267,8 +260,7 @@ public final class WitcheryBlocks {
             case "spiritflowing" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("fluidspirit"), spiritProperties(), true);
             case "hollowtears" -> new SpiritFluidBlock(WitcheryFluids.getRequiredSource("hollowtears"), spiritProperties(), false);
             case "disease" -> new DiseaseBlock();
-            case "brew" -> new LiquidBlock(WitcheryFluids.getRequiredSource("brew"),
-                    BlockBehaviour.Properties.copy(Blocks.WATER).instabreak().noCollission().noLootTable());
+            case "brew" -> new BrewBlock();
             case "brewgas" -> new BrewDispersalBlock(true);
             case "brewliquid" -> new BrewDispersalBlock(false);
             case "force" -> new ForceBlock(true);
@@ -281,8 +273,7 @@ public final class WitcheryBlocks {
             case "wolfaltar" -> new WolfAltarBlock();
             case "statuegoddess" -> new StatueGoddessBlock();
             case "pitdirt" -> new PitDirtBlock();
-            case "pitgrass" -> new net.minecraft.world.level.block.SnowyDirtBlock(
-                    BlockBehaviour.Properties.copy(Blocks.GRASS_BLOCK).noOcclusion().noCollission());
+            case "pitgrass" -> new PitDirtBlock.Grass();
             case "wallgen" -> new Block(BlockBehaviour.Properties.copy(Blocks.BEDROCK)
                     .strength(-1.0F, 6_000.0F)
                     .noOcclusion()

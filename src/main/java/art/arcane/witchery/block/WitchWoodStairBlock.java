@@ -18,6 +18,11 @@ public final class WitchWoodStairBlock extends StairBlock {
     }
 
     @Override
+    public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return level.getMaxLightLevel();
+    }
+
+    @Override
     public int getFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction face) {
         if (state.getValue(WATERLOGGED)) return 0;
         return wood == WitchWoodType.HAWTHORN ? 1 : 20;

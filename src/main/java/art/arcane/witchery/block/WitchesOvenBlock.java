@@ -3,6 +3,7 @@ package art.arcane.witchery.block;
 import art.arcane.witchery.block.entity.WitchesOvenBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
@@ -35,6 +36,11 @@ public final class WitchesOvenBlock extends BaseEntityBlock {
     public WitchesOvenBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return true;
     }
 
     @Override
