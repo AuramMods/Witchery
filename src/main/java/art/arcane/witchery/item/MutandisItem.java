@@ -5,18 +5,15 @@ import art.arcane.witchery.block.SpanishMossBlock;
 import art.arcane.witchery.block.WitchWoodType;
 import art.arcane.witchery.config.ConfiguredBlockState;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.world.WitcheryDimensions;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
@@ -25,6 +22,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.NetherWartBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -66,23 +64,23 @@ public final class MutandisItem extends Item {
         if (extremis) {
             if (existing.is(Blocks.GRASS_BLOCK) || existing.is(Blocks.MYCELIUM)) {
                 if (level instanceof ServerLevel server) {
-                    if (server.random.nextBoolean()) {
+                    if (server.random.nextInt(2) == 0) {
                         Block replacement = existing.is(Blocks.GRASS_BLOCK) ? Blocks.MYCELIUM : Blocks.GRASS_BLOCK;
                         server.setBlockAndUpdate(pos, replacement.defaultBlockState());
                     }
-                    finishMutation(context, server, pos.above());
+                    WitcheryNetwork.sendMutandisFizz(server, pos.above());
+                    consumeDose(context);
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
             if (isSoakedDirt(level, pos)) {
                 if (level instanceof ServerLevel server) {
-                    if (server.random.nextBoolean()) {
-                        makeClay(server, pos);
-                        for (Direction direction : Direction.Plane.HORIZONTAL) {
-                            makeClay(server, pos.relative(direction));
-                        }
+                    if (server.random.nextInt(2) == 0) {
+                        makeClayCross(server, pos);
+                    } else {
+                        WitcheryNetwork.sendMutandisFizz(server, pos.above());
                     }
-                    finishMutation(context, server, pos.above());
+                    consumeDose(context);
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
@@ -111,14 +109,14 @@ public final class MutandisItem extends Item {
             } else {
                 for (Holder<Block> holder : BuiltInRegistries.BLOCK.getTagOrEmpty(PLANTS)) {
                     Block block = holder.value();
-                    if (!existing.is(block) && block != sapling) {
+                    if (block == sapling) {
+                        addWitchwoodVariants(existing, candidates, sapling);
+                    } else if (!existing.is(block)) {
                         candidates.add(block.defaultBlockState());
                     }
                 }
-                for (WitchWoodType wood : WitchWoodType.values()) {
-                    if (!existing.is(sapling) || existing.getValue(WitchWoodType.PROPERTY) != wood) {
-                        candidates.add(sapling.defaultBlockState().setValue(WitchWoodType.PROPERTY, wood));
-                    }
+                if (!sapling.defaultBlockState().is(PLANTS)) {
+                    addWitchwoodVariants(existing, candidates, sapling);
                 }
                 candidates.addAll(extras);
                 if (extremis) {
@@ -131,9 +129,18 @@ public final class MutandisItem extends Item {
             BlockState replacement = candidates.get(server.random.nextInt(candidates.size()));
             if (replacement.getBlock() instanceof SpanishMossBlock moss) replacement = moss.mutatedState(server, pos);
             if (replacement != existing && !server.setBlockAndUpdate(pos, replacement)) return InteractionResult.FAIL;
-            finishMutation(context, server, pos);
+            WitcheryNetwork.sendMutandisFizz(server, pos);
+            consumeDose(context);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private static void addWitchwoodVariants(BlockState existing, List<BlockState> candidates, Block sapling) {
+        for (WitchWoodType wood : WitchWoodType.values()) {
+            if (!existing.is(sapling) || existing.getValue(WitchWoodType.PROPERTY) != wood) {
+                candidates.add(sapling.defaultBlockState().setValue(WitchWoodType.PROPERTY, wood));
+            }
+        }
     }
 
     private static List<BlockState> additionalBlocks() {
@@ -156,8 +163,9 @@ public final class MutandisItem extends Item {
             BlockState candidate = block.defaultBlockState();
             IntegerProperty ageProperty = ageProperty(candidate);
             if (ageProperty != null && block != Blocks.CACTUS) {
+                int maxAge = block instanceof CropBlock crop ? Math.min(7, crop.getMaxAge()) : 7;
                 int target = ageProperty.getPossibleValues().stream().mapToInt(Integer::intValue)
-                        .filter(value -> value <= Math.min(age, 7)).max().orElse(candidate.getValue(ageProperty));
+                        .filter(value -> value <= Math.min(age, maxAge)).max().orElse(candidate.getValue(ageProperty));
                 candidate = candidate.setValue(ageProperty, target);
             }
             candidates.add(candidate);
@@ -170,22 +178,28 @@ public final class MutandisItem extends Item {
     }
 
     static boolean isSoakedDirt(Level level, BlockPos pos) {
-        return level.getBlockState(pos).is(Blocks.DIRT) && level.getBlockState(pos.above()).is(Blocks.WATER);
+        BlockState soil = level.getBlockState(pos);
+        return (soil.is(Blocks.DIRT) || soil.is(Blocks.COARSE_DIRT) || soil.is(Blocks.PODZOL))
+                && level.getBlockState(pos.above()).is(Blocks.WATER);
     }
 
-    static void makeClay(ServerLevel level, BlockPos pos) {
+    static void makeClayCross(ServerLevel level, BlockPos pos) {
+        makeClay(level, pos);
+        makeClay(level, pos.east());
+        makeClay(level, pos.west());
+        makeClay(level, pos.south());
+        makeClay(level, pos.north());
+    }
+
+    private static void makeClay(ServerLevel level, BlockPos pos) {
         if (isSoakedDirt(level, pos) && level.setBlockAndUpdate(pos, Blocks.CLAY.defaultBlockState())) {
-            level.sendParticles(ParticleTypes.INSTANT_EFFECT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
-                    8, 0.22, 0.22, 0.22, 0.01);
+            WitcheryNetwork.sendClayMutationCue(level, pos);
         }
     }
 
-    private static void finishMutation(UseOnContext context, ServerLevel level, BlockPos pos) {
+    private static void consumeDose(UseOnContext context) {
         if (context.getPlayer() == null || !context.getPlayer().getAbilities().instabuild) {
             context.getItemInHand().shrink(1);
         }
-        level.sendParticles(ParticleTypes.INSTANT_EFFECT, pos.getX() + 0.5, pos.getY() + 0.35, pos.getZ() + 0.5,
-                16, 0.22, 0.28, 0.22, 0.01);
-        level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.55F, 1.2F);
     }
 }

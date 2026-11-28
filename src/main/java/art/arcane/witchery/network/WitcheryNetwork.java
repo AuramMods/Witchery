@@ -622,6 +622,14 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atLowerCornerOf(pos), 1, 1, 16);
     }
 
+    public static void sendMutandisFizz(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_FIZZ_SOUND_ID, Vec3.atLowerCornerOf(pos), 1, 1, 16);
+    }
+
+    public static void sendClayMutationCue(ServerLevel level, BlockPos pos) {
+        sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_BIG_SLIME_SOUND_ID, Vec3.atCenterOf(pos.above()), 1, 1, 16);
+    }
+
     public static void sendSolidificationCue(ServerLevel level, BlockPos pos) {
         sendParticlesAround(level, LEGACY_INSTANT_SPELL_PARTICLE_ID, LEGACY_NO_SOUND_ID, Vec3.atCenterOf(pos.above()), 2, 2, 16);
     }

@@ -89,8 +89,7 @@ public final class MutatingSprigItem extends Item {
                 Block changed = clicked.is(Blocks.GRASS_BLOCK) ? Blocks.MYCELIUM : Blocks.GRASS_BLOCK;
                 server.setBlockAndUpdate(pos, changed.defaultBlockState());
             } else if (clay) {
-                MutandisItem.makeClay(server, pos);
-                for (Direction side : Direction.Plane.HORIZONTAL) MutandisItem.makeClay(server, pos.relative(side));
+                MutandisItem.makeClayCross(server, pos);
             } else if (plant != null) {
                 plant.apply(server, pos);
             } else if (wormwood) {
