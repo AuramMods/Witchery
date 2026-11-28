@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Naturally sourced Rowan and Altar (2026-11-27)
+
+- The same clean Forge save on package `c39b006e` grew the planted Oak. The player mined its six logs, collected a sapling from leaf decay, and gathered nine more Oak saplings from forest leaves. The Oven gave three fumes and took newly fired jars from harvested clay. See `grow-oak.log`, `harvest-oak-groups.log`, and `roast-large.log` under `build/qa-natural-altar/clean/`.
+- A farmed Mandrake awoke on Easy in daylight. The player fought it with the Stone Axe and used its root, the Oak fume and the laid egg to brew six Mutandis. The first application changed a wild plant into Rowan. The quiet survival client replanted it and harvested four logs for the Altar. See `fight-mandrake.log`, `rowan-sequence-retry.log`, `rowan-log-retry.log`, and `second-altar-logs.log`.
+- Two ordinary table recipes used the four Rowan Logs, eight Stone Bricks, two pairs of Oak and Birch fumes, and two bottles of river water. The six placed blocks formed at the workshop, with core `-252 63 287` and 946 capacity. The exact 160 saved power was present before login after a headless restart. The rejoined player opened the Altar and kept the original mined Diamond. See `form-altar.log`, `altar-startup-power.log`, and `altar-reopened.log`.
+
 ## Naturally sourced Mutandis on the Oven save (2026-11-27)
 
 - `build/qa-natural-altar/clean` is a copy of the seed-`209376` survival Oven checkpoint running the reobfuscated package from `c39b006e`. The newly mined iron, grass seeds, gravel Flint, and Ruined Portal Netherrack supplied the first Cauldron. The player farmed the Mandrake and picked up a naturally laid egg. The saved Oak fume supplied the remaining ingredient.
