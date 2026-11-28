@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Naturally sourced Kettle and Brew of Love (2026-11-28)
+
+- Continue the seed-`209376` natural progression in `build/qa-natural-dream/clean`. The Heart Glyph and Charged Attuned Stone survived the package change to `ea77acfa`. The player mined seven Raw Iron, one Diamond and one Raw Gold, gathered lava and mineshaft string, and crafted and lit the Kettle. The Kettle is at `-262 65 280` and the Chest at `-261 63 280` holds the Charged Attuned Stone and Witchery Cauldron.
+- The player harvested a wild Poppy and Lily Pad, generated village Carrots and jungle Cocoa, and the Artichoke grown from wild-grass seeds. The saved Rowan Saplings provided the Whiffs. All six ingredient throws entered the heated Kettle and yielded three Brews of Love. A headless restart retained the bottles, fire, workbench and original rite checkpoint. Both client launches stayed hidden and muted. Read `natural-brew-of-love-replay.log` and `love-reopened.log` under the clean profile.
+- The player carries eight crafted Cookies, two Icy Needles, a Globe Artichoke and spare seeds. The workshop still has grown Rowan trees. Five saved Mutandis did not produce Hawthorn. The sleeping route needs another Whiff of Magic and Purified Milk from Odour of Purity, a Milk Bucket and three Clay Jars. Read `found-minerals.json` and `dream-terrain.json` for surveyed ingredient sites.
+
 ## Wolfman prey and pursuit (2026-11-28)
 
 - The 0.24.1 server measured eleven cases. The Wolfman acquired villagers through a wall or across a gap, required sight of normal players, rejected both wolf forms, and remembered a Witch Hunter or Skeleton that attacked it. Its melee goal could start against the hunter. The rebuilt port restores the original prey-specific acquisition and melee flags. Read `build/qa-wolfman-targeting/native/behavior.log` and the [comparison](PORTING.md#wolfman-prey-and-pursuit-2026-11-28).
