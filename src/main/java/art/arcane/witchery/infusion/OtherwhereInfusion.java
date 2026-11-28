@@ -14,9 +14,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,13 +41,13 @@ public final class OtherwhereInfusion {
     public static void channel(ServerPlayer player, int elapsed) {
         if (player.isShiftKeyDown() && elapsed == SET_RECALL_TICKS) {
             player.displayClientMessage(Component.translatable(MESSAGE + "remember_ready"), true);
-            playHandCue(player, SoundEvents.NOTE_BLOCK_PLING.value());
+            WitcherySounds.playIndependentPlayerCue(player, SoundEvents.NOTE_BLOCK_PLING.value(), 0.5F);
         } else if (!player.isShiftKeyDown() && elapsed > 0 && elapsed % 20 == 0) {
             if (blinkTarget(player, elapsed) != null) {
-                playHandCue(player, SoundEvents.EXPERIENCE_ORB_PICKUP);
+                WitcherySounds.playIndependentPlayerCue(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F);
                 player.displayClientMessage(Component.translatable(MESSAGE + "blink_ready"), true);
             } else {
-                playHandCue(player, SoundEvents.ITEM_PICKUP);
+                WitcherySounds.playIndependentPlayerCue(player, SoundEvents.ITEM_PICKUP, 0.5F);
             }
         }
     }
@@ -65,7 +63,7 @@ public final class OtherwhereInfusion {
         Vec3 target = blinkTarget(player, elapsed);
         ServerLevel level = player.serverLevel();
         if (target == null || !WitcheryTeleport.canArrive(player, level, target)) return fail(player, "no_destination");
-        if (!InfusionEnergy.checkHandCharge(player, 1) || !WitcheryTeleport.moveWithPortalCues(player, level, target)) return false;
+        if (!checkTravelCharge(player, 1) || !WitcheryTeleport.moveWithPortalCues(player, level, target)) return false;
         return InfusionEnergy.spendHandCharge(player, 1);
     }
 
@@ -101,7 +99,7 @@ public final class OtherwhereInfusion {
         if (!WitcheryTeleport.canArrive(player, destination, target)) return fail(player, "no_destination");
         boolean moveCompanion = companion != null && !inhibited(companion) && WitcheryTeleport.canArrive(companion, destination, target);
         int cost = companion == null ? 2 : 4;
-        if (!InfusionEnergy.checkHandCharge(player, cost) || !WitcheryTeleport.moveWithLegacyCues(player, destination, target)) return false;
+        if (!checkTravelCharge(player, cost) || !WitcheryTeleport.moveWithLegacyCues(player, destination, target)) return false;
         if (moveCompanion) WitcheryTeleport.moveWithLegacyCues(companion, destination, target);
         return InfusionEnergy.spendHandCharge(player, cost);
     }
@@ -207,12 +205,14 @@ public final class OtherwhereInfusion {
 
     private static boolean fail(ServerPlayer player, String message) {
         player.displayClientMessage(Component.translatable(MESSAGE + message).withStyle(ChatFormatting.RED), true);
-        playHandCue(player, SoundEvents.NOTE_BLOCK_SNARE.value());
+        InfusionEnergy.playHandFailure(player);
         return false;
     }
 
-    private static void playHandCue(ServerPlayer player, SoundEvent sound) {
-        float pitch = 0.4F / ((float) Math.random() * 0.4F + 0.8F);
-        WitcherySounds.playPlayerCue(player, sound, SoundSource.PLAYERS, 0.5F, pitch);
+    private static boolean checkTravelCharge(ServerPlayer player, int cost) {
+        if (InfusionEnergy.checkHandCharge(player, cost)) return true;
+        // The original travel action signals failure after the charge check already sounded.
+        InfusionEnergy.playHandFailure(player);
+        return false;
     }
 }

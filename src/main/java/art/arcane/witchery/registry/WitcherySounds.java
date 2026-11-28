@@ -102,6 +102,11 @@ public final class WitcherySounds {
         playPlayerCue(player, sound, fallbackSource, volume, legacyPitch(player.serverLevel()));
     }
 
+    public static void playIndependentPlayerCue(ServerPlayer player, SoundEvent sound, float volume) {
+        float pitch = 0.4F / ((float) Math.random() * 0.4F + 0.8F);
+        playPlayerCue(player, sound, SoundSource.PLAYERS, volume, pitch);
+    }
+
     public static void playPlayerCue(ServerPlayer player, SoundEvent sound, SoundSource fallbackSource, float volume, float pitch) {
         var level = player.serverLevel();
         // Modern playback needs a sample seed in addition to the original pitch roll.

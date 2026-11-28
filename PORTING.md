@@ -502,6 +502,14 @@ Audit each remaining behavior family against the original inventory before build
 - [x] Restore the original Otherwhere Hand charge feedback and the teleport cues for Otherwhere and the Infernal Enderman power. The 0.24.1 server trace and Forge GameTest check the five charge sounds. The paired muted survival replay verifies portal cues at both ends and confirms that observers receive only the cue within range.
 - [x] Restore the original Ender Inhibition distinction between Otherwhere and Infernal Enderman travel. Measure both lift clearances from the target's feet and debit two charge when a ceiling stops the attempt. The packaged survival replay and two Forge GameTests checked the original travel positions and charge costs.
 
+### Witch's Hand drops and failure cues (2026-11-27)
+
+- The released 0.24.1 server played one half-volume Snare for an uninfused release, an uninfused attack, a failed Light lift, and a missing recall point. Its stored recall and companion recall each played two on an unaffordable attempt. Only the unaffordable casts removed the charge field. All eight cases, including the two cooldown controls, left the next world RNG roll untouched.
+- The original Witch and Coven Witch death callback drew once from the world RNG for a direct player kill. A sampled roll of 0.364 passed with the Arthana and failed with an empty hand. A player-fired arrow drew no roll. The successful drops appeared at the witch's position and were immediately eligible for pickup.
+- The previous Forge package missed three default attack or release cues, used the world RNG for the failed Light lift, and played one cue on each unaffordable recall. Clean Forge matched all eight original Hand cases and six death callback cases after the repair. The Forge event keeps the Hand independent of vanilla mob loot.
+- Copied Auram retained its configured world RNG. The tested seeds produced three qualifying drops and seven empty outcomes. All eight Hand cases still left the next world roll untouched. The same reobfuscated Java 17 JAR ran on both headless dedicated profiles. All 678 required Forge GameTests passed, including an ordinary Witch death with mob loot disabled.
+- The [Witch's Hand action comparison](PORTING_MANIFEST.md#witchs-hand-action-comparison) records all four infusion paths, their common cost and cooldown rules, and the existing rite and restart coverage.
+
 ## Light Infusion Hand Powers (2026-11-20)
 
 - [x] Restore sustained cloaking for one charge every 30 ticks and clear nearby hostile targets. Stopping item use ends the cloak. A separate Invisibility potion retains its duration.
@@ -3629,6 +3637,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
 - [ ] Infusion, prediction, creature power parity.
+  - [x] Compare the [Witch's Hand and four infusion action paths](PORTING_MANIFEST.md#witchs-hand-action-comparison), including the original death callback, exhausted travel, release cooldown and uninfused cues.
   - [x] Compare the [17 prediction triggers](PORTING_MANIFEST.md#prediction-trigger-comparison) and restore [the original Crystal Ball visitor order and cues](#crystal-ball-visitors-and-cues-2026-11-27).
   - [x] Compare [hurt and harvest predictions](#hurt-and-harvest-predictions-2026-11-26), including saved order, damage sources, companion placement, and unfinished forecasts.
   - [x] Compare [Crystal Ball selection and periodic forecasts](#prediction-reading-and-courtship-comparison-2026-11-27), including Nether eligibility, duplicate saved readings, and repeated suitor courtship.

@@ -102,8 +102,12 @@ public final class InfusionEnergy {
             infusion.remove(CHARGE);
             sync(player, infusion);
         }
-        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
+        playHandFailure(player);
         return false;
+    }
+
+    public static void playHandFailure(ServerPlayer player) {
+        WitcherySounds.playIndependentPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), 0.5F);
     }
 
     public static boolean spendCreatureDefense(ServerPlayer player, int cost) {

@@ -2,6 +2,14 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Witch's Hand drops and failure cues (2026-11-27)
+
+- The 0.24.1 controlled release and attack cases show that the uninfused Hand and an exhausted cast play a half-volume Snare without advancing world randomness. A valid but unaffordable Otherwhere recall or companion recall plays two. The previous package omitted the uninfused cues, advanced the world RNG for overdrafts and supplied only one Snare on each exhausted recall.
+- Direct player kills of a Witch or Coven Witch draw once from the world RNG. The original cutoff is 0.33, or 0.5 with an Arthana. The released server spawned the Hand at the witch's coordinates with immediate pickup. The arrow control drew nothing. Forge restores this through the death callback. Read `build/qa-hand-entry/native/sample.log`.
+- The rebuilt JAR matched all eight action and six drop callback cases on clean Forge. Copied Auram matched the actions and its configured RNG and exercised three successful drops across both witch classes. See `build/qa-hand-entry/{clean-baseline/first,clean-headless/first,pack/added-rolls}.log`. The reobfuscated candidate SHA-256 is `96f83e16f67d46f251c8d747566bb422f1cb1150ada390d8c47af61d3652b8ff`.
+- All 678 required Forge GameTests passed. The regression exercises ordinary held use and melee dispatch, the cooldown, charge clearing, and a Witch death with mob loot disabled. Read `build/qa-hand-entry/{package,gametest}.log`.
+- The [Witch's Hand action comparison](PORTING_MANIFEST.md#witchs-hand-action-comparison) connects the four Infusions to their original action paths and existing packaged gameplay, including the infusion and recharge rites.
+
 ## Crystal Ball visitors and cues (2026-11-27)
 
 - The original 0.24.1 callback used the reader's distance for every comparison, so the first visitor in the world search received the reading. The native dedicated fixtures checked insertion within one section, west and north chunk priority, and the lower vertical section. The preceding clean package picked the nearer player in all four. The rebuilt package matched all four native selections and kept the 500-power cost. Read `build/qa-crystal-reading/{native/verified.log,clean-baseline/first.log,clean-headless/first.log}`.

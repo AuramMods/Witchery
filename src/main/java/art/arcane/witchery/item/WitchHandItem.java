@@ -83,6 +83,7 @@ public final class WitchHandItem extends Item {
                     stack.getOrCreateTag().putLong(COOLDOWN, System.currentTimeMillis() + TELEPORT_COOLDOWN_MILLIS);
                 }
             }
+            default -> InfusionEnergy.playHandFailure(player);
         }
     }
 
@@ -93,8 +94,12 @@ public final class WitchHandItem extends Item {
 
     @Override
     public boolean onLeftClickEntity(ItemStack stack, Player player, Entity target) {
-        if (player instanceof ServerPlayer caster && target instanceof LivingEntity living) {
-            switch (InfusionEnergy.type(caster)) {
+        if (!(player instanceof ServerPlayer caster)) return true;
+        int infusion = InfusionEnergy.type(caster);
+        if (infusion <= 0) {
+            InfusionEnergy.playHandFailure(caster);
+        } else if (target instanceof LivingEntity living) {
+            switch (infusion) {
                 case LightInfusion.ID -> LightInfusion.attack(caster, living);
                 case OverworldInfusion.ID -> OverworldInfusion.attack(caster, living);
                 case OtherwhereInfusion.ID -> OtherwhereInfusion.attack(caster, living);

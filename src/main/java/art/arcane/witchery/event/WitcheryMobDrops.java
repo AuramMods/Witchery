@@ -17,6 +17,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -30,8 +31,10 @@ import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -46,6 +49,18 @@ public final class WitcheryMobDrops {
 
     private static TagKey<EntityType<?>> creatureTag(String name) {
         return TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(Witchery.MODID, name));
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void dropWitchHand(LivingDeathEvent event) {
+        LivingEntity witch = event.getEntity();
+        if (!(witch instanceof Witch || witch instanceof CovenWitch) || !(witch.level() instanceof ServerLevel level)
+                || !(event.getSource().getDirectEntity() instanceof ServerPlayer player)) return;
+        boolean arthana = player.getMainHandItem().is(WitcheryItems.getRequired("arthana").get());
+        if (level.random.nextDouble() >= (arthana ? 0.5D : 0.33D)) return;
+        ItemStack hand = new ItemStack(WitcheryItems.getRequired("witchhand").get());
+        level.addFreshEntity(new ItemEntity(level, witch.getX(), witch.getY(), witch.getZ(), hand,
+                Math.random() * 0.2D - 0.1D, 0.2D, Math.random() * 0.2D - 0.1D));
     }
 
     @SubscribeEvent
@@ -118,11 +133,6 @@ public final class WitcheryMobDrops {
             return roll(random, (arthana ? 0.08 : 0.02) * multiplier)
                     ? new ItemStack(WitcheryIngredient.CREEPER_HEART.item()) : ItemStack.EMPTY;
         }
-        if (creature instanceof Witch || creature instanceof CovenWitch) {
-            return roll(random, arthana ? 0.5 : 0.33)
-                    ? new ItemStack(WitcheryItems.getRequired("witchhand").get()) : ItemStack.EMPTY;
-        }
-
         if (arthana && creature instanceof AbstractSkeleton) {
             if (creature.getType() == EntityType.SKELETON && roll(random, 0.05 * multiplier)) {
                 return new ItemStack(Items.SKELETON_SKULL);
