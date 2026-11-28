@@ -20,8 +20,8 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -76,41 +76,43 @@ public final class SymbolProjectile extends Projectile {
     }
 
     public SymbolProjectile(ServerLevel level, LivingEntity owner, SymbolSpell spell, Vec3 origin, Vec3 direction) {
-        this(level, owner, spell, origin, direction, 0.3);
+        this(level, owner, spell, origin);
+        entityData.set(ACCELERATION, direction.normalize().scale(0.3).toVector3f());
     }
 
-    private SymbolProjectile(ServerLevel level, LivingEntity owner, SymbolSpell spell, Vec3 origin, Vec3 direction,
-                             double acceleration) {
+    private SymbolProjectile(ServerLevel level, LivingEntity owner, SymbolSpell spell, Vec3 origin) {
         this(WitcheryEntities.SYMBOL_PROJECTILE.get(), level);
         setOwner(owner);
         moveTo(origin.x, origin.y, origin.z, owner.getYRot(), owner.getXRot());
         entityData.set(SPELL, spell.id());
-        entityData.set(ACCELERATION, direction.normalize().scale(acceleration).toVector3f());
         if (spell == SymbolSpell.MORSMORDRE) ticksUntilImpact = spell.lifetime();
     }
 
     static SymbolProjectile mobShot(ServerLevel level, LivingEntity caster, LivingEntity target, SymbolSpell spell,
                                     float attackStrength) {
         Vec3 origin = new Vec3(caster.getX(), caster.getY(0.5), caster.getZ());
-        var projectile = new SymbolProjectile(level, caster, spell, origin, mobAim(caster, target, attackStrength), 0.1);
+        var projectile = new SymbolProjectile(level, caster, spell, origin);
+        Vec3 aim = MobProjectile.aim(caster, target, attackStrength);
+        projectile.entityData.set(ACCELERATION, MobProjectile.acceleration(aim, projectile.random).toVector3f());
         projectile.initialMobShooter = caster.getUUID();
         return projectile;
     }
 
-    static Vec3 mobAim(LivingEntity caster, LivingEntity target, float attackStrength) {
-        var random = caster.getRandom();
-        double spread = Math.sqrt(attackStrength) * 0.5;
-        Vec3 aim = new Vec3(target.getX() - caster.getX() + random.nextGaussian() * spread,
-                target.getY(0.5) - caster.getY(0.5),
-                target.getZ() - caster.getZ() + random.nextGaussian() * spread);
-        return aim.add(random.nextGaussian() * 0.4, random.nextGaussian() * 0.4, random.nextGaussian() * 0.4);
+    static void castMobSymbol(ServerLevel level, LivingEntity caster, LivingEntity target, SymbolSpell spell, float strength) {
+        MobProjectile.playLaunchCue(level, caster);
+        // The original single-symbol casts advance the caster's random source before aiming.
+        caster.getRandom().nextInt(10);
+        level.addFreshEntity(mobShot(level, caster, target, spell, strength));
     }
 
-    static void playMobCastSound(ServerLevel level, LivingEntity caster) {
-        var random = level.getRandom();
-        float pitch = 1 + (random.nextFloat() - random.nextFloat()) * 0.2F;
-        level.playSound(null, caster.getX(), caster.getY(), caster.getZ(), SoundEvents.GHAST_SHOOT,
-                caster.getSoundSource(), 2, pitch);
+    static SymbolSpell commonMobSpell(RandomSource random) {
+        return switch ((int) Math.ceil(random.nextDouble() * 21)) {
+            case 15, 16 -> SymbolSpell.EXPELLIARMUS;
+            case 17, 18 -> SymbolSpell.FLIPENDO;
+            case 19, 20 -> SymbolSpell.IMPEDIMENTA;
+            case 21 -> SymbolSpell.CONFUNDUS;
+            default -> SymbolSpell.IGNIANIMA;
+        };
     }
 
     @Override

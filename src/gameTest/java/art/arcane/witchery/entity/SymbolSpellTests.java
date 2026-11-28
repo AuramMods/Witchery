@@ -340,7 +340,7 @@ public final class SymbolSpellTests {
                 caster.setYRot(-90);
                 caster.setXRot(-35);
                 caster.getRandom().setSeed(28);
-                if (caster == lilith) level.getRandom().setSeed(28);
+                level.getRandom().setSeed(28);
                 for (int attack = 0; attack < 24; attack++) ((RangedAttackMob) caster).performRangedAttack(target, 0.7F);
 
                 var spells = shots.stream().filter(SymbolProjectile.class::isInstance).map(SymbolProjectile.class::cast).toList();
@@ -372,6 +372,56 @@ public final class SymbolSpellTests {
         }
     }
 
+    @GameTest(template = "qa_coven_arena", batch = "witchery_mob_symbol_random")
+    public static void mobSymbolAimingKeepsWorldCasterAndProjectileRollsSeparate(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 10, 4)));
+        var target = EntityType.PIG.create(level);
+        target.setPos(origin.add(12, 4, 0));
+        var leonard = WitcheryEntities.LEONARD.get().create(level);
+        var lilith = WitcheryEntities.LILITH.get().create(level);
+        var reflection = WitcheryEntities.REFLECTION.get().create(level);
+        reflection.setItemInHand(InteractionHand.MAIN_HAND, WitcheryItems.getRequired("mysticbranch").get().getDefaultInstance());
+
+        var shots = new ArrayList<SymbolProjectile>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof SymbolProjectile shot) shots.add(shot);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            for (Mob caster : List.of(leonard, lilith, reflection)) {
+                caster.setPos(origin);
+                for (long worldSeed : new long[]{0, 4640}) {
+                    level.getRandom().setSeed(worldSeed);
+                    caster.getRandom().setSeed(42);
+                    RandomSource worldReference = RandomSource.create(worldSeed);
+                    RandomSource casterReference = RandomSource.create(42);
+                    boolean casts = worldReference.nextBoolean();
+                    if (casts) {
+                        if (caster == lilith) worldReference.nextInt(3);
+                        casterReference.nextInt(10);
+                        casterReference.nextGaussian();
+                        casterReference.nextGaussian();
+                    }
+
+                    ((RangedAttackMob) caster).performRangedAttack(target, 0.65F);
+                    String name = caster.getName().getString();
+                    helper.assertTrue(shots.size() == (casts ? 1 : 0)
+                                    && level.getRandom().nextLong() == worldReference.nextLong(),
+                            name + " uses the legacy world spell decision");
+                    helper.assertTrue(caster.getRandom().nextLong() == casterReference.nextLong(),
+                            name + " leaves all three secondary spread draws to the projectile");
+                    shots.forEach(Projectile::discard);
+                    shots.clear();
+                }
+            }
+            helper.succeed();
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            shots.forEach(Projectile::discard);
+        }
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void tormentLordCastsIgnianimaAndBothLegacyVolleySizes(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -390,18 +440,23 @@ public final class SymbolSpellTests {
             for (long seed : new long[]{0, 1}) {
                 lord.getRandom().setSeed(seed);
                 lord.performRangedAttack(target, 0.125F);
-                int count = RandomSource.create(seed).nextInt(10) == 0 ? 9 : 3;
+                RandomSource reference = RandomSource.create(seed);
+                int count = reference.nextInt(10) == 0 ? 9 : 3;
                 helper.assertTrue(shots.size() == count + 1
                                 && shots.get(0) instanceof SymbolProjectile spell && spell.spell() == SymbolSpell.IGNIANIMA
                                 && spell.getOwner() == lord && spell.position().distanceTo(center) < 1.0E-6
                                 && Math.abs(savedAcceleration(spell).length() - 0.1) < 1.0E-6,
                         "Even at close range the Lord launches Ignianima with the original spell flight");
                 for (var shot : shots.subList(1, shots.size())) {
-                    helper.assertTrue(shot instanceof Soulfire && shot.getOwner() == lord
+                    helper.assertTrue(shot instanceof Soulfire fireball && shot.getOwner() == lord
                                     && shot.position().distanceTo(center.add(0, 0.5, 0)) < 1.0E-6
+                                    && Math.abs(new Vec3(fireball.xPower, fireball.yPower, fireball.zPower).length() - 0.1) < 1.0E-6
                                     && !shot.saveWithoutId(new CompoundTag()).getBoolean("Ignianima"),
                             "Each of the " + count + " fireballs is ordinary Soulfire, half a block above the spell");
                 }
+                for (int draw = 0; draw < 2 * (count + 1); draw++) reference.nextGaussian();
+                helper.assertTrue(lord.getRandom().nextLong() == reference.nextLong(),
+                        "The Lord draws only the horizontal aim for each projectile");
                 shots.forEach(Projectile::discard);
                 shots.clear();
             }

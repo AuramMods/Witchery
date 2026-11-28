@@ -33,7 +33,7 @@ public final class Soulfire extends SmallFireball {
     public Soulfire(EntityType<? extends Soulfire> type, LivingEntity owner, Vec3 direction) {
         this(type, owner.level());
         setOwner(owner);
-        Vec3 acceleration = direction.normalize().scale(0.1);
+        Vec3 acceleration = MobProjectile.acceleration(direction, random);
         xPower = acceleration.x;
         yPower = acceleration.y;
         zPower = acceleration.z;

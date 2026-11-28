@@ -2,12 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Demon bargains and mob-cast symbols (2026-11-28)
+
+- The original Demon kept pursuit and ranged combat eligible during a bargain. The bargain began within four blocks and ended if the customer left or the Demon was knocked back. Its Blaze Rod trade exploded on update 51. The port restores the original goals and timings. Night village routing uses occupied village points of interest in the modern world.
+- Leonard, Lilith, Reflection and the Lord of Torment keep the original random sources for world decisions, caster aim and projectile spread. Clean Forge matched the nine original cast samples, including the Lord's three- and nine-shot Soulfire volleys. Copied Auram retained its configured random sequence.
+- Clean Forge passed 13 packaged checks and copied Auram passed 14, including both Soulfire volley sizes. All 693 required Forge GameTests passed locally. Read the [comparison](PORTING.md#demon-bargains-and-mob-cast-symbols-2026-11-28) and `build/qa-mob-cast-and-navigation/{native/finish,clean/settled,pack/nine-shot,gametest-final}.log`.
+
 ## Demon melee and Lilith ranged combat (2026-11-28)
 
 - The 0.24.1 Demon chose melee pursuit through three blocks and hit only inside the vanilla strike reach. The Devil's Tongue Charm stopped melee and allowed a fireball on a five-percent world roll. Lilith's world rolls selected a missed opportunity, a symbol or a fireball. The original Large Fireball constructor added its own horizontal and vertical spread after the shooter aimed.
 - The port restores separate Demon pursuit and strike ranges, charm protection and the world rolls. The shared fireball code uses the body angles and midpoint, then offsets the projectile above and forward and sends the Ghast cue. Both headless packaged profiles matched the 15-case matrix. The [combat comparison](PORTING.md#demon-melee-and-lilith-ranged-combat-2026-11-28) links the native and packaged logs.
 - All 691 required Forge GameTests passed locally on the same build. See `build/qa-demon-combat/gametest-final.log`.
-- The Demon navigation audit still needs the original village and bargain movement. The mob-cast Symbol Projectile currently takes its three secondary draws from the caster. The native projectile constructor drew them from its own random source.
 
 ## Naturally sourced Dream travel (2026-11-28)
 

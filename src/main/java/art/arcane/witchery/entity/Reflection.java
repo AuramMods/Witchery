@@ -24,10 +24,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -78,6 +78,7 @@ public final class Reflection extends Monster implements RangedAttackMob {
     private static final EntityDataAccessor<Boolean> WOLFMAN_MODEL =
             SynchedEntityData.defineId(Reflection.class, EntityDataSerializers.BOOLEAN);
     private static final EquipmentSlot[] ARMOR = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+    private static final RandomSource SPELL_RANDOM = RandomSource.create();
     private final ServerBossEvent boss = new ServerBossEvent(Component.translatable("entity.witchery.reflection"),
             BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
     @Nullable private BlockPos roomExit;
@@ -219,7 +220,7 @@ public final class Reflection extends Monster implements RangedAttackMob {
             players.forEach(boss::addPlayer);
             LivingEntity enemy = getTarget();
             if (enemy != null && getNavigation().isDone() && hasLineOfSight(enemy)) {
-                castAt(level, enemy, 1, SymbolSpell.ATTRAHO);
+                SymbolProjectile.castMobSymbol(level, this, enemy, SymbolSpell.ATTRAHO, 1);
             }
         }
         LivingEntity enemy = getTarget();
@@ -284,14 +285,9 @@ public final class Reflection extends Monster implements RangedAttackMob {
         if (!(level() instanceof ServerLevel level) || !holdsRangedWeapon()) return;
         startAttackAnimation();
         if (getMainHandItem().getItem() instanceof MysticBranchItem) {
-            swing(InteractionHand.MAIN_HAND);
-            if (random.nextBoolean()) castAt(level, target, strength, switch (random.nextInt(21)) {
-                case 14, 15 -> SymbolSpell.EXPELLIARMUS;
-                case 16, 17 -> SymbolSpell.FLIPENDO;
-                case 18, 19 -> SymbolSpell.IMPEDIMENTA;
-                case 20 -> SymbolSpell.CONFUNDUS;
-                default -> SymbolSpell.IGNIANIMA;
-            });
+            if (level.random.nextBoolean()) {
+                SymbolProjectile.castMobSymbol(level, this, target, SymbolProjectile.commonMobSpell(SPELL_RANDOM), strength);
+            }
             return;
         }
         boolean handBow = getMainHandItem().getItem() instanceof HandBowItem;
@@ -321,12 +317,6 @@ public final class Reflection extends Monster implements RangedAttackMob {
     private static boolean isShiftedWerewolf(LivingEntity entity) {
         return entity instanceof Wolfman || entity instanceof Reflection reflection && reflection.hasWolfmanModel()
                 || entity instanceof Player player && Lycanthropy.isShifted(player);
-    }
-
-    private void castAt(ServerLevel level, LivingEntity target, float strength, SymbolSpell spell) {
-        if (level.addFreshEntity(SymbolProjectile.mobShot(level, this, target, spell, strength))) {
-            SymbolProjectile.playMobCastSound(level, this);
-        }
     }
 
     @Override

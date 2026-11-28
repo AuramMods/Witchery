@@ -185,13 +185,13 @@ public final class LordOfTorment extends Monster implements RangedAttackMob {
     public void performRangedAttack(LivingEntity target, float strength) {
         if (!(level() instanceof ServerLevel server)) return;
         beginAttack();
-        SymbolProjectile.playMobCastSound(server, this);
+        MobProjectile.playLaunchCue(server, this);
         int bursts = random.nextInt(10) == 0 ? 9 : 3;
         server.addFreshEntity(SymbolProjectile.mobShot(server, this, target, SymbolSpell.IGNIANIMA, strength));
         for (int i = 0; i < bursts; i++) {
-            Vec3 aim = SymbolProjectile.mobAim(this, target, strength);
+            Vec3 aim = MobProjectile.aim(this, target, strength);
             Soulfire shot = new Soulfire(WitcheryEntities.SOULFIRE.get(), this, aim);
-            shot.setPos(getX(), getY(0.5) + 0.5, getZ());
+            shot.moveTo(getX(), getY(0.5) + 0.5, getZ(), getYRot(), getXRot());
             server.addFreshEntity(shot);
         }
     }

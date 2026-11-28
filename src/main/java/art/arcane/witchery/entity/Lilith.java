@@ -264,13 +264,10 @@ public final class Lilith extends Monster implements RangedAttackMob {
         if (!(level() instanceof ServerLevel world) || friendly() || invulnerableTicks > 0
                 || !world.random.nextBoolean()) return;
         beginAttack();
-        boolean fireball = world.random.nextInt(3) == 0;
-        MobFireball.playLaunchCue(world, this);
-        if (fireball) {
+        if (world.random.nextInt(3) == 0) {
+            MobProjectile.playLaunchCue(world, this);
             world.addFreshEntity(new MobFireball(world, this, target, strength));
         } else {
-            // The symbol branch advances Lilith's random source before aiming in 0.24.1.
-            random.nextInt(10);
             SymbolSpell spell = switch ((int) Math.ceil(SPELL_RANDOM.nextDouble() * 13)) {
                 case 0, 1 -> SymbolSpell.IGNIANIMA;
                 case 2, 3, 4, 5, 6 -> SymbolSpell.FLIPENDO;
@@ -278,7 +275,7 @@ public final class Lilith extends Monster implements RangedAttackMob {
                 case 8 -> SymbolSpell.CONFUNDUS;
                 default -> SymbolSpell.ATTRAHO;
             };
-            world.addFreshEntity(SymbolProjectile.mobShot(world, this, target, spell, strength));
+            SymbolProjectile.castMobSymbol(world, this, target, spell, strength);
         }
     }
 

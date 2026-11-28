@@ -25,12 +25,15 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsTargetGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
@@ -56,6 +59,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 public final class Demon extends AbstractGolem implements RangedAttackMob, Merchant {
@@ -85,37 +89,32 @@ public final class Demon extends AbstractGolem implements RangedAttackMob, Merch
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1, true) {
             @Override
             public boolean canUse() {
-                return customer == null && super.canUse() && hasCloseMeleeTarget();
+                return super.canUse() && hasCloseMeleeTarget();
             }
 
             @Override
             public boolean canContinueToUse() {
-                return customer == null && super.canContinueToUse() && hasCloseMeleeTarget();
+                return super.canContinueToUse() && hasCloseMeleeTarget();
             }
         });
-        goalSelector.addGoal(2, new RangedAttackGoal(this, 1, 20, 60, 15) {
+        goalSelector.addGoal(2, new RangedAttackGoal(this, 1, 20, 60, 15));
+        goalSelector.addGoal(3, new BargainGoal());
+        goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8) {
             @Override
             public boolean canUse() {
-                return customer == null && super.canUse();
-            }
-
-            @Override
-            public boolean canContinueToUse() {
-                return customer == null && super.canContinueToUse();
+                lookAt = customer;
+                return lookAt != null;
             }
         });
-        goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.6) {
-            @Override
-            public boolean canUse() {
-                return customer == null && super.canUse();
-            }
-        });
-        goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 6));
-        goalSelector.addGoal(9, new RandomLookAroundGoal(this));
+        goalSelector.addGoal(5, new MoveTowardsTargetGoal(this, 0.9, 32));
+        goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 0.6, true, 4, () -> true));
+        goalSelector.addGoal(7, new MoveTowardsRestrictionGoal(this, 1));
+        goalSelector.addGoal(8, new RandomStrollGoal(this, 0.6));
+        goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 6));
+        goalSelector.addGoal(10, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false, null));
         targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Villager.class, 0, true, false, null));
@@ -125,6 +124,33 @@ public final class Demon extends AbstractGolem implements RangedAttackMob, Merch
         LivingEntity target = getTarget();
         return target != null && distanceToSqr(target) <= MELEE_TARGET_RANGE * MELEE_TARGET_RANGE
                 && !hasTongueCharm(target) && getNavigation().createPath(target, 0) != null;
+    }
+
+    private boolean canBargain() {
+        return isAlive() && !isInWater() && onGround() && !hurtMarked && customer != null
+                && customer.isAlive() && distanceToSqr(customer) <= 16 && customer.containerMenu instanceof MerchantMenu;
+    }
+
+    private final class BargainGoal extends Goal {
+        private BargainGoal() {
+            setFlags(EnumSet.of(Flag.MOVE, Flag.JUMP));
+        }
+
+        @Override
+        public boolean canUse() {
+            return canBargain();
+        }
+
+        @Override
+        public void start() {
+            getNavigation().stop();
+        }
+
+        @Override
+        public void stop() {
+            setTradingPlayer(null);
+            targetSelector.tick();
+        }
     }
 
     public void summonedByRite() {
@@ -142,25 +168,13 @@ public final class Demon extends AbstractGolem implements RangedAttackMob, Merch
             discard();
             return;
         }
-        if (customer != null) {
-            if (!customer.isAlive() || distanceToSqr(customer) > 16 || !(customer.containerMenu instanceof MerchantMenu)
-                    || isInWater() || !onGround() || hurtMarked) {
-                setTradingPlayer(null);
-            } else {
-                setTarget(null);
-                getNavigation().stop();
-                getLookControl().setLookAt(customer, 30, 30);
-            }
-        }
-        if (escapeTicks > 0 && --escapeTicks == 0) {
+        if (customer != null && !canBargain()) setTradingPlayer(null);
+        if (escapeTicks == 0) {
             escapeTicks = -1;
             level.explode(this, getX(), getY(), getZ(), 3, true, Level.ExplosionInteraction.MOB);
+        } else if (escapeTicks > 0) {
+            escapeTicks--;
         }
-    }
-
-    @Override
-    public boolean canAttack(LivingEntity target) {
-        return customer == null && super.canAttack(target);
     }
 
     @Override
@@ -185,7 +199,7 @@ public final class Demon extends AbstractGolem implements RangedAttackMob, Merch
     public void performRangedAttack(LivingEntity target, float velocity) {
         if (!(level() instanceof ServerLevel level) || hasTongueCharm(target) && level.random.nextDouble() >= 0.05) return;
         var bolt = new MobFireball(level, this, target, velocity);
-        MobFireball.playLaunchCue(level, this);
+        MobProjectile.playLaunchCue(level, this);
         level.addFreshEntity(bolt);
     }
 

@@ -1,6 +1,5 @@
 package art.arcane.witchery.entity;
 
-import art.arcane.witchery.infusion.SymbolSpell;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.registry.WitcheryEffects;
@@ -18,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -48,6 +48,7 @@ import org.jetbrains.annotations.Nullable;
 public final class Leonard extends Monster implements RangedAttackMob {
     private static final int ENTRANCE_TICKS = 150;
     private static final int SOUL_RADIUS = 15;
+    private static final RandomSource SPELL_RANDOM = RandomSource.create();
 
     private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(),
             BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
@@ -233,17 +234,9 @@ public final class Leonard extends Monster implements RangedAttackMob {
 
     @Override
     public void performRangedAttack(LivingEntity target, float strength) {
-        if (!(level() instanceof ServerLevel level) || entranceTicks > 0 || !random.nextBoolean()) return;
+        if (!(level() instanceof ServerLevel level) || entranceTicks > 0 || !level.random.nextBoolean()) return;
         beginAttack();
-        SymbolSpell spell = switch (random.nextInt(21)) {
-            case 14, 15 -> SymbolSpell.EXPELLIARMUS;
-            case 16, 17 -> SymbolSpell.FLIPENDO;
-            case 18, 19 -> SymbolSpell.IMPEDIMENTA;
-            case 20 -> SymbolSpell.CONFUNDUS;
-            default -> SymbolSpell.IGNIANIMA;
-        };
-        level.addFreshEntity(SymbolProjectile.mobShot(level, this, target, spell, strength));
-        SymbolProjectile.playMobCastSound(level, this);
+        SymbolProjectile.castMobSymbol(level, this, target, SymbolProjectile.commonMobSpell(SPELL_RANDOM), strength);
     }
 
     @Override
