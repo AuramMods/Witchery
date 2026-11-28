@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Ground familiar feeding, pursuit, and swimming (2026-11-28)
+
+- The Witch Cat accepts the raw fish variants, tames inside three blocks, heals ten points from the owner's fish, and hunts chickens at the original average interval. Older and modern goal schedulers use different sweep intervals. The recorded hunt began through the registered goal in each runtime.
+- Toads swim with their original air protection and reduce a skeleton's six-point bow hit to three and a half. Both ground pets take a viable path before trying the first open landing cell at twelve blocks. The direct sample comparison matched 32 original results in each package. The vanilla Pig controls reproduce the pack's armor and critical hit results.
+- Copied Auram uses an observer within its configured entity tick range for normal passive AI. The headless profile saved its world before fixture cleanup. The [ground familiar comparison](PORTING.md#ground-familiar-feeding-pursuit-and-swimming-2026-11-28) records the cases.
+- Java 17 reobfuscation and all 714 local Forge GameTests passed. The packaged JAR has SHA-256 `71069ceea98b41f386b0e8c3495d7290eb74fbd1c94597a666c547030244f04b`. Fixture commands and logs are under `build/qa-ground-familiars/`.
+
 ## Flying companion courtship and long-range Owl delivery (2026-11-28)
 
 - Clean Forge matched 32 original runtime samples for both flyers' food and breeding goals and the Owl's 128-block landing boundary. Copied Auram's landing matched its configured world random draws, and its other 31 samples matched the original. [Porting comparison](PORTING.md#flying-companion-courtship-and-long-range-owl-delivery-2026-11-28)

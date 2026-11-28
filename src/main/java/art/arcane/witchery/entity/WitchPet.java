@@ -2,6 +2,7 @@ package art.arcane.witchery.entity;
 
 import art.arcane.witchery.familiar.Familiar;
 import art.arcane.witchery.familiar.FamiliarBinding;
+import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.world.migration.LegacyGameProfiles;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -20,6 +21,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.ForgeEventFactory;
 
@@ -138,7 +141,7 @@ public abstract class WitchPet extends TamableAnimal implements Familiar {
                 return InteractionResult.sidedSuccess(client);
             }
         }
-        if (isOwnedBy(player) && !isFood(held) && held.isEmpty()) {
+        if (isOwnedBy(player) && !isFood(held) && canToggleSit(held)) {
             if (!client) {
                 setOrderedToSit(!isOrderedToSit());
                 getNavigation().stop();
@@ -151,6 +154,16 @@ public abstract class WitchPet extends TamableAnimal implements Familiar {
 
     protected boolean canTameFrom(Player player) {
         return true;
+    }
+
+    protected boolean canToggleSit(ItemStack held) {
+        return held.isEmpty();
+    }
+
+    static boolean bypassesSitCommand(ItemStack held) {
+        return held.is(Items.NAME_TAG) || held.getItem() instanceof SpawnEggItem
+                || held.is(WitcheryItems.getRequired("polynesiacharm").get())
+                || held.is(WitcheryItems.getRequired("devilstonguecharm").get());
     }
 
     protected boolean mayHandleFoodAndDye(Player player) {

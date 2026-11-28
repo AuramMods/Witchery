@@ -385,6 +385,14 @@ Audit each remaining behavior family against the original inventory before build
 - [x] Restore the coven witch's additional combat, visits and ritual behaviors. See Coven Witch Combat and Visits below.
 - [x] Restore village shelter seeking and daytime door restrictions for Coven Witches and Hobgoblins.
 
+### Ground familiar feeding, pursuit, and swimming (2026-11-28)
+
+- Witch Cats accept all four raw fish variants. Inside three blocks, an untamed cat consumes one fish for a one-in-three taming roll. At exactly three blocks an eligible adult takes the ordinary feeding action. A tamed owner can heal ten health with raw fish or toggle sitting with an ordinary non-food item. Name tags, spawn eggs, and the two trading charms use their existing interactions. Wild Witch Cats hunt chickens and use the original furniture-perching goal. The original one-in-750 hunt roll ran every third tick. Forge checks every other tick and uses a one-in-1,125 roll to retain the same average interval.
+- Toads resume surface swimming, keep their air and fall protection, and use the original 240-tick ambient sound cooldown. Six damage from a skeleton's arrow becomes three and a half. Player attacks and unowned arrows keep their original damage. The toad keeps a familiar's sit order when hit. Its owner can also give the sit command while holding an ordinary item.
+- Both pets follow a living owner in the same dimension from ten blocks away. They attempt to walk first. A failed route at twelve blocks or more uses the first supported and unobstructed cell on the outer edge of the original five-by-five square. Leashed pets skip the jump.
+- Both packaged profiles matched 32 original interaction, damage, and follow measurements directly. The original and both packaged profiles hunted a chicken on the controlled pursuit roll and swam upward with the Toad's 147 air intact. The Auram fixture placed an observer within the configured entity tick range.
+- The two species retain five innate armor points when bound. A six-point hit on the fixture's bound pet at ten current health left 5.2 in the original, 4.48 in clean Forge, and 6 in Auram. Each modern profile's vanilla Pig with five armor points produced the same result as its familiars. An Auram Pig took nine points on a guaranteed critical hit, matching the Toad's higher hit in the uncontrolled replay. The ordinary damage comparison fixed the fixture attacker's critical chance at zero. All three profiles preserved the familiar's sit order.
+
 ## Coven Witch Combat and Visits (2026-11-21)
 
 - [x] Restore defensive drinking. A burning witch can drink Fire Resistance, an injured witch can drink Healing, and a witch facing a target over eleven blocks away can drink Swiftness. The potion occupies her hand for 32 ticks and pauses movement and ranged attacks. The held item renders on the witch and the drink survives save and load.
@@ -3987,6 +3995,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [Witch Cat feeding and chicken pursuit, Toad swimming and arrow damage, and ground familiar following](#ground-familiar-feeding-pursuit-and-swimming-2026-11-28).
   - [x] Compare [Owl and Winged Monkey defense, owner following, and perching](#owl-and-winged-monkey-defense-owner-following-and-perching-2026-11-28) against both original creature classes.
   - [x] Compare [the Owl and Winged Monkey's original food temptation and breeding goals and the long-range Owl waypoint landing](#flying-companion-courtship-and-long-range-owl-delivery-2026-11-28).
   - [x] Compare [Demon melee and Lilith ranged combat](#demon-melee-and-lilith-ranged-combat-2026-11-28), including the Devil's Tongue Charm, seeded attack choices, and shared fireball trajectories.

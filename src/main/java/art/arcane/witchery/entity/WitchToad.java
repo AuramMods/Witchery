@@ -13,20 +13,18 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
-import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -40,7 +38,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public final class WitchToad extends WitchPet {
@@ -49,7 +46,6 @@ public final class WitchToad extends WitchPet {
 
     public WitchToad(EntityType<? extends WitchToad> type, Level level) {
         super(type, level);
-        moveControl = new SmoothSwimmingMoveControl(this, 80, 10, 0.25F, 1, true);
     }
 
     public void prepareRainToad() {
@@ -69,8 +65,9 @@ public final class WitchToad extends WitchPet {
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
-        goalSelector.addGoal(3, new FollowOwnerGoal(this, 1, 10, 2, false));
+        goalSelector.addGoal(1, new FloatGoal(this));
+        goalSelector.addGoal(2, new GroundFamiliarGoals.Sit(this));
+        goalSelector.addGoal(3, new GroundFamiliarGoals.Follow(this, 2));
         goalSelector.addGoal(4, new TemptGoal(this, 1.25, FOOD, false));
         goalSelector.addGoal(6, new BreedGoal(this, 1));
         goalSelector.addGoal(7, new RandomStrollGoal(this, 1));
@@ -86,17 +83,6 @@ public final class WitchToad extends WitchPet {
     }
 
     @Override
-    public void travel(Vec3 input) {
-        if (isEffectiveAi() && isInWater()) {
-            moveRelative(getSpeed(), input);
-            move(MoverType.SELF, getDeltaMovement());
-            setDeltaMovement(getDeltaMovement().scale(0.9));
-        } else {
-            super.travel(input);
-        }
-    }
-
-    @Override
     public void aiStep() {
         super.aiStep();
         if (!level().isClientSide && !isOrderedToSit() && onGround() && !isInWater()
@@ -107,8 +93,8 @@ public final class WitchToad extends WitchPet {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (source.getEntity() != null && !(source.getEntity() instanceof Player)
-                && !(source.getDirectEntity() instanceof AbstractArrow)) {
+        Entity attacker = source.getEntity();
+        if (attacker != null && !(attacker instanceof Player) && !(attacker instanceof AbstractArrow)) {
             amount = (amount + 1) / 2;
         }
         return super.hurt(source, amount);
@@ -117,6 +103,11 @@ public final class WitchToad extends WitchPet {
     @Override
     public boolean isFood(ItemStack stack) {
         return FOOD.test(stack);
+    }
+
+    @Override
+    protected boolean canToggleSit(ItemStack held) {
+        return !bypassesSitCommand(held);
     }
 
     @Override
@@ -199,6 +190,11 @@ public final class WitchToad extends WitchPet {
     @Override
     protected SoundEvent getDeathSound() {
         return WitcherySounds.TOAD_HURT.get();
+    }
+
+    @Override
+    public int getAmbientSoundInterval() {
+        return super.getAmbientSoundInterval() * 2;
     }
 
     @Override
