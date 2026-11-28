@@ -37,7 +37,6 @@ public final class LegacyChunkEntities {
     static final String SPAWNER_CART = "minecraft:spawner_minecart";
     private static final String LEGACY_CART_SPAWNER = "WitcheryLegacyCartSpawner";
     static final ResourceLocation INFINITY_EGG = ResourceLocation.fromNamespaceAndPath(Witchery.MODID, "infinityegg");
-    private static final String FALLING_INFINITY_EGG = "WitcheryLegacyFallingInfinityEgg";
 
     private LegacyChunkEntities() {
     }
@@ -88,10 +87,7 @@ public final class LegacyChunkEntities {
         }
         int targetVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         String oldType = entity.getString("id");
-        if (isFallingInfinityEgg(entity, ids)) {
-            // The vanilla fixer interprets TileID using vanilla's numeric registry.
-            entity.putBoolean(FALLING_INFINITY_EGG, true);
-        }
+        LegacyEmbeddedBlocks.prepare(entity, ids);
         if (oldType.equals("MinecartSpawner") || oldType.equals("Minecart") && entity.getInt("Type") == 4) {
             prepareSpawnerCart(entity, ids, fixer, from);
         }
@@ -137,9 +133,7 @@ public final class LegacyChunkEntities {
 
     static boolean isFallingInfinityEgg(CompoundTag entity, LegacyWorldIds ids) {
         if (!entity.getString("id").equals("FallingSand")) return false;
-        int number = entity.contains("TileID", Tag.TAG_ANY_NUMERIC)
-                ? entity.getInt("TileID") : Byte.toUnsignedInt(entity.getByte("Tile"));
-        return INFINITY_EGG.equals(ids.block(number));
+        return INFINITY_EGG.equals(LegacyEmbeddedBlocks.fallingBlock(entity, ids));
     }
 
     private static void prepareSpawner(CompoundTag spawner, LegacyWorldIds ids, DataFixer fixer, int from) {
@@ -233,12 +227,7 @@ public final class LegacyChunkEntities {
     }
 
     static void restoreEntity(CompoundTag entity) {
-        if (entity.getBoolean(FALLING_INFINITY_EGG)) {
-            var state = new CompoundTag();
-            state.putString("Name", INFINITY_EGG.toString());
-            entity.put("BlockState", state);
-            entity.remove(FALLING_INFINITY_EGG);
-        }
+        LegacyEmbeddedBlocks.restoreAfterDataFix(entity);
         if (entity.contains(ORIGINAL_TYPE, Tag.TAG_STRING)) {
             String type = entity.getString(ORIGINAL_TYPE);
             entity.putString("id", type);

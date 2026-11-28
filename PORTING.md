@@ -40,6 +40,7 @@ Audit each remaining behavior family against the original inventory before build
   - [x] Preserve [native and converted potion effect identities](#effect-ids-in-native-and-converted-saves-2026-11-27) in active effects, pending death effects, potion stacks, and saved vanilla potion carriers.
   - [x] Preserve [fractional health and creature upgrades](#health-and-attributes-in-converted-saves-2026-11-27), including mounted creatures, original modifier UUIDs, and explicit current values.
   - [x] Recover [original equipment modifiers](#equipment-modifiers-in-converted-saves-2026-11-27) from stored, dropped, nested, and equipped items.
+  - [x] Recover [piston and falling block payloads](#moving-and-falling-blocks-in-saves-2026-11-27) with their original Witchery metadata.
 - [ ] Run the final data generation, reobfuscated build, and regression replay. Use that exact JAR for clean Forge and copied Auram, record the survival progression and any fixture supplies, and rerun the 19 original packet intents using their modern equivalents where applicable. Cover two-client state across death, reconnects, dimension travel, and dedicated restarts. Recheck the documented optional integrations and configuration, then record the downloadable artifact, tested build, and results.
 - [x] Restore Flowing Spirit and Hollow Tears spread and contact rules. The original server and packaged Forge both filled four cells, left water in place, and preferred the drop four cells away. A muted background survival client poured both buckets. Blaze contact gave Weakness II from Flowing Spirit and Regeneration II from Hollow Tears. The GameTests also cover diagonal feeding, recession, Nightmares, vampirism, and the Brew of the Grave.
 - [x] Continue the same Auram survival save through the Brazier, spectral binding, and release of an owned Banshee.
@@ -2530,6 +2531,15 @@ The muted Auram client rejoined after the headless dedicated-server restart and 
 - [x] Open a single-player copy with a mixed owner record inside Mirror. The muted background client recovered the original vampire rank eight and blood reserve 34, kept the current 888 blood and second cooldown, and used the chat chant to return to the saved entrance. A full client restart kept the recovered inventory alongside an apple added after the first save, confirming the backup did not replay.
 - [x] Import and reopen nine [Infernal creature variants](#infernal-creature-variants-2026-11-26). Both packaged profiles preserved their names, UUIDs, vanilla or Witchery identities, and new bindings. The player reopened with the shared Horse reserve.
 - [ ] Expand migration to other block and subtype data and specialized entity and block-entity fields. Add fixtures before calling the migration complete.
+
+### Moving and falling blocks in saves (2026-11-27)
+
+- Witchery 0.24.1 wrote a Hawthorn log during sticky retraction, an Alder top slab during extension, a moving vanilla spruce log, and a falling Alder log. The previous packaged importer only recovered the vanilla control.
+- The importer resolves piston `blockId` and `blockData` and falling `TileID` or `Tile` and `Data` against the captured registry. It carries the flattened Witchery state through vanilla's data fixer. Piston progress and direction and falling motion and time stay with the carrier. The unstarted Infinity Egg path still reschedules the source block once.
+- Ordinary Forge loads recover numeric payloads left in mixed records when the old registry is present. An explicit `blockState` or `BlockState` wins even when the saved legacy fields identify a different block. The fixtures cover a full ID above 255 and the unsigned-byte fallback.
+- Clean Forge completed the original region's piston movements and falling block landing in normal server ticks and retained all four resulting blocks through an ordinary restart. A separate converted region completed both additional piston movements and both additional landings. It kept the explicit Stone and Gravel controls and retained all eight blocks after restarting again. Read `build/qa-embedded-block-saves/{native/source.log,clean-baseline-legacy/first.log,clean-legacy/first.log,clean-legacy/restart.log,clean-mixed/first.log,clean-mixed/restart.log}`.
+- Copied Auram completed the same four native movements and kept the expected Witchwood and vanilla blocks on its ordinary restart. Read `build/qa-embedded-block-saves/pack-legacy/{first,restart}.log`.
+- The local Java 17 reobfuscated build and all 675 required Forge GameTests passed, including the existing Infinity Egg scheduling test and both new normal storage checks.
 
 ### Bolt impact anchor recovery (2026-11-27)
 

@@ -157,6 +157,9 @@ public final class LegacyChunkUpgrade {
 
     public static void finish(CompoundTag upgraded, ResourceKey<Level> dimension) {
         LegacyChunkEntities.restore(upgraded.getList("entities", Tag.TAG_COMPOUND));
+        for (Tag entry : upgraded.getList("block_entities", Tag.TAG_COMPOUND)) {
+            LegacyEmbeddedBlocks.restoreAfterDataFix((CompoundTag) entry);
+        }
         restoreTicks(upgraded, LEGACY_BLOCK_TICKS, "block_ticks");
         restoreTicks(upgraded, LEGACY_FLUID_TICKS, "fluid_ticks");
         if (dimension.equals(WitcheryDimensions.TORMENT) || dimension.equals(WitcheryDimensions.MIRROR)) {
@@ -205,6 +208,7 @@ public final class LegacyChunkUpgrade {
         updateBlockEntityTypes(tiles);
         for (Tag entry : tiles) {
             CompoundTag tile = (CompoundTag) entry;
+            LegacyEmbeddedBlocks.prepare(tile, ids);
             String tileId = tile.getString("id");
             if ((tileId.equals("witchery:leechchest") || tileId.equals("witchery:refillingchest"))
                     && tile.contains("CustomName", Tag.TAG_STRING)) {
