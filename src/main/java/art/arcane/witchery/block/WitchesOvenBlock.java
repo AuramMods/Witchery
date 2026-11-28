@@ -7,7 +7,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public final class WitchesOvenBlock extends BaseEntityBlock {
+    private final RandomSource dropRandom = RandomSource.create();
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
@@ -96,7 +96,7 @@ public final class WitchesOvenBlock extends BaseEntityBlock {
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
         if (!state.is(replacement.getBlock()) && !level.isClientSide
                 && level.getBlockEntity(pos) instanceof WitchesOvenBlockEntity oven) {
-            Containers.dropContents(level, pos, oven);
+            LegacyContainerDrops.scatter(level, pos, oven, dropRandom);
             level.updateNeighbourForOutputSignal(pos, this);
         }
         super.onRemove(state, level, pos, replacement, moving);

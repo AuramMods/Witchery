@@ -1,6 +1,8 @@
 package art.arcane.witchery.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -9,8 +11,17 @@ public final class LegacyContainerDrops {
     private LegacyContainerDrops() {}
 
     public static void scatter(Level level, BlockPos pos, ItemStack stack) {
+        scatter(level, pos, stack, level.random);
+    }
+
+    public static void scatter(Level level, BlockPos pos, Container inventory, RandomSource random) {
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            scatter(level, pos, inventory.getItem(slot), random);
+        }
+    }
+
+    private static void scatter(Level level, BlockPos pos, ItemStack stack, RandomSource random) {
         if (stack.isEmpty()) return;
-        var random = level.random;
         double x = pos.getX() + (random.nextFloat() * 0.8F + 0.1F);
         double y = pos.getY() + (random.nextFloat() * 0.8F + 0.1F);
         double z = pos.getZ() + (random.nextFloat() * 0.8F + 0.1F);

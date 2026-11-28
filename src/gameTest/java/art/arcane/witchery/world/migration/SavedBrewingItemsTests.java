@@ -201,13 +201,24 @@ public final class SavedBrewingItemsTests {
         } finally {
             FileUtils.deleteDirectory(world.toFile());
         }
-        var pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(6, 3, 4));
-        pig.setNoGravity(true);
-        projectile.setPos(pig.position().add(-1, 0.3, 0));
-        projectile.setDeltaMovement(2, 0, 0);
-        helper.assertTrue(level.addFreshEntity(projectile), "The migrated projectile joins the game normally");
-        helper.succeedWhen(() -> helper.assertTrue(!projectile.isAlive() && pig.hasEffect(WitcheryEffects.WOLFSBANE.get()),
-                "The migrated projectile applies its original brew on impact"));
+        var target = new BlockPos(6, 3, 4);
+        var center = helper.absolutePos(target);
+        var launch = Vec3.atBottomCenterOf(center).add(-1, 0.3, 0);
+        var pig = EntityType.PIG.create(level);
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                level.isPositionEntityTicking(center) && level.isPositionEntityTicking(BlockPos.containing(launch)),
+                "The impact and launch chunks both track entities")).thenExecute(() -> {
+            level.setBlockAndUpdate(center, Blocks.AIR.defaultBlockState());
+            level.setBlockAndUpdate(BlockPos.containing(launch), Blocks.AIR.defaultBlockState());
+            pig.setPos(Vec3.atBottomCenterOf(center));
+            pig.setNoAi(true);
+            pig.setNoGravity(true);
+            helper.assertTrue(level.addFreshEntity(pig), "The splash target joins the game normally");
+            projectile.setPos(launch);
+            projectile.setDeltaMovement(2, 0, 0);
+            helper.assertTrue(level.addFreshEntity(projectile), "The migrated projectile joins the game normally");
+        }).thenWaitUntil(() -> helper.assertTrue(!projectile.isAlive() && pig.hasEffect(WitcheryEffects.WOLFSBANE.get()),
+                "The migrated projectile applies its original brew on impact")).thenSucceed();
     }
 
     private static CompoundTag tile(CompoundTag chunk, int index) {

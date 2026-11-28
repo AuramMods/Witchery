@@ -91,14 +91,14 @@ public final class LegacyConsumableTests {
         try {
             long seed = 0;
             while (RandomSource.create(seed).nextInt(2) != 0) seed++;
-            player.getRandom().setSeed(seed);
+            helper.getLevel().random.setSeed(seed);
             player.addEffect(new MobEffectInstance(curse, 900, 1));
             consume(helper, player, new ItemStack(milk));
             assertEffect(helper, player, curse, 900, 1);
 
             player.removeEffect(curse);
             player.addEffect(new MobEffectInstance(MobEffects.POISON, 900));
-            player.getRandom().setSeed(seed);
+            helper.getLevel().random.setSeed(seed);
             consume(helper, player, new ItemStack(milk));
             helper.assertFalse(player.hasEffect(MobEffects.POISON), "The same successful milk roll removes a curable effect");
 

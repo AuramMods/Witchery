@@ -157,9 +157,9 @@ public final class DistilleryBlockEntity extends BaseContainerBlockEntity implem
         setChanged();
     }
 
-    public static boolean acceptsItem(int slot, ItemStack stack) {
+    private static boolean acceptsItem(int slot, ItemStack stack) {
         return switch (slot) {
-            case FIRST_INPUT, SECOND_INPUT -> !stack.is(WitcheryIngredient.CLAY_JAR.item());
+            case FIRST_INPUT, SECOND_INPUT, FIRST_RESULT -> !stack.is(WitcheryIngredient.CLAY_JAR.item());
             case JARS -> stack.is(WitcheryIngredient.CLAY_JAR.item());
             default -> false;
         };

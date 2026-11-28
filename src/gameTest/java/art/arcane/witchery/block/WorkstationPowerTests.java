@@ -16,15 +16,100 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class WorkstationPowerTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_workstation_inventory")
+    public static void distilleryKeepsManualAndSidedSlotsDistinct(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(3, 4, 3));
+        level.setBlockAndUpdate(pos, WitcheryBlocks.getRequired("distilleryidle").get().defaultBlockState());
+        var distillery = (DistilleryBlockEntity) level.getBlockEntity(pos);
+        var player = helper.makeMockPlayer();
+        var menu = (DistilleryMenu) distillery.createMenu(1, player.getInventory(), player);
+        var jar = new ItemStack(WitcheryIngredient.CLAY_JAR.item());
+        var powder = new ItemStack(Items.GUNPOWDER, 2);
+        helper.assertTrue(menu.getSlot(0).mayPlace(jar) && menu.getSlot(1).mayPlace(jar)
+                        && menu.getSlot(2).mayPlace(jar) && !menu.getSlot(2).mayPlace(powder)
+                        && !menu.getSlot(3).mayPlace(powder),
+                "Hand placement accepts any input and keeps dedicated jars and result slots separate");
+        var side = distillery.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.NORTH).orElseThrow(AssertionError::new);
+        helper.assertTrue(ItemStack.matches(side.insertItem(0, jar, false), jar)
+                        && ItemStack.matches(side.insertItem(3, jar, false), jar)
+                        && ItemStack.matches(side.insertItem(4, powder, false), powder)
+                        && side.insertItem(3, powder, false).isEmpty(),
+                "Side automation can insert a non-jar into the first result slot only");
+        helper.assertTrue(side.extractItem(3, 2, false).getCount() == 2 && distillery.getItem(3).isEmpty(),
+                "Side automation can also extract from that slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_workstation_inventory")
+    public static void workstationRemovalKeepsOriginalDropSlotsAndTags(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var ids = List.of("witchesovenidle", "witchesovenburning", "distilleryidle", "distilleryburning", "spinningwheel");
+        var pos = helper.absolutePos(new BlockPos(3, 4, 3));
+        var drops = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> listener = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity drop
+                    && drop.getItem().getTag() != null && drop.getItem().getTag().getBoolean("WorkshopFixture")) drops.add(drop);
+        };
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            for (String id : ids) {
+                var block = WitcheryBlocks.getRequired(id).get();
+                level.setBlockAndUpdate(pos, block.defaultBlockState());
+                var inventory = (Container) level.getBlockEntity(pos);
+                var powder = new ItemStack(Items.GUNPOWDER, 48);
+                powder.getOrCreateTag().putBoolean("WorkshopFixture", true);
+                var sword = new ItemStack(Items.DIAMOND_SWORD);
+                sword.getOrCreateTag().putBoolean("WorkshopFixture", true);
+                sword.setDamageValue(17);
+                inventory.setItem(0, powder);
+                inventory.setItem(2, sword);
+                level.random.setSeed(42);
+                level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+
+                helper.assertTrue(drops.size() >= 3 && drops.get(drops.size() - 1).getItem().getDamageValue() == 17,
+                        id + " drops the worn item after the first slot's fragments");
+                var firstSlot = drops.subList(0, drops.size() - 1);
+                helper.assertTrue(firstSlot.stream().mapToInt(drop -> drop.getItem().getCount()).sum() == 48
+                                && firstSlot.stream().allMatch(drop -> drop.position().equals(drops.get(0).position()))
+                                && drops.stream().allMatch(drop -> drop.saveWithoutId(new CompoundTag()).getShort("PickupDelay") == 0),
+                        id + " keeps a shared origin per slot, the original count, and immediate pickup");
+                var fragments = firstSlot.stream().map(drop -> drop.getItem().getCount()).toList();
+                if (id.equals("spinningwheel")) {
+                    helper.assertTrue(fragments.equals(List.of(27, 10, 11)) && level.random.nextInt(1000) == 713,
+                            "The spinning wheel scatters with the world stream");
+                } else {
+                    helper.assertTrue(level.random.nextInt(1000) == 130, id + " leaves the world stream untouched");
+                }
+                drops.forEach(ItemEntity::discard);
+                drops.clear();
+            }
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            drops.forEach(ItemEntity::discard);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena", batch = "witchery_distillery_glow")
     public static void distilleryKeepsItsOriginalGlowThrottleDuringPowerChanges(GameTestHelper helper) {
         var level = helper.getLevel();

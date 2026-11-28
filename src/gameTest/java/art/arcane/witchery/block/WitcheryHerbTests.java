@@ -63,6 +63,42 @@ public final class WitcheryHerbTests {
     }
 
     @GameTest(template = "qa_coven_arena")
+    public static void herbsHonorTheOriginalSupportAndSpreadRolls(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var glint = WitcheryBlocks.getRequired("glintweed").get().defaultBlockState();
+        var ember = WitcheryBlocks.getRequired("embermoss").get().defaultBlockState();
+        BlockPos hanging = helper.absolutePos(new BlockPos(5, 8, 5));
+        level.setBlockAndUpdate(hanging.below(), Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(hanging.above(), Blocks.STONE.defaultBlockState());
+        helper.assertTrue(glint.canSurvive(level, hanging) && !ember.canSurvive(level, hanging),
+                "Only Glint Weed can hang from a ceiling without a floor");
+        level.setBlockAndUpdate(hanging, glint);
+        level.setBlockAndUpdate(hanging.above(), Blocks.AIR.defaultBlockState());
+        helper.assertTrue(level.isEmptyBlock(hanging), "Removing the ceiling immediately removes the unsupported plant");
+
+        var herbs = new BlockState[]{glint, ember};
+        for (int i = 0; i < herbs.length; i++) {
+            BlockPos origin = helper.absolutePos(new BlockPos(6 + i * 12, 5, 6));
+            fillGround(helper, origin, Blocks.DIRT.defaultBlockState());
+            level.setBlockAndUpdate(origin, herbs[i]);
+            var offsets = RandomSource.create(42);
+            level.random.setSeed(42);
+            herbs[i].randomTick(level, origin, offsets);
+            helper.assertTrue(countNearby(helper, origin, herbs[i].getBlock()) == 1
+                            && level.random.nextInt(1000) == 763 && offsets.nextInt(1000) == 130,
+                    "A failed world roll never consumes an offset");
+
+            offsets.setSeed(42);
+            level.random.setSeed(0);
+            herbs[i].randomTick(level, origin, offsets);
+            helper.assertTrue(level.getBlockState(origin.offset(-2, 0, 2)).is(herbs[i].getBlock())
+                            && level.random.nextInt(1000) == 948 && offsets.nextInt(1000) == 400,
+                    "The same successful rolls reach the same dirt cell as Witchery 0.24.1");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena")
     public static void emberMossIgnitesLivingContacts(GameTestHelper helper) {
         var level = helper.getLevel();
         var ember = WitcheryBlocks.getRequired("embermoss").get();

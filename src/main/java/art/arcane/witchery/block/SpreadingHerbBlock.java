@@ -1,10 +1,9 @@
 package art.arcane.witchery.block;
 
+import art.arcane.witchery.network.WitcheryNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.IForgeShearable;
@@ -48,7 +48,7 @@ public abstract class SpreadingHerbBlock extends BushBlock {
 
     @Override
     public final void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (random.nextInt(6) != 0 || !level.isAreaLoaded(pos, 5)) return;
+        if (level.random.nextInt(6) != 0 || !level.isAreaLoaded(pos, 5)) return;
         int nearby = 0;
         for (BlockPos candidate : BlockPos.betweenClosed(pos.offset(-4, -1, -4), pos.offset(4, 1, 4))) {
             if (level.getBlockState(candidate).is(this) && ++nearby == 5) return;
@@ -99,11 +99,10 @@ public abstract class SpreadingHerbBlock extends BushBlock {
         @Override
         public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
             if (!(level instanceof ServerLevel server) || !(entity instanceof LivingEntity living) || !living.isAlive()
-                    || living.isOnFire() || living.fireImmune() || living instanceof Player player && player.isCreative()) return;
+                    || living.isOnFire() || living.fireImmune()
+                    || living instanceof Player player && (player.isCreative() || player.getAbilities().invulnerable)) return;
             living.setSecondsOnFire(3);
-            server.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.05, pos.getZ() + 0.5,
-                    16, 0.5, 1, 0.5, 0.04);
-            server.playSound(null, pos, SoundEvents.GHAST_SHOOT, SoundSource.BLOCKS, 1, 1);
+            WitcheryNetwork.sendEmberMossIgnition(server, Vec3.atBottomCenterOf(pos).add(0, 0.05, 0));
         }
 
         @Override

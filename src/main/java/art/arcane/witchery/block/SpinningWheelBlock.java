@@ -4,7 +4,6 @@ import art.arcane.witchery.block.entity.SpinningWheelBlockEntity;
 import art.arcane.witchery.registry.WitcheryBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -94,8 +93,9 @@ public final class SpinningWheelBlock extends BaseEntityBlock {
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
-        if (!state.is(replacement.getBlock()) && level.getBlockEntity(pos) instanceof SpinningWheelBlockEntity wheel) {
-            Containers.dropContents(level, pos, wheel);
+        if (!state.is(replacement.getBlock()) && !level.isClientSide
+                && level.getBlockEntity(pos) instanceof SpinningWheelBlockEntity wheel) {
+            LegacyContainerDrops.scatter(level, pos, wheel, level.random);
             level.updateNeighbourForOutputSignal(pos, this);
         }
         super.onRemove(state, level, pos, replacement, moving);

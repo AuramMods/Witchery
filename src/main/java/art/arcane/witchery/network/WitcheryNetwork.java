@@ -719,6 +719,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_FLAME_PARTICLE_ID, LEGACY_GHAST_FIREBALL_SOUND_ID, origin, 3, 2, 16);
     }
 
+    public static void sendEmberMossIgnition(ServerLevel level, Vec3 origin) {
+        sendParticlesAround(level, LEGACY_FLAME_PARTICLE_ID, LEGACY_GHAST_FIREBALL_SOUND_ID, origin, 0.5, 1, 16);
+    }
+
     public static void sendRiteWaveSurface(ServerLevel level, BlockPos surface, boolean curse, boolean belowGlyph) {
         int particle = curse ? LEGACY_MOB_SPELL_PARTICLE_ID : LEGACY_SPELL_PARTICLE_ID;
         sendParticlesAround(level, particle, LEGACY_NO_SOUND_ID, Vec3.atBottomCenterOf(surface.above()),

@@ -7,7 +7,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public final class DistilleryBlock extends BaseEntityBlock {
+    private final RandomSource dropRandom = RandomSource.create();
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final IntegerProperty VISIBLE_JARS = IntegerProperty.create("jars", 0, 4);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -99,7 +99,7 @@ public final class DistilleryBlock extends BaseEntityBlock {
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
         if (!state.is(replacement.getBlock()) && !level.isClientSide
                 && level.getBlockEntity(pos) instanceof DistilleryBlockEntity distillery) {
-            Containers.dropContents(level, pos, distillery);
+            LegacyContainerDrops.scatter(level, pos, distillery, dropRandom);
             level.updateNeighbourForOutputSignal(pos, this);
         }
         super.onRemove(state, level, pos, replacement, moving);

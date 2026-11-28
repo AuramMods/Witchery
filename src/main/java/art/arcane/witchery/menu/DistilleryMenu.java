@@ -62,7 +62,11 @@ public final class DistilleryMenu extends AbstractContainerMenu {
         addSlot(new Slot(distillery, index, x, y) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return DistilleryBlockEntity.acceptsItem(index, stack);
+                return switch (index) {
+                    case FIRST_INPUT, SECOND_INPUT -> true;
+                    case JARS -> stack.is(WitcheryIngredient.CLAY_JAR.item());
+                    default -> false;
+                };
             }
         });
     }

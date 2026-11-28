@@ -222,6 +222,13 @@ Audit each remaining behavior family against the original inventory before build
 - [x] Reopen a dedicated save in the muted background survival client. The named 64-stack and waiting oak sapling are present. Collect the stack using the regular oven menu and verify the name and custom tag in the player's inventory.
 - [x] Replay the same JAR on copied Auram. Extreme Reactors registers Coal as a furnace input for Graphite, so the oven's original Shift-click priority sends Coal to its input slot. Coal still works when placed directly in the fuel slot, and Shift-click sends Blaze Rods to fuel. Registering a synthetic Coal smelting recipe in Forge 1.7.10 reproduced the same priority. All 667 required local Forge GameTests passed.
 
+## Workstation removal and Distillery slot routing (2026-11-27)
+
+- The original Distillery used unrestricted hand placement for both input slots and a separate Clay Jar slot. The four result slots rejected hand placement. Horizontal automation could insert a non-jar into its first result slot and extract from all four. The modern menu and sided inventory now apply the corresponding rules independently.
+- Breaking either Oven or Distillery ID or the Spinning Wheel uses the original per-slot drop origin, 10–30 item fragments, motion, and immediate pickup. The Oven and Distillery have block-local drop randomness. The Wheel uses the level's random source. The original and packaged clean Forge runs matched all 20 named drops and all five next-random samples. The local GameTest checks wear and custom data across the inventory scatter.
+- A vanilla hopper facing a Distillery with both inputs full transferred two named, tagged Gunpowder into the first result slot on rebuilt clean Forge and copied Auram. The earlier clean package kept both items in the hopper. Both server restarts kept the count and tags, then allowed extraction from the side. The three other result slots remain closed to insertion.
+- Java 17 reobfuscation and all 673 required local Forge GameTests passed. The saved-projectile fixture now waits for the launch and impact chunks to track entities. The Purified Milk fixture seeds the level stream for its cure attempt.
+
 ## Altar Core and Artifacts (2026-11-22)
 
 - [x] Use the sixth placed altar block as the core. Save the original `CoreX`, `CoreY`, and `CoreZ` coordinates on every member. Preserve the saved core on import and use the previous port's coordinate order when an existing modern altar has no saved links.
@@ -1225,6 +1232,11 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Restore Glint Weed and Ember Moss. Both spread on the original soils and sand with a local cap of five. Glint Weed emits light level 14 and can attach below a solid block. Ember Moss emits light level six, ignites creatures for three seconds, and requires shears.
 - [x] Restore Spanish Moss attachment on walls and ceilings. Its strands grow like vines, require shears, and stay non-climbable. Mutandis can attach a new strand to a nearby support. Older decorative plants can acquire an attachment when they find support.
 - [x] Verify light, spreading and harvest, physical Ember Moss contact, and Spanish Moss placement and downward growth on a headless Forge GameTest server. Data generation, reobfuscation, and all 44 required GameTests passed.
+
+### Spreading herb ticks and Ember Moss ignition (2026-11-27)
+
+- Both herbs roll one in six on the level's RNG and then sample the branch offsets from the supplied random tick stream. Clean Forge matched both original successful and unsuccessful cases and the remaining random draws. Glint Weed still grows under a ceiling and drops on support removal. Ember Moss requires support below it.
+- Ember Moss ignites a pig for 60 ticks and leaves the timer alone while it is already burning. Invulnerable players and fire-immune creatures are exempt. The contact sends the original Flame and Ghast fireball cue through the shared 16-block particle and sound path.
 - [x] Verify the five Spanish Moss attachment models and biome tint in a muted client. The four wall attachments and ceiling attachment each loaded the expected pair of baked faces. Swamp and badlands positions produced distinct foliage colors.
 
 ## Alluring Skull (2026-11-21)
@@ -3540,6 +3552,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
 
 ### Phase 4 - Feature Behavior Pass (depth)
 - [ ] Blocks/tile entity behavior parity pass.
+  - [x] Compare [workstation removal and Distillery slot routing](#workstation-removal-and-distillery-slot-routing-2026-11-27) for both Oven and Distillery IDs and the Spinning Wheel.
+  - [x] Compare [Glint Weed and Ember Moss spread, support, and ignition](#spreading-herb-ticks-and-ember-moss-ignition-2026-11-27).
   - [x] Compare [Poppet Shelf priority across dimensions, loaded-chunk behavior, and original break drops](#poppet-shelf-lookup-and-break-drops-2026-11-27).
   - [x] Compare [Brazier ignition, comparator weighting, and the original break drops](#brazier-ignition-comparator-and-saved-offerings-2026-11-27), including saved offerings.
   - [x] Compare [Witch's Oven menu eligibility and routing, named output, and stack limits](#oven-menu-and-named-output-2026-11-27) alongside the original batch and funnel checks.
