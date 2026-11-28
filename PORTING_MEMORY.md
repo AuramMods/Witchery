@@ -2,12 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Naturally sourced Rite of Charging (2026-11-28)
+
+- The seed-`209376` survival player repaired the generated Ruined Portal at `-1170 79 194` with chest obsidian and four mined blocks, used it to enter the Nether, mined Glowstone at `-189 55 24`, and brought two Glowstone Dust through the return portal. See `restore-natural-portal.log` and `harvest-glowstone.log` under `build/qa-natural-altar/clean/`.
+- All five natural offerings settled in the Heart's plane after ordinary drops onto the level ground to its south. A right-click activated the rite, drew exactly 2,000 power, and yielded one Charged Attuned Stone. The player picked it up, saved, and rejoined after an ordinary headless restart. The 44 white glyphs and Heart survived and the player kept the stone, one Glowstone Dust, three Redstone Dust and 28 Wood Ash. Both client launches were muted and unfocused on the same `c39b006e` package. See `natural-charging-rite.log` and `charged-stone-reopen.log`.
+
 ## Naturally sourced Golden Chalk (2026-11-28)
 
 - The same seed-`209376` clean Forge survival save on `c39b006e` placed all 36 white Cauldron glyphs on the raised pad at `-251 70 299`. The player moved and heated the original Cauldron and filled it with three river-water buckets. See `golden-ground.log` under `build/qa-natural-altar/clean/`.
 - The player harvested the workshop Mandrake at night and directly threw its root, a mined-gold Nugget and the 36-wear Ritual Chalk into the Cauldron. The two rings brought the cost to 2,000 on the 2,068-power Altar. The player collected exactly one Golden Chalk and kept one pristine Ritual Chalk. Read `golden-brew.log` for the pending cast, altar power and saved inventory.
-- The player drew the 44 distinct white rite glyphs, placed the Heart at `-251 70 299`, and mined four Redstone Dust. The rite still needs naturally sourced Glowstone Dust. The player already has the Attuned Stone, Wood Ash and Quicklime. See `charging-pad.log`.
-- Three further mined Diamonds and freshly crafted sticks made a Diamond Pickaxe. The server shut down normally with all 44 glyphs, the Heart and the four available offerings on disk. Start the same save for the Nether route. `portal-ores.json` lists 36 reachable candidates from the saved obsidian palette, beginning near `-350 -55 301`. Verify the candidate from a safe standing position before mining. Read `nether-tools.log` and `charging-pad-checkpoint.log` under the clean profile.
+- The player drew the 44 distinct white rite glyphs, placed the Heart at `-251 70 299`, and mined four Redstone Dust. The player already had the Attuned Stone, Wood Ash and Quicklime. See `charging-pad.log`.
+- Three further mined Diamonds and freshly crafted sticks made a Diamond Pickaxe. The server shut down normally with all 44 glyphs, the Heart and the four available offerings on disk before the Nether trip described above. Read `nether-tools.log` and `charging-pad-checkpoint.log` under the clean profile.
 
 ## Naturally sourced Attuned Stone, Distillery, and Ritual Chalk (2026-11-27)
 
