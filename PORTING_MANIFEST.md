@@ -908,7 +908,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 
 | ID | Field | Class | Legacy Name |
 |---:|---|---|---|
-| 92 | `DEMON` | `EntityDemon` | `demon` |
+| 92 | `DEMON` | `EntityDemon` | `demon` ([pursuit, charm and fireballs](PORTING.md#demon-melee-and-lilith-ranged-combat-2026-11-28)) |
 | 93 | `BROOM` | `EntityBroom` | `broom` (rideable vehicle, hue, damage and recovery) |
 | 94 | `BREW` | `EntityWitchProjectile` | `brew` → `witchery:thrown_brew` (fixed brew or projectile selected by `damageValue`) |
 | 95 | `SPECTRAL_FAMILIAR` | `EntityFamiliar` | `familiar` (tamed spectral pig, ore search, `ItemToFind`, `Searches`) |
@@ -957,7 +957,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 138 | `VILLAGE_GUARD` | `EntityVillageGuard` | `villageguard` |
 | 139 | `VAMPIRE_VILLAGER` | `EntityVampire` | `vampire` |
 | 140 | `GRENADE` | `EntityGrenade` | `grenade` (Sun and Duplicate Grenades, saved `Mode`, `Impacted`, `Remaining`, original `BlockPlaced` coordinates and `ownerName`) |
-| 141 | `LILITH` | `EntityLilith` | `lilith` |
+| 141 | `LILITH` | `EntityLilith` | `lilith` ([ranged combat](PORTING.md#demon-melee-and-lilith-ranged-combat-2026-11-28)) |
 | 142 | `FOLLOWER` | `EntityFollower` | `follower` (Elle, four named Fairest variants, and type-five duplicate with saved `Skin` and `TicksToLive`) |
 | 143 | `WINGED_MONKEY` | `EntityWingedMonkey` | `wingedmonkey` (cocoa mutation, taming, Taglock pickup and Waystone transport) |
 | 144 | `ATTACK_BAT` | `EntityAttackBat` | `attackbat` |

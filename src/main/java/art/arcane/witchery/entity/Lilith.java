@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -54,6 +55,7 @@ public final class Lilith extends Monster implements RangedAttackMob {
     private static final int HEAL_INTERVAL = 20;
     private static final int REFLECTED_FIREBALL_HEAL_PULSES = 10;
     private static final int INNATE_ARMOR = 8;
+    private static final RandomSource SPELL_RANDOM = RandomSource.create();
     private final ServerBossEvent bar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.PURPLE,
             BossEvent.BossBarOverlay.PROGRESS);
     private int invulnerableTicks;
@@ -259,21 +261,21 @@ public final class Lilith extends Monster implements RangedAttackMob {
 
     @Override
     public void performRangedAttack(LivingEntity target, float strength) {
-        if (!(level() instanceof ServerLevel world) || friendly() || invulnerableTicks > 0 || !random.nextBoolean()) return;
+        if (!(level() instanceof ServerLevel world) || friendly() || invulnerableTicks > 0
+                || !world.random.nextBoolean()) return;
         beginAttack();
-        SymbolProjectile.playMobCastSound(world, this);
-        if (random.nextInt(3) == 0) {
-            Vec3 aim = SymbolProjectile.mobAim(this, target, strength);
-            var fireball = new LargeFireball(world, this, aim.x, aim.y, aim.z, 1);
-            Vec3 look = getLookAngle();
-            fireball.setPos(getX() + look.x, getY(0.5) + 0.5, getZ() + look.z);
-            world.addFreshEntity(fireball);
+        boolean fireball = world.random.nextInt(3) == 0;
+        MobFireball.playLaunchCue(world, this);
+        if (fireball) {
+            world.addFreshEntity(new MobFireball(world, this, target, strength));
         } else {
-            SymbolSpell spell = switch (random.nextInt(13)) {
-                case 0 -> SymbolSpell.IGNIANIMA;
-                case 1 -> SymbolSpell.IMPEDIMENTA;
-                case 2 -> SymbolSpell.CONFUNDUS;
-                case 3, 4, 5, 6, 7 -> SymbolSpell.FLIPENDO;
+            // The symbol branch advances Lilith's random source before aiming in 0.24.1.
+            random.nextInt(10);
+            SymbolSpell spell = switch ((int) Math.ceil(SPELL_RANDOM.nextDouble() * 13)) {
+                case 0, 1 -> SymbolSpell.IGNIANIMA;
+                case 2, 3, 4, 5, 6 -> SymbolSpell.FLIPENDO;
+                case 7 -> SymbolSpell.IMPEDIMENTA;
+                case 8 -> SymbolSpell.CONFUNDUS;
                 default -> SymbolSpell.ATTRAHO;
             };
             world.addFreshEntity(SymbolProjectile.mobShot(world, this, target, spell, strength));

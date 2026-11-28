@@ -662,6 +662,14 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 - [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
 - [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
 
+## Demon melee and Lilith ranged combat (2026-11-28)
+
+- The 0.24.1 Demon started melee pursuit at 1.8, 2.8 and 3 blocks. Its first swing hit at 1.8 blocks and left the farther targets untouched. A victim at 3.1 blocks and a nearby victim holding the Devil's Tongue Charm were ineligible. Its ranged attack against a charm holder drew one world roll and fired below five percent. Unprotected shots preserved the next world roll. Read `build/qa-demon-combat/native/body-yaw.log`.
+- The same trace verified Lilith's two world rolls for choosing when to fire and whether to launch a symbol or fireball. Both mobs used the original Ghast cue before launch. At negative coordinates the cue used the integer-truncated position. Fireballs aimed between the body midpoints and added an independent spread on each axis. They started half a block above the shooter’s midpoint and offset forward using the body's facing even with the head turned.
+- The preceding Forge package diverged in eight of 15 checks, including melee hits at 2.8 and 3 blocks, charm protection, and Demon fireballs aimed half a block low with zero vertical spread. The port now uses separate melee pursuit and strike ranges, the original target scan interval, world rolls for both mobs, and the shared fireball launch calculations. Fireballs save as the ordinary vanilla projectile. Forge uses the current target's hitbox midpoint and the modern Ghast shooting event.
+- Clean Forge and copied Auram matched all 15 recorded combat checks on one Java 17 reobfuscated JAR, SHA-256 `844e2ee3708beeb868ca5cc6914358dbc68c4d1a195158c9e3c784b9a482d505`. The headless samples verified the vanilla Large Fireball type and measured the expected 0.1 acceleration, forward offset, and spread for both mobs. Read `build/qa-demon-combat/{clean-baseline/measured,clean/first,pack/first}.log`.
+- All 691 required Forge GameTests passed. The new tests cover Demon pursuit and strike ranges, equipping the charm during pursuit, the ranged gate, and the fireball trajectory with the head turned. Read `build/qa-demon-combat/gametest-final.log`.
+
 ## Wolfman prey and pursuit (2026-11-28)
 
 - The 0.24.1 dedicated server acquired villagers without sight or a reachable path. It required sight for human players, rejected both werewolf player forms, and ignored an unprovoked Witch Hunter. It remembered both an attacking Witch Hunter and an attacking Skeleton, and activated melee pursuit against the hunter. Read `build/qa-wolfman-targeting/native/behavior.log`.
@@ -3803,6 +3811,9 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [Demon melee and Lilith ranged combat](#demon-melee-and-lilith-ranged-combat-2026-11-28), including the Devil's Tongue Charm, seeded attack choices, and shared fireball trajectories.
+  - [ ] Compare the remaining Demon navigation during village visits, pursuit, and completed bargains.
+  - [ ] Verify mob-cast Mystic Branch symbols against the original projectile constructor. Compare which random source supplies their secondary spread and where the resulting projectile starts for each caster.
   - [x] Compare [Wolfman prey and pursuit](#wolfman-prey-and-pursuit-2026-11-28), including the two player forms, concealed villagers, and retaliation against a Witch Hunter and Skeleton.
   - [x] Compare [original path-checked creature targeting](#original-path-checked-creature-targeting-2026-11-28) for Treefyds, Imps, Hobgoblins, village vampires, Village Guards, Baba Yaga, Witch Hunters and Nightmares.
   - [x] Compare [Hellhound and Mindrake target selection](#hellhound-and-mindrake-target-selection-2026-11-28), including open routes, detours, unreachable prey, tame state, distance and priority.

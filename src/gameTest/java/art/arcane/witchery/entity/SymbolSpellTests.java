@@ -340,6 +340,7 @@ public final class SymbolSpellTests {
                 caster.setYRot(-90);
                 caster.setXRot(-35);
                 caster.getRandom().setSeed(28);
+                if (caster == lilith) level.getRandom().setSeed(28);
                 for (int attack = 0; attack < 24; attack++) ((RangedAttackMob) caster).performRangedAttack(target, 0.7F);
 
                 var spells = shots.stream().filter(SymbolProjectile.class::isInstance).map(SymbolProjectile.class::cast).toList();

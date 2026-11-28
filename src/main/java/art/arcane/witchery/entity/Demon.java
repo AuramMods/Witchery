@@ -38,7 +38,6 @@ import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
@@ -53,7 +52,6 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -63,7 +61,7 @@ import java.util.List;
 public final class Demon extends AbstractGolem implements RangedAttackMob, Merchant {
     private static final byte SWING = 4;
     private static final int SWING_TICKS = 10;
-    private static final int ATTACK_RANGE = 3;
+    private static final int MELEE_TARGET_RANGE = 3;
     private static final int OFFER_STOCK = 2;
     private final boolean inDream;
     private boolean summoned;
@@ -91,17 +89,12 @@ public final class Demon extends AbstractGolem implements RangedAttackMob, Merch
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1, true) {
             @Override
             public boolean canUse() {
-                return customer == null && getTarget() != null && distanceToSqr(getTarget()) <= ATTACK_RANGE * ATTACK_RANGE && super.canUse();
+                return customer == null && super.canUse() && hasCloseMeleeTarget();
             }
 
             @Override
             public boolean canContinueToUse() {
-                return customer == null && getTarget() != null && distanceToSqr(getTarget()) <= ATTACK_RANGE * ATTACK_RANGE && super.canContinueToUse();
-            }
-
-            @Override
-            protected double getAttackReachSqr(LivingEntity target) {
-                return ATTACK_RANGE * ATTACK_RANGE;
+                return customer == null && super.canContinueToUse() && hasCloseMeleeTarget();
             }
         });
         goalSelector.addGoal(2, new RangedAttackGoal(this, 1, 20, 60, 15) {
@@ -124,8 +117,14 @@ public final class Demon extends AbstractGolem implements RangedAttackMob, Merch
         goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 6));
         goalSelector.addGoal(9, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Villager.class, true));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false, null));
+        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Villager.class, 0, true, false, null));
+    }
+
+    private boolean hasCloseMeleeTarget() {
+        LivingEntity target = getTarget();
+        return target != null && distanceToSqr(target) <= MELEE_TARGET_RANGE * MELEE_TARGET_RANGE
+                && !hasTongueCharm(target) && getNavigation().createPath(target, 0) != null;
     }
 
     public void summonedByRite() {
@@ -184,15 +183,9 @@ public final class Demon extends AbstractGolem implements RangedAttackMob, Merch
 
     @Override
     public void performRangedAttack(LivingEntity target, float velocity) {
-        if (!(level() instanceof ServerLevel level) || hasTongueCharm(target) && random.nextFloat() >= 0.05F) return;
-        double spread = Mth.sqrt(velocity) * 0.5;
-        double fromY = getY(0.5) + 0.5;
-        LargeFireball bolt = new LargeFireball(level, this,
-                target.getX() - getX() + random.nextGaussian() * spread, target.getY(0.5) - fromY,
-                target.getZ() - getZ() + random.nextGaussian() * spread, 1);
-        Vec3 view = getViewVector(1);
-        bolt.setPos(getX() + view.x, fromY, getZ() + view.z);
-        level.levelEvent(null, 1016, blockPosition(), 0);
+        if (!(level() instanceof ServerLevel level) || hasTongueCharm(target) && level.random.nextDouble() >= 0.05) return;
+        var bolt = new MobFireball(level, this, target, velocity);
+        MobFireball.playLaunchCue(level, this);
         level.addFreshEntity(bolt);
     }
 

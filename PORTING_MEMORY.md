@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Demon melee and Lilith ranged combat (2026-11-28)
+
+- The 0.24.1 Demon chose melee pursuit through three blocks and hit only inside the vanilla strike reach. The Devil's Tongue Charm stopped melee and allowed a fireball on a five-percent world roll. Lilith's world rolls selected a missed opportunity, a symbol or a fireball. The original Large Fireball constructor added its own horizontal and vertical spread after the shooter aimed.
+- The port restores separate Demon pursuit and strike ranges, charm protection and the world rolls. The shared fireball code uses the body angles and midpoint, then offsets the projectile above and forward and sends the Ghast cue. Both headless packaged profiles matched the 15-case matrix. The [combat comparison](PORTING.md#demon-melee-and-lilith-ranged-combat-2026-11-28) links the native and packaged logs.
+- All 691 required Forge GameTests passed locally on the same build. See `build/qa-demon-combat/gametest-final.log`.
+- The Demon navigation audit still needs the original village and bargain movement. The mob-cast Symbol Projectile currently takes its three secondary draws from the caster. The native projectile constructor drew them from its own random source.
+
 ## Naturally sourced Dream travel (2026-11-28)
 
 - The same seed-`209376` clean Forge save on package `ea77acfa` brewed six more Mutandis. A successful application grew Hawthorn at `-255 72 320`. Harvested Rowan and Hawthorn saplings yielded two Whiffs of Magic and one Odour of Purity. Milk from a natural cow and three fired jars yielded three Purified Milk. The player put the six original offerings into the Kettle and bottled and drank one of three finished servings.
