@@ -14,6 +14,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.BreakDoorGoal;
@@ -59,7 +60,9 @@ public final class Wolfman extends Monster {
         if (getNavigation() instanceof GroundPathNavigation navigation) navigation.setCanOpenDoors(true);
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(1, new BreakDoorGoal(this, difficulty -> difficulty == Difficulty.HARD));
-        goalSelector.addGoal(2, new MeleeAttackGoal(this, 1, true));
+        goalSelector.addGoal(2, new PreyMeleeGoal(this, Player.class, false));
+        goalSelector.addGoal(3, new PreyMeleeGoal(this, Villager.class, true));
+        goalSelector.addGoal(4, new PreyMeleeGoal(this, WitchHunter.class, true));
         goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 1));
         goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1, false, 4, () -> true));
         goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1));
@@ -68,8 +71,33 @@ public final class Wolfman extends Monster {
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false,
                 target -> !Lycanthropy.isShifted(target)));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Villager.class, 0, false, false, null));
-        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WitchHunter.class, 0, true, false, null));
+        targetSelector.addGoal(2, new VillagerTargetGoal(this));
+    }
+
+    private static final class VillagerTargetGoal extends NearestAttackableTargetGoal<Villager> {
+        private VillagerTargetGoal(Wolfman wolfman) {
+            super(wolfman, Villager.class, 0, false, false, null);
+            targetConditions.ignoreLineOfSight();
+        }
+    }
+
+    private static final class PreyMeleeGoal extends MeleeAttackGoal {
+        private final Class<? extends LivingEntity> preyType;
+
+        private PreyMeleeGoal(Wolfman wolfman, Class<? extends LivingEntity> preyType, boolean followUnseen) {
+            super(wolfman, 1, followUnseen);
+            this.preyType = preyType;
+        }
+
+        @Override
+        public boolean canUse() {
+            return preyType.isInstance(mob.getTarget()) && super.canUse();
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return preyType.isInstance(mob.getTarget()) && super.canContinueToUse();
+        }
     }
 
     @Override

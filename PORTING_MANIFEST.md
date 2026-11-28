@@ -951,7 +951,7 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 | 132 | `SPLATTER` | `EntitySplatter` | `splatter` |
 | 133 | `LEONARD` | `EntityLeonard` | `leonard` (cauldron summon, spells, shield and Urn loot) |
 | 134 | `LOST_SOUL` | `EntityLostSoul` | `lostsoul` (three vulnerabilities, legacy color and expiry) |
-| 135 | `WOLFMAN` | `EntityWolfman` | `wolfman` |
+| 135 | `WOLFMAN` | `EntityWolfman` | `wolfman` ([prey and pursuit](PORTING.md#wolfman-prey-and-pursuit-2026-11-28)) |
 | 136 | `HELLHOUND` | `EntityHellhound` | `hellhound` (reachable and visible prey, sheep priority, strict five-block player and Follower limit) |
 | 137 | `WERE_VILLAGER` | `EntityVillagerWere` | `werevillager` |
 | 138 | `VILLAGE_GUARD` | `EntityVillageGuard` | `villageguard` |

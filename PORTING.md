@@ -660,6 +660,13 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 - [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
 - [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
 
+## Wolfman prey and pursuit (2026-11-28)
+
+- The 0.24.1 dedicated server acquired villagers without sight or a reachable path. It required sight for human players, rejected both werewolf player forms, and ignored an unprovoked Witch Hunter. It remembered both an attacking Witch Hunter and an attacking Skeleton, and activated melee pursuit against the hunter. Read `build/qa-wolfman-targeting/native/behavior.log`.
+- The preceding clean Forge package diverged in three of the eleven cases. The Wolfman now uses the original villager acquisition rule and separate player, villager, and Witch Hunter melee goals. The player goal keeps the original short pursuit flag, and the villager and hunter goals retain pursuit when sight is lost. Pathfinding uses 1.20.1 navigation.
+- Headless clean Forge and copied Auram both matched all eleven observations on reobfuscated JAR SHA-256 `601a10fc8c4231321d16eb90a19bf4c4ecc39e523813b7abb5e130564c5335e5`. The copied profile's fixture sets a nonzero age before recording retaliation, since the pack can defer mob ticks without a connected player. Read `build/qa-wolfman-targeting/{clean-baseline/first,clean/first,pack/replay}.log`.
+- The two regression tests check the real target selector and which melee goals start after retaliation. All 689 required Forge GameTests passed locally. Read `build/qa-wolfman-targeting/gradle.log`.
+
 ## Original path-checked creature targeting (2026-11-28)
 
 - The 0.24.1 server exercised 38 cases across Treefyds, Imps, Hobgoblins, village vampires, Village Guards, Baba Yaga, Witch Hunters and Nightmares. All eight required a reachable path. Hobgoblin raiders also needed sight and three party members. The other seven acquired their eligible target behind a short wall when a detour existed. Read `build/qa-legacy-hunters/native/measured.log`.
@@ -3777,6 +3784,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [Wolfman prey and pursuit](#wolfman-prey-and-pursuit-2026-11-28), including the two player forms, concealed villagers, and retaliation against a Witch Hunter and Skeleton.
   - [x] Compare [original path-checked creature targeting](#original-path-checked-creature-targeting-2026-11-28) for Treefyds, Imps, Hobgoblins, village vampires, Village Guards, Baba Yaga, Witch Hunters and Nightmares.
   - [x] Compare [Hellhound and Mindrake target selection](#hellhound-and-mindrake-target-selection-2026-11-28), including open routes, detours, unreachable prey, tame state, distance and priority.
   - [x] Compare [Ent targeting, fertilization and death rewards](#ent-player-targeting-fertilization-and-death-rewards-2026-11-28), including a live survival pursuit around a wall.

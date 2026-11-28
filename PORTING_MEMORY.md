@@ -2,13 +2,17 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Wolfman prey and pursuit (2026-11-28)
+
+- The 0.24.1 server measured eleven cases. The Wolfman acquired villagers through a wall or across a gap, required sight of normal players, rejected both wolf forms, and remembered a Witch Hunter or Skeleton that attacked it. Its melee goal could start against the hunter. The rebuilt port restores the original prey-specific acquisition and melee flags. Read `build/qa-wolfman-targeting/native/behavior.log` and the [comparison](PORTING.md#wolfman-prey-and-pursuit-2026-11-28).
+- Both headless packaged profiles matched all eleven original cases. The copied Auram probe assigns a nonzero age before creating the retaliation record. Local Java 17 packaging and all 689 required Forge GameTests passed. Read `build/qa-wolfman-targeting/{clean/first,pack/replay,gradle}.log`.
+
 ## Original path-checked creature targeting (2026-11-28)
 
 - Compared 38 actual 0.24.1 acquisitions for Treefyds, Imps, Hobgoblins, village vampires, Village Guards, Baba Yaga, Witch Hunters and Nightmares. The shared reachability check now handles every original nearest-target goal with that flag. The registered groups preserve the original sight comparisons, tame and owner filters, three-Hobgoblin party boundary, village hunt and specific Nightmare victim.
 - The preceding clean package diverged in 19 of the 38 cases. A live Village Guard on the rebuilt JAR rounded the fixture wall and struck the Hobgoblin while sparing the Creeper. The attached survival client stayed hidden, muted and unfocused. Read `build/qa-legacy-hunters/`.
 - Both packaged dedicated profiles matched all 38 original targeting cases on the same JAR. The copied Auram profile used its regular Mobtimizations settings. See `clean-fixed/verify.log` and `pack-fixed/verify.log`.
 - All 687 required Forge GameTests passed locally. The Spectre summon fixture now prepares a dedicated landing pad and waits for tracking of the actual intruder and Sentinel. See `gametest-final.log`.
-- The separate Wolfman reference in `build/qa-wolfman-targeting/native/reference.log` covers seven sight and prey cases. The original acquired villagers through a wall or across a gap, required sight for players, and left an unprovoked Witch Hunter untargeted. The next packaged comparison can reuse those results.
 
 ## Hellhound and Mindrake target selection (2026-11-28)
 

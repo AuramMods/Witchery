@@ -1,6 +1,7 @@
 package art.arcane.witchery.entity;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.registry.WitcheryEntities;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
@@ -14,7 +15,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -32,6 +35,7 @@ import java.util.function.Supplier;
 @PrefixGameTestTemplate(false)
 public final class LegacyTargetingTests {
     private static final Field TARGET_GOALS = ObfuscationReflectionHelper.findField(Mob.class, "f_21346_");
+    private static final Field MELEE_GOALS = ObfuscationReflectionHelper.findField(Mob.class, "f_21345_");
 
     @GameTest(template = "qa_coven_arena", batch = "witchery_legacy_targeting")
     public static void allLegacyPathCheckingMobsRejectUnreachableTargets(GameTestHelper helper) throws IllegalAccessException {
@@ -62,6 +66,52 @@ public final class LegacyTargetingTests {
         arena.check(Hunter.NIGHTMARE, Layout.OPEN, null, "other-victim", true, false);
         arena.check(Hunter.NIGHTMARE, Layout.WALL, null, "named-victim", false, true);
         helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_wolfman_targeting")
+    public static void wolfmanAcquiresItsOriginalPrey(GameTestHelper helper) throws IllegalAccessException {
+        Arena arena = new Arena(helper);
+        for (Layout layout : Layout.values()) {
+            arena.checkWolfman(layout, EntityType.VILLAGER, 0, true);
+            arena.checkWolfman(layout, null, 0, layout != Layout.WALL);
+        }
+        arena.checkWolfman(Layout.OPEN, null, 1, false);
+        arena.checkWolfman(Layout.OPEN, null, 2, false);
+        arena.checkWolfman(Layout.OPEN, WitcheryEntities.WITCH_HUNTER.get(), 0, false);
+        helper.succeed();
+    }
+
+    @GameTest(template = "qa_coven_arena", batch = "witchery_wolfman_melee")
+    public static void wolfmanRetaliatesWithMeleeOnlyAgainstOriginalPrey(GameTestHelper helper)
+            throws IllegalAccessException {
+        Arena arena = new Arena(helper);
+        arena.prepare(Layout.OPEN);
+        Wolfman wolfman = WitcheryEntities.WOLFMAN.get().create(helper.getLevel());
+        wolfman.setPos(Vec3.atBottomCenterOf(arena.origin));
+        wolfman.setOnGround(true);
+        var targetGoals = (GoalSelector) TARGET_GOALS.get(wolfman);
+        var meleeGoals = (GoalSelector) MELEE_GOALS.get(wolfman);
+        helper.runAfterDelay(21, () -> {
+            for (var type : List.of(WitcheryEntities.WITCH_HUNTER.get(), EntityType.SKELETON)) {
+                Mob aggressor = arena.spawn(type, 6, 0);
+                try {
+                    wolfman.tickCount++;
+                    wolfman.setLastHurtByMob(aggressor);
+                    targetGoals.tick();
+                    helper.assertTrue(wolfman.getTarget() == aggressor,
+                            "The Wolfman remembers the attacking " + type);
+                    helper.assertTrue(meleeGoals.getAvailableGoals().stream()
+                                    .filter(goal -> goal.getGoal() instanceof MeleeAttackGoal).anyMatch(goal -> goal.canUse())
+                                    == (type == WitcheryEntities.WITCH_HUNTER.get()),
+                            "Unexpected Wolfman melee response to " + type);
+                    targetGoals.getAvailableGoals().forEach(goal -> goal.stop());
+                } finally {
+                    aggressor.discard();
+                }
+            }
+            wolfman.discard();
+            helper.succeed();
+        });
     }
 
     private static List<Hunter> hunters() {
@@ -106,6 +156,28 @@ public final class LegacyTargetingTests {
                     level.setBlockAndUpdate(origin.offset(2, y, z),
                             (layout == Layout.WALL ? Blocks.STONE : Blocks.AIR).defaultBlockState());
                 }
+            }
+        }
+
+        private void checkWolfman(Layout layout, EntityType<? extends Mob> type, int form, boolean expected)
+                throws IllegalAccessException {
+            prepare(layout);
+            Wolfman wolfman = WitcheryEntities.WOLFMAN.get().create(level);
+            wolfman.setPos(Vec3.atBottomCenterOf(origin));
+            LivingEntity candidate = type == null ? player("WolfmanPrey", 6) : spawn(type, 6, 0);
+            try {
+                if (form != 0) WitcheryPlayerDataProvider.get((Player) candidate).orElseThrow(AssertionError::new)
+                        .setCreatureTypeOrdinal(form);
+                String label = layout + " against " + candidate.getType() + " in form " + form;
+                helper.assertTrue(wolfman.hasLineOfSight(candidate) == (layout != Layout.WALL),
+                        "Unexpected Wolfman line of sight " + label);
+                ((GoalSelector) TARGET_GOALS.get(wolfman)).tick();
+                helper.assertTrue(wolfman.getTarget() == (expected ? candidate : null),
+                        "Unexpected Wolfman target " + label);
+            } finally {
+                if (candidate instanceof FakePlayer player) level.removePlayerImmediately(player, Entity.RemovalReason.DISCARDED);
+                else candidate.discard();
+                wolfman.discard();
             }
         }
 
