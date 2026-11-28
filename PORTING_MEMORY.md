@@ -2,6 +2,13 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Naturally sourced Golden Chalk (2026-11-28)
+
+- The same seed-`209376` clean Forge survival save on `c39b006e` placed all 36 white Cauldron glyphs on the raised pad at `-251 70 299`. The player moved and heated the original Cauldron and filled it with three river-water buckets. See `golden-ground.log` under `build/qa-natural-altar/clean/`.
+- The player harvested the workshop Mandrake at night and directly threw its root, a mined-gold Nugget and the 36-wear Ritual Chalk into the Cauldron. The two rings brought the cost to 2,000 on the 2,068-power Altar. The player collected exactly one Golden Chalk and kept one pristine Ritual Chalk. Read `golden-brew.log` for the pending cast, altar power and saved inventory.
+- The player drew the 44 distinct white rite glyphs, placed the Heart at `-251 70 299`, and mined four Redstone Dust. The rite still needs naturally sourced Glowstone Dust. The player already has the Attuned Stone, Wood Ash and Quicklime. See `charging-pad.log`.
+- Three further mined Diamonds and freshly crafted sticks made a Diamond Pickaxe. The server shut down normally with all 44 glyphs, the Heart and the four available offerings on disk. Start the same save for the Nether route. `portal-ores.json` lists 36 reachable candidates from the saved obsidian palette, beginning near `-350 -55 301`. Verify the candidate from a safe standing position before mining. Read `nether-tools.log` and `charging-pad-checkpoint.log` under the clean profile.
+
 ## Naturally sourced Attuned Stone, Distillery, and Ritual Chalk (2026-11-27)
 
 - The same clean Forge save on `c39b006e` recovered six saplings from the first Rowan canopy, planted two, and cooked one for Whiff of Magic. The player combined it with the original Diamond and lava collected at `-186 26 353`. The Attuned Stone and returned bucket were present on disk. The player then respawned after a driver-assisted pickup caused suffocation and recovered the original tagged items.
