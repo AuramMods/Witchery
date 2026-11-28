@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Naturally sourced Mutandis on the Oven save (2026-11-27)
+
+- `build/qa-natural-altar/clean` is a copy of the seed-`209376` survival Oven checkpoint running the reobfuscated package from `c39b006e`. The newly mined iron, grass seeds, gravel Flint, and Ruined Portal Netherrack supplied the first Cauldron. The player farmed the Mandrake and picked up a naturally laid egg. The saved Oak fume supplied the remaining ingredient.
+- The client poured three river-water buckets and threw each offering from the same cobblestone step at `-252.5 64 285.5`. The Cauldron at `-253 65 284` accepted the original drops. All six Mutandis were collected and saved. Read `paste.log`, `ruin-loot.log`, `setup-retry.log`, `fire.log`, `root.log`, `egg.log`, and `mutandis.log` under the clean profile.
+- The first six rolls left Rowan outstanding. The quiet client reopened the planted Oak at `-250 63 287`, the empty Cauldron and its fire, one more root, two eggs, and the original Diamond after an ordinary headless restart. The returning player can resume gathering Oak fumes from this save. See `reopen-checkpoint.log` and the corresponding client and focus logs.
+
 ## Mirror glass occupancy (2026-11-27)
 
 - The 0.24.1 Mirror tile checks for living entities on its first client tick and every ten loaded ticks. Each half samples its own three-block-wide, one-block-high slice in front of the panel. Both block IDs use the same cadence and viewing area. The Forge renderer draws the original secondary glass texture from that sampled state.
