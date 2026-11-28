@@ -1,5 +1,6 @@
 package art.arcane.witchery.entity;
 
+import art.arcane.witchery.block.entity.HauntingContainerOrder;
 import art.arcane.witchery.infusion.InfernalInfusion;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.network.WitcheryNetwork;
@@ -61,6 +62,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -426,8 +428,7 @@ public final class SpectralUndead extends Monster {
     }
 
     private boolean hauntContainer(ServerLevel level) {
-        BlockEntity closest = null;
-        double nearest = Double.POSITIVE_INFINITY;
+        List<BlockEntity> candidates = new ArrayList<>();
         for (int cx = SectionPos.blockToSectionCoord(getBlockX() - HAUNT_RADIUS);
              cx <= SectionPos.blockToSectionCoord(getBlockX() + HAUNT_RADIUS); cx++) {
             for (int cz = SectionPos.blockToSectionCoord(getBlockZ() - HAUNT_RADIUS);
@@ -435,15 +436,19 @@ public final class SpectralUndead extends Monster {
                 LevelChunk chunk = level.getChunkSource().getChunkNow(cx, cz);
                 if (chunk == null) continue;
                 for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
-                    if (!(blockEntity instanceof Container inventory) || inventory.isEmpty() || blockEntity.isRemoved()) continue;
-                    double distance = distanceToSqr(Vec3.atCenterOf(blockEntity.getBlockPos()));
-                    if (distance <= HAUNT_RADIUS * HAUNT_RADIUS && distance < nearest) {
-                        nearest = distance;
-                        closest = blockEntity;
+                    if (blockEntity instanceof Container && !blockEntity.isRemoved()
+                            && distanceToSqr(Vec3.atCenterOf(blockEntity.getBlockPos())) <= HAUNT_RADIUS * HAUNT_RADIUS) {
+                        candidates.add(blockEntity);
                     }
                 }
             }
         }
+        // Reading a modern loot container can generate its contents. Only inspect candidates in pursuit order.
+        candidates.sort(Comparator.<BlockEntity>comparingDouble(candidate -> distanceToSqr(Vec3.atCenterOf(candidate.getBlockPos())))
+                .thenComparingLong(candidate -> ((HauntingContainerOrder) candidate).witchery$hauntingLoadOrder()));
+        BlockEntity closest = candidates.stream()
+                .filter(candidate -> !candidate.isRemoved() && !((Container) candidate).isEmpty())
+                .findFirst().orElse(null);
         if (!(closest instanceof Container inventory)) return false;
         Vec3 position = Vec3.atCenterOf(closest.getBlockPos());
         if (!approach(position)) return true;

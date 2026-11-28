@@ -3205,6 +3205,14 @@ Copied Auram matched all 572 reference vertices on the same archive. The surviva
 - Clean Forge and copied Auram matched all 19 original pursuit, shade, retaliation, and contact measurements. Both packages also reproduced the Spectre's 0.10 upward and 0.50 forward Knockback I impulse and the three species' closed-door routing flags.
 - Both headless profiles saved the Sentinel at 590 ticks and reopened its UUID and living intruder after a dedicated restart. The countdown advanced with no players online. Removing the target removed the Sentinel and left no Spectral Dust. Both servers saved all dimensions. The copied Auram runner closed the remaining pack workers after the server stopped.
 
+### Poltergeist container priority and unopened loot (2026-11-28)
+
+- Witchery 0.24.1 skipped the closer empty chest and took one item from the nearest occupied chest, even when the farther occupied chest was registered first. At equal distances it used the first registered chest in both east-first and west-first arrangements. A chest 17 blocks overhead stayed untouched.
+- Forge chest inventory reads can generate pending loot. The prior package ejected the correct item but generated both the farther chest's loot and the loot 17 blocks overhead. The port now filters loaded containers by the original spherical range before reading inventories and checks them in distance order until it finds an occupied one.
+- A live server container records its registration order when it first joins its level. That order breaks equal-distance ties, independent of the chunk's inventory map. The order is rebuilt when block entities load. The original server also chose from its current loaded block-entity list.
+- Both packaged profiles matched the two original tie cases. Clean Forge ejected one Apple from the seeded Witch Shack loot. Copied Auram's same-seed control produced Bread and a Glass Bottle. The Poltergeist ejected one Bread, and every other slot matched the control.
+- Both dedicated restarts kept the haunted chest's remaining slots and retained the unopened tables and loot seeds for the farther chest and the chest overhead.
+
 ## Brazier ignition, comparator, and saved offerings (2026-11-27)
 
 - [x] Compare five ignition cases and eight inventory and comparator cases with the released 0.24.1 server. The previous package matched three. The rebuilt clean Forge package matched all 13. Igniting adjacent fire uses the vanilla Forge placement path. A blocked strike spends one durability silently. A strike into unsupported air plays the volume-one ignition cue at the clicked face and spends one durability. An empty chamber stays empty.
@@ -4023,6 +4031,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [Poltergeist container selection](#poltergeist-container-priority-and-unopened-loot-2026-11-28), including its range, placement-order ties, and pending loot.
   - [x] Compare [Spectre, Banshee, and Poltergeist pursuit, retaliation, and melee](#spectral-pursuit-retaliation-and-sentinel-departure-2026-11-28), including the Banshee's route cutoff and the temporary Sentinel's target and expiry.
   - [x] Compare [Nightmare armor swipes, enchanted strikes in both realms, pursuit, and underwater air](#nightmare-armor-swipes-and-enchanted-strikes-2026-11-28).
   - [x] Compare [Dream Spirit attraction, structure guide flight, and Lost Soul pursuit and damage](#dream-spirit-guides-and-lost-soul-pursuit-2026-11-28), including their saved countdowns and expiry drops.

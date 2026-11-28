@@ -2,6 +2,11 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Poltergeist container priority and unopened loot (2026-11-28)
+
+- The original server chose the nearest occupied chest and used registration order for ties. Clean Forge and copied Auram matched both placement orders. The port checks the original sixteen-block sphere before reading inventories and stops at the first occupied candidate. The two unselected loot chests kept their seeds across dedicated restarts. See the [container comparison](PORTING.md#poltergeist-container-priority-and-unopened-loot-2026-11-28).
+- Java 17 data generation, reobfuscation, and all 724 required Forge GameTests passed locally. The packaged JAR has SHA-256 `968b8dbd3da6ddcef51f4c14067b6c3ca8b32716b4ae334f459bac6c29d541c1`. The original, baseline, clean Forge, and copied Auram logs are under `build/qa-haunt-containers/`.
+
 ## Spectral pursuit, retaliation, and Sentinel departure (2026-11-28)
 
 - Poltergeists pursue only players for melee, and each spirit species follows its original revenge rules. Banshees remove the last shaded cell from a route into open sky, and their ordinary melee hit knocks back with zero damage. A previous attacker alone is outside their scream's targeting rule. See [spectral pursuit](PORTING.md#spectral-pursuit-retaliation-and-sentinel-departure-2026-11-28).
