@@ -9,7 +9,6 @@ import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcherySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -28,6 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -39,10 +39,11 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.MoveTowardsTargetGoal;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
@@ -123,22 +124,64 @@ public final class SpectralUndead extends Monster {
         super(type, level);
         this.kind = kind;
         goalSelector.addGoal(1, new FloatGoal(this));
-        goalSelector.addGoal(2, new MeleeAttackGoal(this, kind == Kind.BANSHEE ? 0.3 : 1, kind == Kind.SPECTRE));
+        goalSelector.addGoal(2, kind == Kind.POLTERGEIST ? new PoltergeistMeleeGoal(this)
+                : new MeleeAttackGoal(this, kind == Kind.BANSHEE ? 0.3 : 1, kind == Kind.SPECTRE));
         if (kind == Kind.SPECTRE) goalSelector.addGoal(3, new MoveTowardsTargetGoal(this, 1, 32));
-        if (kind == Kind.POLTERGEIST && getNavigation() instanceof GroundPathNavigation navigation) {
-            navigation.setCanOpenDoors(true);
-            goalSelector.addGoal(3, new OpenDoorGoal(this, true));
+        if (getNavigation() instanceof GroundPathNavigation navigation) {
+            navigation.setCanOpenDoors(kind != Kind.SPECTRE);
+            navigation.setAvoidSun(kind == Kind.BANSHEE);
+            if (kind == Kind.POLTERGEIST) goalSelector.addGoal(3, new OpenDoorGoal(this, true));
         }
-        goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1));
-        goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8));
-        goalSelector.addGoal(6, new RandomLookAroundGoal(this));
+        int wanderPriority = kind == Kind.BANSHEE ? 3 : 4;
+        goalSelector.addGoal(wanderPriority, new RandomStrollGoal(this, 1));
+        goalSelector.addGoal(wanderPriority + 1, new LookAtPlayerGoal(this, Player.class, 8));
+        goalSelector.addGoal(wanderPriority + 2, new RandomLookAroundGoal(this));
 
-        HurtByTargetGoal retaliation = new HurtByTargetGoal(this);
-        targetSelector.addGoal(2, kind == Kind.SPECTRE ? retaliation : retaliation.setAlertOthers());
+        HurtByTargetGoal retaliation = new HurtByTargetGoal(this) {
+            @Override
+            protected void alertOther(Mob mob, LivingEntity attacker) {
+                // The original species had separate classes. Forge sees all three as SpectralUndead.
+                if (mob instanceof SpectralUndead ally && ally.kind == kind && ally.canAttack(attacker)) {
+                    super.alertOther(ally, attacker);
+                }
+            }
+        };
+        targetSelector.addGoal(1, kind == Kind.SPECTRE ? retaliation : retaliation.setAlertOthers());
         if (kind != Kind.POLTERGEIST) {
-            targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false,
+            targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false,
                     target -> !InfernalInfusion.owns(this, target)));
         }
+    }
+
+    private static final class PoltergeistMeleeGoal extends MeleeAttackGoal {
+        private PoltergeistMeleeGoal(SpectralUndead mob) {
+            super(mob, 1, false);
+        }
+
+        @Override
+        public boolean canUse() {
+            return mob.getTarget() instanceof Player && super.canUse();
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return mob.getTarget() instanceof Player && super.canContinueToUse();
+        }
+    }
+
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        return new GroundPathNavigation(this, level) {
+            @Override
+            protected void trimPath() {
+                int length = path.getNodeCount();
+                super.trimPath();
+                if (kind == Kind.BANSHEE && path.getNodeCount() < length) {
+                    // The original sun restriction also removes the shaded node before the first sunny node.
+                    path.truncateNodes(Math.max(0, path.getNodeCount() - 1));
+                }
+            }
+        };
     }
 
     public static AttributeSupplier.Builder attributes(Kind kind) {
@@ -213,7 +256,7 @@ public final class SpectralUndead extends Monster {
         if (sentinelTargeting == null) {
             // The original Sentinel gives creatures of the intruder's class priority over the usual player target.
             sentinelTargeting = new NearestAttackableTargetGoal<>(this, intruder.getClass(), 0, true, false, null);
-            targetSelector.addGoal(2, sentinelTargeting);
+            targetSelector.addGoal(1, sentinelTargeting);
         }
         setTarget(intruder);
     }
@@ -295,7 +338,6 @@ public final class SpectralUndead extends Monster {
 
     @Override
     public boolean doHurtTarget(Entity target) {
-        if (kind == Kind.BANSHEE) return false;
         if (kind == Kind.SPECTRE && target instanceof LivingEntity living) {
             if (!canAttack(living)) return false;
             float damage = Math.max(1, living.getMaxHealth() * 0.15F)
@@ -304,7 +346,7 @@ public final class SpectralUndead extends Monster {
             int knockback = EnchantmentHelper.getKnockbackBonus(this);
             if (knockback > 0) {
                 float yaw = getYRot() * Mth.DEG_TO_RAD;
-                living.knockback(knockback * 0.5, Mth.sin(yaw), -Mth.cos(yaw));
+                living.push(-Mth.sin(yaw) * knockback * 0.5F, 0.1, Mth.cos(yaw) * knockback * 0.5F);
                 setDeltaMovement(getDeltaMovement().multiply(0.6, 1, 0.6));
             }
             int fire = EnchantmentHelper.getFireAspect(this);
@@ -323,12 +365,12 @@ public final class SpectralUndead extends Monster {
         super.aiStep();
         if (throwAnimation > 0) throwAnimation--;
         if (!(level() instanceof ServerLevel level) || !isAlive()) return;
-        if (sentinelTarget != null && (getTarget() == null || sentinelTargeting == null)
+        if (sentinelTarget != null && sentinelTargeting == null
                 && level.getEntity(sentinelTarget) instanceof LivingEntity target && target.isAlive()) {
             followSentinelTarget(target);
         }
         if (temporary() && (--lifeTicks <= 0 || getTarget() == null || !getTarget().isAlive())) {
-            level.sendParticles(ParticleTypes.POOF, getX(), getY(0.5), getZ(), 16, 0.4, 0.5, 0.4, 0.05);
+            WitcheryNetwork.sendSpiritDeparture(level, position());
             discard();
             return;
         }
@@ -343,7 +385,7 @@ public final class SpectralUndead extends Monster {
             Vec3 center = position();
             for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, new AABB(center, center).inflate(6),
                     candidate -> candidate.isAlive() && distanceToSqr(candidate) <= 36
-                            && (candidate instanceof Player || candidate == getTarget() || candidate == getLastHurtByMob()))) {
+                            && (candidate instanceof Player || candidate == getTarget()))) {
                 nearby = true;
                 if (!(target instanceof Player) || !target.getItemBySlot(EquipmentSlot.HEAD).is(WitcheryItems.getRequired("earmuffs").get())) {
                     spectralTouch(target, 0.1F);

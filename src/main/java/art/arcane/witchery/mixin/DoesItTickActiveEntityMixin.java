@@ -12,6 +12,7 @@ import art.arcane.witchery.entity.InfernoSplatter;
 import art.arcane.witchery.entity.Leonard;
 import art.arcane.witchery.entity.LostSoul;
 import art.arcane.witchery.entity.MirrorFace;
+import art.arcane.witchery.entity.SpectralUndead;
 import art.arcane.witchery.entity.SymbolProjectile;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.entity.WingedMonkey;
@@ -40,6 +41,7 @@ abstract class DoesItTickActiveEntityMixin {
                 || (entity instanceof Leonard leonard && leonard.hasActiveEntrance())
                 || (entity instanceof DreamSpirit spirit && spirit.hasTimedLife())
                 || (entity instanceof LostSoul soul && soul.hasTimedLife())
+                || (entity instanceof SpectralUndead undead && undead.temporary())
                 || entity instanceof DarkMark
                 || entity instanceof Illusion
                 || entity instanceof MirrorFace

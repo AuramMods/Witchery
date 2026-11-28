@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Spectral pursuit, retaliation, and Sentinel departure (2026-11-28)
+
+- Poltergeists pursue only players for melee, and each spirit species follows its original revenge rules. Banshees remove the last shaded cell from a route into open sky, and their ordinary melee hit knocks back with zero damage. A previous attacker alone is outside their scream's targeting rule. See [spectral pursuit](PORTING.md#spectral-pursuit-retaliation-and-sentinel-departure-2026-11-28).
+- Both headless profiles recovered the same Sentinel UUID and its designated intruder after a dedicated restart. The countdown advanced with no players online. Removing the intruder removed the Sentinel without dropping Spectral Dust. The departure uses the original silent explosion cue.
+- Local Java 17 reobfuscation and all 722 required Forge GameTests passed. The packaged servers matched 19 original measurements on JAR SHA-256 `210620d25c743480ae6f1e7862bedc82ed0399fc9a74ea580b30f8758da3491c`. Fixture sources and logs are under `build/qa-spectral-pursuit/`.
+
 ## Nightmare armor swipes and enchanted strikes (2026-11-28)
 
 - The original server measured an armor toss 0.3 blocks below the player's eyes with 0.2 upward motion and a 40-tick pickup delay. The main inventory charm skips the armor roll. The Forge port takes those rolls from the world, preserves the named and worn stack, and leaves it equipped if Forge denies the drop.

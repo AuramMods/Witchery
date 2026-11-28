@@ -291,11 +291,17 @@ public final class FetishBehaviorTests {
                     helper.assertTrue(guards.stream().allMatch(guard -> guard.isAlive() && guard.getTarget() == pig),
                             "Reloaded guards restore the intruder and continue to ignore the trusted player");
                 }
+                var guard = guards.get(0);
+                guard.setNoAi(true);
+                guard.setTarget(null);
+                guard.aiStep();
+                helper.assertTrue(pig.isAlive() && guard.isRemoved(),
+                        "An active guard that loses its target expires without relocking to the saved intruder");
             } finally {
                 owner.discard();
                 pig.discard();
             }
-            guards.forEach(level::tickNonPassenger);
+            guards.stream().filter(SpectralUndead::isAlive).forEach(level::tickNonPassenger);
             helper.assertTrue(guards.stream().allMatch(SpectralUndead::isRemoved), "The guards vanish with their target");
         }).thenSucceed();
     }
