@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Naturally sourced Dream travel (2026-11-28)
+
+- The same seed-`209376` clean Forge save on package `ea77acfa` brewed six more Mutandis. A successful application grew Hawthorn at `-255 72 320`. Harvested Rowan and Hawthorn saplings yielded two Whiffs of Magic and one Odour of Purity. Milk from a natural cow and three fired jars yielded three Purified Milk. The player put the six original offerings into the Kettle and bottled and drank one of three finished servings.
+- The clean survival player reopened in the nightmare after a headless dedicated restart, harvested generated cotton at `-260 72 328`, and returned with an Icy Needle. The Overworld inventory kept the Diamond Pickaxe, seven Cookies, two Brews of Love and the Disturbed Cotton. The Dream inventory retained one Mutandis. Both client runs stayed hidden and muted. Read the [Dream milestone](PORTING.md#naturally-sourced-dream-travel-2026-11-28) and the logs under `build/qa-natural-dream/clean`.
+- The saved workshop has two more servings of Brew of Sleeping at `-262 65 280`. The player has Snowbell seeds for another waking needle. The generated cotton survey is in `clean/native-cotton-survey.log`. The archived save in `build/qa-natural-dream/dream-parked-checkpoint` contains the state before waking. Copied Auram opened it on the same reobfuscated JAR and verified the sleeping body UUID, two Kettle servings, fire, and saved Charged Attuned Stone.
+
 ## Naturally sourced Kettle and Brew of Love (2026-11-28)
 
 - Continue the seed-`209376` natural progression in `build/qa-natural-dream/clean`. The Heart Glyph and Charged Attuned Stone survived the package change to `ea77acfa`. The player mined seven Raw Iron, one Diamond and one Raw Gold, gathered lava and mineshaft string, and crafted and lit the Kettle. The Kettle is at `-262 65 280` and the Chest at `-261 63 280` holds the Charged Attuned Stone and Witchery Cauldron.
