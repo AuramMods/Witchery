@@ -2,6 +2,12 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Owl and Winged Monkey flight behavior (2026-11-28)
+
+- The shared flight goals restore defense, owner following, and canopy landing. The original and both packaged profiles matched 28 measurements. Regular server ticks in clean Forge and copied Auram reproduced both owner rejoins and both owner-defense hits. The [comparison](PORTING.md#owl-and-winged-monkey-defense-owner-following-and-perching-2026-11-28) records the flight adaptations and remaining companion checks.
+- All 709 required Forge GameTests passed, including delivered parcels and Taglock and Waystone transport. The local reobfuscated JAR has SHA-256 `613a01c81b7c378c58631556c92c9930a78d767dc838f84b705b2c6053d3bceb`. The fixture sources and results are in `build/qa-flying-companion-behavior/`.
+- Both profiles saved the tested animals with their owner UUIDs, standing state, and health. Copied Auram's server thread finished saving all dimensions and stopped. Its remaining worker threads held the process open until the test runner timed out.
+
 ## Named Witchery chests in converted saves (2026-11-28)
 
 - The original server wrote two named chests with two diamonds in slot five. The Leech Chest's literal name resembled a formatted component. The packaged Forge import preserved it as literal text and retained the Refilling Chest's name and elapsed refill time.

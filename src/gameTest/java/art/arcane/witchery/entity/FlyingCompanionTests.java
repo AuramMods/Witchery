@@ -23,6 +23,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -37,6 +38,105 @@ import java.util.UUID;
 public final class FlyingCompanionTests {
     private static final String TEMPLATE = "qa_flying_route";
     private static final InteractionHand HAND = InteractionHand.MAIN_HAND;
+
+    @GameTest(template = TEMPLATE)
+    public static void flyingCompanionsFollowAndRejoinAtOriginalDistances(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(new BlockPos(8, 0, 8)).atY(185);
+        Vec3 start = Vec3.atBottomCenterOf(origin);
+        for (var type : List.of(WitcheryEntities.OWL.get(), WitcheryEntities.WINGED_MONKEY.get())) {
+            TamableAnimal pet = type.create(level);
+            var owner = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FlyingFollow"));
+            pet.tame(owner);
+            pet.setOrderedToSit(false);
+            pet.setPos(start);
+            owner.setPos(start.add(13.99, 0, 0));
+            level.addNewPlayer(owner);
+            try {
+                var follow = new FlyingCompanionGoals.Follow(pet);
+                helper.assertTrue(!follow.canUse(), "The owner has not crossed the follow boundary");
+                owner.setPos(start.add(14, 0, 0));
+                helper.assertTrue(follow.canUse(), "Follow starts at fourteen blocks");
+                follow.start();
+                follow.tick();
+                helper.assertTrue(pet.getDeltaMovement().distanceTo(new Vec3(0.1, 0.1, 0)) < 0.00001,
+                        "The unobstructed owner attracts the original forward and upward impulse");
+                for (int tick = 0; tick < 9; tick++) follow.tick();
+                helper.assertTrue(pet.getDeltaMovement().distanceTo(new Vec3(0.1, 0.1, 0)) < 0.00001,
+                        "The next impulse waits ten ticks");
+                follow.tick();
+                helper.assertTrue(pet.getDeltaMovement().distanceTo(new Vec3(0.2, 0.2, 0)) < 0.00001,
+                        "The next impulse arrives on tick ten");
+                owner.setPos(start.add(5, 0, 0));
+                helper.assertTrue(!follow.canContinueToUse(), "The owner is already within five blocks");
+                follow.stop();
+
+                owner.setPos(start.add(16, 0, 0));
+                BlockPos firstLanding = owner.blockPosition().offset(-2, 0, -2);
+                level.setBlockAndUpdate(firstLanding.below(), Blocks.STONE.defaultBlockState());
+                level.setBlockAndUpdate(owner.blockPosition().offset(-2, -1, -1), Blocks.STONE.defaultBlockState());
+                helper.assertTrue(follow.canUse(), "The distant owner is a valid follow target");
+                follow.start();
+                follow.tick();
+                helper.assertTrue(pet.position().distanceTo(Vec3.atBottomCenterOf(firstLanding).add(0, 0.01, 0)) < 0.00001,
+                        "Sixteen blocks triggers the first supported diagonal landing cell");
+            } finally {
+                level.removePlayerImmediately(owner, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void flyingCompanionsPursueStrikeAndPerch(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(new BlockPos(8, 0, 8)).atY(185);
+        Vec3 start = Vec3.atBottomCenterOf(origin);
+        for (var type : List.of(WitcheryEntities.OWL.get(), WitcheryEntities.WINGED_MONKEY.get())) {
+            TamableAnimal pet = type.create(level);
+            Pig target = EntityType.PIG.create(level);
+            pet.setPos(start);
+            target.setPos(start.add(6, 0, 0));
+            pet.setTarget(target);
+            var defend = new FlyingCompanionGoals.Defend(pet);
+            helper.assertTrue(defend.canUse(), "A living target starts air pursuit");
+            defend.start();
+            defend.tick();
+            helper.assertTrue(pet.getDeltaMovement().distanceTo(new Vec3(0.15, 0, 0)) < 0.00001,
+                    "An open route gives the original pursuit impulse");
+            pet.setDeltaMovement(Vec3.ZERO);
+            level.setBlockAndUpdate(origin.east(3), Blocks.STONE.defaultBlockState());
+            defend.start();
+            defend.tick();
+            helper.assertTrue(pet.getDeltaMovement().equals(Vec3.ZERO), "A wall blocks the flight impulse");
+            level.removeBlock(origin.east(3), false);
+            target.setPos(start.add(1.1, 0, 0));
+            defend.tick();
+            helper.assertTrue(target.getHealth() == 8, "A strike within reach deals two damage");
+            for (int tick = 0; tick < 19; tick++) {
+                target.invulnerableTime = 0;
+                defend.tick();
+            }
+            helper.assertTrue(target.getHealth() == 8, "The 20-tick strike interval protects against a second immediate hit");
+            target.invulnerableTime = 0;
+            defend.tick();
+            helper.assertTrue(target.getHealth() == 6, "The next strike waits twenty ticks");
+
+            pet.setDeltaMovement(Vec3.ZERO);
+            BlockPos leaves = origin.offset(-4, -1, -4);
+            level.setBlockAndUpdate(leaves, Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
+            var land = new FlyingCompanionGoals.Land(pet);
+            helper.assertTrue(land.canContinueToUse(), "An airborne companion can look for a perch");
+            land.start();
+            land.tick();
+            helper.assertTrue(pet.getDeltaMovement().x < 0 && pet.getDeltaMovement().y > 0 && pet.getDeltaMovement().z < 0
+                            && Math.abs(pet.getDeltaMovement().length() - 0.05) < 0.00001,
+                    "The tree canopy takes precedence over a vertical descent");
+            pet.setPos(Vec3.atBottomCenterOf(leaves.above()));
+            helper.assertTrue(!land.canContinueToUse(), "The companion is landed on the leaf canopy");
+        }
+        helper.succeed();
+    }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 450)
     public static void taglockMonkeyFetchesItsSubjectAfterReload(GameTestHelper helper) {

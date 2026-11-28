@@ -27,12 +27,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
@@ -46,6 +43,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
@@ -81,11 +79,9 @@ public final class WitchOwl extends WitchPet {
                 return isTame() && isOrderedToSit();
             }
         });
-        goalSelector.addGoal(3, new MeleeAttackGoal(this, 1, true));
+        FlyingCompanionGoals.register(goalSelector, this);
         goalSelector.addGoal(4, new TemptGoal(this, 0.6, FOOD, true));
-        goalSelector.addGoal(5, new FollowOwnerGoal(this, 1, 14, 5, true));
         goalSelector.addGoal(8, new BreedGoal(this, 0.8));
-        goalSelector.addGoal(10, new WaterAvoidingRandomFlyingGoal(this, 0.8));
         goalSelector.addGoal(11, new LookAtPlayerGoal(this, Player.class, 10, 0.2F));
         targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
         targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
@@ -99,6 +95,12 @@ public final class WitchOwl extends WitchPet {
         flying.setCanFloat(true);
         flying.setCanPassDoors(true);
         return flying;
+    }
+
+    @Override
+    public void travel(Vec3 input) {
+        if (isNoGravity()) super.travel(input);
+        else FlyingCompanionGoals.travel(this, input);
     }
 
     @Override

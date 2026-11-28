@@ -739,6 +739,12 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 - [x] Run the checked-in flight tests with `./gradlew runGameTestServer`. Each launch creates its own world under `build/run-gametest`. The four cases cover the monkey's saved Taglock route and Waystone ride, the Owl's older Waystone and parcel return, and the Owl's Ink attack on a bound pig.
 - [x] Pass all 432 required checks in a fresh world with the broader development GameTest suite. This run includes the main Witchery namespace and the separate Winged Monkey, Owl delivery, Mindrake, Treefyd, Polynesia Charm and Workroom import suites.
 
+### Owl and Winged Monkey defense, owner following, and perching (2026-11-28)
+
+- Both species add the original pursuit impulse on a clear course and back off when an obstacle blocks it. Contact deals two damage and waits 20 ticks before another strike. Following begins at 14 blocks, continues beyond five, and tries to rejoin the owner at 16. The landing search tries the diagonal columns in order and checks five heights in each one.
+- Idle flyers search loaded leaf canopies for a perch and fall back to descending toward the ground. Their flight uses the original drag in air, water and lava. On selecting a new roaming waypoint, the port uses its direction immediately so the first movement is relative to the chosen destination. Modern path navigation drives the existing Waystone, Taglock, food temptation and breeding paths.
+- Reobfuscated clean Forge and copied Auram matched all 28 follow, pursuit, strike and canopy samples from the original dedicated server. In both profiles, regular server ticks brought the companions to their owners and each companion struck the owner's target for two damage. All 709 required Forge GameTests passed locally, including the existing Winged Monkey and Owl transport cases. The scratch fixtures and logs are under `build/qa-flying-companion-behavior/`.
+
 ## Treefyd (2026-11-21)
 
 - [x] Restore the two-seed recipe with four Mutandis Extremis, Reek of Misfortune, Embermoss, a Globe Artichoke, Mandrake Root, and Tear of the Goddess. The muted client put supplied ingredients in the survival crafting table, took both seeds, and planted one on a grass block. It grew an owned 50-health Treefyd and left short grass.
@@ -3974,6 +3980,8 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [Owl and Winged Monkey defense, owner following, and perching](#owl-and-winged-monkey-defense-owner-following-and-perching-2026-11-28) against both original creature classes.
+  - [ ] Compare the Owl and Winged Monkey's original food temptation and breeding goals and the long-range Owl waypoint landing.
   - [x] Compare [Demon melee and Lilith ranged combat](#demon-melee-and-lilith-ranged-combat-2026-11-28), including the Devil's Tongue Charm, seeded attack choices, and shared fireball trajectories.
   - [x] Compare [Demon village movement, pursuit, and completed bargains](#demon-bargains-and-mob-cast-symbols-2026-11-28), including the 51st-tick escape.
   - [x] Compare [mob-cast Mystic Branch symbols](#demon-bargains-and-mob-cast-symbols-2026-11-28) for random draw ownership, launch position, and both Soulfire volley sizes.
