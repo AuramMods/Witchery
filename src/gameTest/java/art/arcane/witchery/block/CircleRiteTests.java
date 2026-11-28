@@ -1150,22 +1150,33 @@ public final class CircleRiteTests {
         Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
             if (event.getLevel() == level && event.getPosition().equals(Vec3.atLowerCornerOf(center))) sounds.add(event);
         };
+        var refundArea = new AABB(center).inflate(4);
+        var refunds = new ArrayList<ItemEntity>();
+        Consumer<EntityJoinLevelEvent> capture = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof ItemEntity item
+                    && refundArea.contains(item.position())) {
+                refunds.add(item);
+            }
+        };
         MinecraftForge.EVENT_BUS.addListener(listener);
+        MinecraftForge.EVENT_BUS.addListener(capture);
         try {
             tick(level, center, heart, 1);
-            helper.assertTrue(sounds.isEmpty() && drops(helper).isEmpty(), "The rite waits for its 30-tick pulse");
+            helper.assertTrue(sounds.isEmpty() && refunds.isEmpty(), "The rite waits for its 30-tick pulse");
             tick(level, center, heart, 1);
             helper.assertTrue(sounds.size() == 2 && sounds.stream().allMatch(event -> event.getSound() != null
                             && event.getSound().value() == SoundEvents.NOTE_BLOCK_SNARE.value() && event.getNewVolume() == 0.5F
                             && event.getNewPitch() >= 1F / 3 && event.getNewPitch() <= 0.5F),
                     "The coven check and the Heart Glyph each play the original snare");
-            helper.assertTrue(drops(helper).size() == 1 && ItemStack.matches(drops(helper).get(0).getItem(), soup)
-                            && !heart.saveWithoutMetadata().contains("Rite", Tag.TAG_STRING),
-                    "The aborted rite refunds the held offering once and ends");
+            helper.assertTrue(refunds.size() == 1 && ItemStack.matches(refunds.get(0).getItem(), soup),
+                    "The aborted rite launches exactly one copy of the held offering");
+            helper.assertFalse(heart.saveWithoutMetadata().contains("Rite", Tag.TAG_STRING), "The aborted rite ends");
         } finally {
             MinecraftForge.EVENT_BUS.unregister(listener);
+            MinecraftForge.EVENT_BUS.unregister(capture);
         }
-        helper.succeed();
+        helper.succeedWhen(() -> helper.assertTrue(drops(helper).contains(refunds.get(0)),
+                "The returned offering is tracked in the world"));
     }
 
     @GameTest(template = TEMPLATE, batch = "witchery_legacy_ward_gate")

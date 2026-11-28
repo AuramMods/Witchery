@@ -1432,6 +1432,13 @@ On clean Forge, the player selected and activated Bat form through ordinary cont
 - [x] Import an original Forge 1.7.10 chest containing three raw and eleven cooked servings. Both IDs, stack counts, and custom item tags survived import and a normal restart. Data generation and the reobfuscated JAR succeeded with Java 17.
 - [x] Pass all 78 clean Forge GameTests and all 82 with Thaumaturge, Lithostitched, and Curios. Verify the settled Coven Witch fixture across 56 additional replays.
 
+## Item stack and anvil behavior (2026-11-27)
+
+- [x] Compare all 217 original Witchery item IDs in 436 default and subtype stacks, covering stack limits, wear, declared use, enchantability, recipe remainders, and food properties. Compare ten anvil materials across 57 items with an original wear value.
+- [x] Restore 64-item stacks for the Seer Stone, Necromantic Stone, and identical Vampire Journals. Restore the Huntsman's Spear enchantability of 15 and its wooden-plank anvil repair. Keep the spear's 1,561 durability and restore the original declared bow pose on the two instant grenades.
+- [x] Return the Atlas and its selected biome, bookmark, and custom data through Forge's crafting remainder hook. Take two Biome Notes from the crafting result slot in a single grid and preserve the original four Atlases and their data. Verify the spear repair and level debit through the anvil result slot.
+- [x] Compare eight single- and two-serving Meaty Stew cases in Survival and Creative, plus fourteen portions of the original edible Ingredient subtypes. Both stews spend one serving and return the bowl directly to inventory. A full inventory drops the bowl at the original offset. The vanilla Raw Mutton mapping accounts for the difference in its saturation.
+
 ## Water and Lava Diviners (2026-11-22)
 
 - [x] Craft the Water Diviner with four sticks, four Water Bottles, and Tear of the Goddess in the original pattern. Craft the Lava Diviner with three Blaze Rods and either a fresh or worn Water Diviner. Restore the original names and use the existing original item sprites.
@@ -3480,6 +3487,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Demon Heart animation, particles and heartbeat and the three altar displays](#demon-heart-and-mounted-altar-items-2026-11-27), including collision, Forge placement protection, and recovery after restart.
   - [x] Compare [block collision, lighting and redstone](#block-collision-lighting-and-redstone-2026-11-27) across the original block inventory and repair the collision and emission mismatches found in valid placed states.
 - [ ] Item behavior parity pass (including metadata-subitem conversions).
+  - [x] Compare [item stack and anvil behavior](#item-stack-and-anvil-behavior-2026-11-27) for all original IDs and sampled subtypes, with live anvil, crafting, and food interactions.
   - [x] Compare melee modifiers, sword guards, and Boline harvest against the [melee tool measurements](#melee-tools-and-boline-harvesting-2026-11-26).
   - [x] Restore the Crossbow's [launch position, velocity, spread, and firing cue](#crossbow-launch-physics-2026-11-27). The seeded original replay covers four draw durations and the three Splitting trajectories with a moving shooter.
   - [x] Compare [Bolt flight in air and water](#crossbow-bolt-flight-in-water-2026-11-27), including the original wet cell bounds, water drag, current, water entry and exit, and stone impact.

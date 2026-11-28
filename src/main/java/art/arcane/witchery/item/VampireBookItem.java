@@ -30,7 +30,7 @@ public final class VampireBookItem extends Item {
             "transfix", "knockback", "speed", "resistsun", "smashstone", "bats", "mesmerize", "maker", "maker2", "finalpowers");
 
     public VampireBookItem() {
-        super(new Properties().stacksTo(1));
+        super(new Properties());
     }
 
     @Override

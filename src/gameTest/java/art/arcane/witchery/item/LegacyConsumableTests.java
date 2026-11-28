@@ -383,8 +383,9 @@ public final class LegacyConsumableTests {
                             && player.getInventory().countItem(Items.BOWL) == 1,
                     "Eating from a stack saves the other serving and returns a bowl");
             consume(helper, player, rawStack);
-            helper.assertTrue(player.getMainHandItem().is(Items.BOWL) && player.getInventory().countItem(Items.BOWL) == 2,
-                    "The last serving leaves its bowl in hand");
+            helper.assertTrue(player.getMainHandItem().isEmpty() && player.getInventory().getItem(1).is(Items.BOWL)
+                            && player.getInventory().getItem(1).getCount() == 2,
+                    "The last serving returns its bowl to the inventory and empties the hand");
 
             food.setFoodLevel(0);
             food.setSaturation(0);
@@ -399,9 +400,22 @@ public final class LegacyConsumableTests {
             var dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(3),
                     item -> item.getItem().is(Items.BOWL));
             helper.assertTrue(player.getMainHandItem().is(cooked) && cookedStack.getCount() == 1
-                            && dropped.size() == 1 && dropped.get(0).getItem().getCount() == 1,
+                            && dropped.size() == 1 && dropped.get(0).getItem().getCount() == 1
+                            && dropped.get(0).position().equals(player.position().add(0.5, 1.5, 0.5)),
                     "A full inventory drops exactly one bowl and keeps the remaining stew");
             dropped.get(0).discard();
+
+            inventory.clearContent();
+            player.gameMode.changeGameModeForPlayer(GameType.CREATIVE);
+            food.setFoodLevel(0);
+            food.setSaturation(0);
+            var creativeStack = new ItemStack(cooked, 2);
+            consume(helper, player, creativeStack);
+            helper.assertTrue(creativeStack.getCount() == 1 && inventory.getItem(1).is(Items.BOWL),
+                    "The first Creative serving spends one stew and returns one bowl");
+            consume(helper, player, creativeStack);
+            helper.assertTrue(player.getMainHandItem().isEmpty() && inventory.getItem(1).getCount() == 2,
+                    "Creative also spends the last serving and keeps both returned bowls");
             helper.succeed();
         } finally {
             player.discard();

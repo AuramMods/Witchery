@@ -39,6 +39,16 @@ public final class HuntsmanSpearItem extends GuardingSwordItem {
     public boolean isFoil(ItemStack stack) { return true; }
 
     @Override
+    public int getEnchantmentValue() {
+        return Tiers.WOOD.getEnchantmentValue();
+    }
+
+    @Override
+    public boolean isValidRepairItem(ItemStack spear, ItemStack material) {
+        return Tiers.WOOD.getRepairIngredient().test(material);
+    }
+
+    @Override
     protected void onGuardHit(ServerPlayer wearer, DamageSource source) {
         if (!(source.getEntity() instanceof LivingEntity attacker) || !attacker.isAlive() || attacker == wearer
                 || wearer.getRandom().nextDouble() >= 0.25) return;

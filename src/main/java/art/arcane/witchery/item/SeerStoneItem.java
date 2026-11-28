@@ -29,7 +29,7 @@ public final class SeerStoneItem extends Item {
     private static final int USE_TICKS = 1200;
 
     public SeerStoneItem() {
-        super(new Properties().stacksTo(1));
+        super(new Properties());
     }
 
     @Override

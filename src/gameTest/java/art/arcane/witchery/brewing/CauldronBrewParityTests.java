@@ -12,6 +12,7 @@ import art.arcane.witchery.block.entity.SlurpBlockEntity;
 import art.arcane.witchery.block.entity.WitchesCauldronBlockEntity;
 import art.arcane.witchery.capability.WitcheryPlayerDataProvider;
 import art.arcane.witchery.config.WitcheryServerConfig;
+import art.arcane.witchery.entity.Ent;
 import art.arcane.witchery.entity.ThrownBrew;
 import art.arcane.witchery.item.WitcheryIngredient;
 import art.arcane.witchery.registry.WitcheryBlocks;
@@ -61,6 +62,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.PlayLevelSoundEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fluids.FluidStack;
@@ -677,6 +679,9 @@ public final class CauldronBrewParityTests {
         level.setBlockAndUpdate(center.south(), Blocks.CRIMSON_STEM.defaultBlockState());
         level.setBlockAndUpdate(center.west(), Blocks.STRIPPED_WARPED_HYPHAE.defaultBlockState());
         level.setBlockAndUpdate(landing.below(), Blocks.STONE.defaultBlockState());
+        for (var pos : BlockPos.betweenClosed(landing.offset(-1, 0, -1), landing.offset(1, 2, 1))) {
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        }
 
         var brewer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FellingTester"));
         Consumer<BlockEvent.BreakEvent> protection = event -> {
@@ -684,9 +689,17 @@ public final class CauldronBrewParityTests {
                 event.setCanceled(true);
             }
         };
+        var awakenings = new ArrayList<Ent>();
+        var searchArea = new AABB(landing).inflate(2);
+        Consumer<EntityJoinLevelEvent> capture = event -> {
+            if (event.getLevel() == level && event.getEntity() instanceof Ent ent && searchArea.contains(ent.position())) {
+                awakenings.add(ent);
+            }
+        };
         var config = WitcheryServerConfig.ALLOW_INTER_MOD_BLOCK_BREAK_EVENTS;
         boolean previous = config.get();
         MinecraftForge.EVENT_BUS.addListener(protection);
+        MinecraftForge.EVENT_BUS.addListener(capture);
         try {
             config.set(true);
             var brew = BrewMixture.from(List.of(new ItemStack(Items.NETHER_WART), new ItemStack(Items.GUNPOWDER),
@@ -701,21 +714,25 @@ public final class CauldronBrewParityTests {
                             && level.getBlockState(center.south()).is(Blocks.CRIMSON_STEM)
                             && level.getBlockState(center.west()).is(Blocks.STRIPPED_WARPED_HYPHAE),
                     "Protected Witchwood, planks and fungal trunks stay in place");
-            var ent = level.getEntities(WitcheryEntities.ENT.get(), new AABB(landing), entity -> true);
-            helper.assertTrue(ent.size() == 1 && ent.get(0).blockPosition().equals(landing),
+            helper.assertTrue(awakenings.size() == 1 && awakenings.get(0).blockPosition().equals(landing),
                     "The accepted log harvest rolls one Ent into its original landing column");
-            ent.get(0).discard();
         } finally {
             MinecraftForge.EVENT_BUS.unregister(protection);
+            MinecraftForge.EVENT_BUS.unregister(capture);
             config.set(previous);
             brewer.discard();
         }
+        var awakened = awakenings.get(0);
+        awakened.setNoAi(true);
         helper.succeedWhen(() -> {
+            var tracked = level.getEntities(WitcheryEntities.ENT.get(), searchArea, ent -> ent == awakened);
+            helper.assertTrue(tracked.size() == 1, "The awakened Ent is tracked after entering the destination chunk");
             var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(protectedLog).inflate(4),
                     entity -> entity.getItem().is(witchLog.asItem()));
             helper.assertTrue(drops.size() == 1 && ItemStack.isSameItemSameTags(drops.get(0).getItem(),
                             WitchWoodType.HAWTHORN.stack(witchLog)),
                     "The cast drops one Hawthorn log and leaves the protected log in place");
+            awakened.discard();
         });
     }
 

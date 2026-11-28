@@ -10,8 +10,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -24,6 +28,28 @@ import java.util.UUID;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class HuntsmanSpearTests {
+    @GameTest(template = "qa_coven_arena")
+    public static void spearUsesItsOriginalAnvilMaterialAndEnchantability(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = helper.makeMockSurvivalPlayer();
+        player.experienceLevel = 10;
+        var pos = helper.absolutePos(new BlockPos(4, 3, 4));
+        level.setBlockAndUpdate(pos, Blocks.ANVIL.defaultBlockState());
+        var anvil = new AnvilMenu(1, player.getInventory(), ContainerLevelAccess.create(level, pos));
+        var spear = new ItemStack(WitcheryItems.getRequired("huntsmanspear").get());
+        spear.setDamageValue(600);
+        helper.assertTrue(spear.getMaxDamage() == 1561 && spear.getItem().getEnchantmentValue() == 15,
+                "The spear has the original durability and enchantability");
+        anvil.getSlot(0).set(spear);
+        anvil.getSlot(1).set(Items.DIAMOND.getDefaultInstance());
+        helper.assertTrue(anvil.getSlot(2).getItem().isEmpty(), "A diamond does not repair the spear");
+        anvil.getSlot(1).set(Items.OAK_PLANKS.getDefaultInstance());
+        var repaired = anvil.getSlot(2).getItem();
+        helper.assertTrue(repaired.is(spear.getItem()) && repaired.getDamageValue() == 210 && anvil.getCost() == 1,
+                "A plank restores a quarter of the original durability through the anvil");
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void spearRetaliatesWhileGuarding(GameTestHelper helper) {
         var level = helper.getLevel();

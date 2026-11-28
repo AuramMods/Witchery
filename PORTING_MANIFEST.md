@@ -459,6 +459,10 @@ Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com
 ## Item Registry List (`WitcheryItems`)
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryItems.java`
 
+The original and Forge item property probes resolved 436 stacks across the 217 original IDs, including all 163 Ingredient and 12 Poppet subtypes. The anvil matrix compares ten materials for each of the 57 items that report an original wear value. The Huntsman's Spear keeps its diamond durability and attack properties, with its original wooden-plank repair and enchantability of 15. The Atlas returns one copy with the original data for every copy spent in a crafting slot. Identical Vampire Journals, Seer Stones and Necromantic Stones each stack to 64.
+
+The remaining property differences reflect the saved representations and compatibility items. Poppets keep the original thousand-point wear in `WITCDamage`, and the Voodoo Poppet is the only variant that enters the original 80-tick draw. The Cane Sword only exposes the guard while drawn. Endless Water represents the original 100 available pours with modern durability. The hidden Mirror and Demon Heart block item IDs retain the interactions from earlier port saves. Edible Ingredient subtypes expose modern food properties on their separate items. The original Raw Mutton subtype has a saturation modifier of 0.2. Its vanilla replacement uses 0.3.
+
 The original `witchhat`, `witchrobe`, `necromancerrobe`, and `babashat` IDs equip the modeled clothing. The corresponding ingredient mapping uses `impregnated_leather` for 72 and `brew_of_raising` for 65. `necromantic_stone` issues commands to owned undead.
 Witch clothing models hide on invisible wearers and remain visible on armor stands. Vanilla armor visibility and crouching scale the legacy mob search for nearby invisible players. The existing `VampireLevel` data also controls whether zombies target a visible player at rank ten.
 

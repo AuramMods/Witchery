@@ -91,6 +91,16 @@ public final class GuideBookItem extends Item {
     }
 
     @Override
+    public boolean hasCraftingRemainingItem(ItemStack stack) {
+        return volume == Volume.ATLAS;
+    }
+
+    @Override
+    public ItemStack getCraftingRemainingItem(ItemStack stack) {
+        return hasCraftingRemainingItem(stack) ? stack.copyWithCount(1) : ItemStack.EMPTY;
+    }
+
+    @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         if (volume != Volume.ATLAS || level == null) return;
         var biome = BiomeBookIndex.selectedBiome(stack, level.registryAccess());

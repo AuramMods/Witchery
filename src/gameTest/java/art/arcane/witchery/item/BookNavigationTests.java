@@ -234,16 +234,24 @@ public final class BookNavigationTests {
             }
         }, 2, 2);
         grid.setItem(0, Items.PAPER.getDefaultInstance());
-        grid.setItem(1, ItemStack.of(book.save(new CompoundTag())));
+        grid.setItem(1, ItemStack.of(book.copyWithCount(4).save(new CompoundTag())));
         var recipe = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, grid, level).orElseThrow();
         ItemStack note = recipe.assemble(grid, access);
         helper.assertTrue(snowyBeach.equals(BiomeNoteItem.biomeId(note)), "The reopened atlas copies the same biome");
+        var remainder = recipe.getRemainingItems(grid);
+        helper.assertTrue(remainder.get(0).isEmpty() && ItemStack.matches(remainder.get(1), book)
+                        && grid.getItem(1).getCount() == 4,
+                "The Atlas returns one exact copy through the crafting remainder hook");
+        helper.assertTrue(ItemStack.matches(grid.getItem(1).getCraftingRemainingItem(), remainder.get(1)),
+                "The Atlas also exposes its remainder to other crafting recipes");
         helper.succeed();
     }
 
     @GameTest(template = "qa_coven_arena")
     public static void vampireJournalKeepsTheOriginalPageTrail(GameTestHelper helper) {
         ItemStack journal = new ItemStack(WitcheryItems.getRequired("vampirebook").get());
+        journal.setCount(4);
+        helper.assertTrue(journal.getMaxStackSize() == 64, "Identical journals retain their original stack limit");
         ListTag original = new ListTag();
         for (String page : List.of("ritual1", "ritual2", "ritual3")) original.add(StringTag.valueOf(page));
         journal.getOrCreateTag().put("pageStack", original);
@@ -255,7 +263,8 @@ public final class BookNavigationTests {
         helper.assertTrue(VampireBookItem.setBookmark(journal, "transfix"), "The first restored page unlocks the next chapter");
         ItemStack reopened = ItemStack.of(journal.save(new CompoundTag()));
         ListTag trail = reopened.getTag().getList("pageStack", Tag.TAG_STRING);
-        helper.assertTrue(trail.size() == 6 && trail.getString(4).equals("ritual5") && trail.getString(5).equals("transfix"),
+        helper.assertTrue(reopened.getCount() == 4 && trail.size() == 6
+                        && trail.getString(4).equals("ritual5") && trail.getString(5).equals("transfix"),
                 "The serialized book holds all pages along the trail");
         helper.assertTrue(VampireBookItem.setBookmark(reopened, "toc"), "The cover is always available");
         helper.assertTrue(VampireBookItem.bookmark(reopened) == 0 && VampireBookItem.tornPages(reopened) == 1

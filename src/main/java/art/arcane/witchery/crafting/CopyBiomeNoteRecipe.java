@@ -5,7 +5,6 @@ import art.arcane.witchery.item.BiomeNoteItem;
 import art.arcane.witchery.item.GuideBookItem;
 import art.arcane.witchery.registry.WitcheryItems;
 import art.arcane.witchery.registry.WitcheryRecipes;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -37,18 +36,6 @@ public final class CopyBiomeNoteRecipe extends CustomRecipe {
         var note = new ItemStack(WitcheryItems.getRequired("biomenote").get());
         note.getOrCreateTag().putString(BiomeNoteItem.BIOME, biome.toString());
         return note;
-    }
-
-    @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingContainer grid) {
-        var remaining = super.getRemainingItems(grid);
-        for (int slot = 0; slot < grid.getContainerSize(); slot++) {
-            var stack = grid.getItem(slot);
-            if (GuideBookItem.volume(stack) == GuideBookItem.Volume.ATLAS) {
-                remaining.set(slot, stack.copyWithCount(1));
-            }
-        }
-        return remaining;
     }
 
     private static ItemStack findAtlas(CraftingContainer grid) {

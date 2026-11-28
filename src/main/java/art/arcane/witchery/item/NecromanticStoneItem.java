@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 
 public final class NecromanticStoneItem extends Item {
     public NecromanticStoneItem() {
-        super(new Properties().stacksTo(1).rarity(Rarity.UNCOMMON));
+        super(new Properties().rarity(Rarity.UNCOMMON));
     }
 
     @Override
