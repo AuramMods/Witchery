@@ -660,6 +660,14 @@ Clean Forge and copied Auram match all 42 cases measured from the original handl
 - [x] Save a live Mystic Branch rite after the first Grassper offering. The packaged restart emptied the second Grassper and completed the rite. A separate Grassper still held one ingot and emitted comparator output 15. The client released the bat from the restored snare, and the bat kept its shop stock flag.
 - [x] Pass all 84 required Forge GameTests and package the reobfuscated JAR on Java 17.
 
+## Original path-checked creature targeting (2026-11-28)
+
+- The 0.24.1 server exercised 38 cases across Treefyds, Imps, Hobgoblins, village vampires, Village Guards, Baba Yaga, Witch Hunters and Nightmares. All eight required a reachable path. Hobgoblin raiders also needed sight and three party members. The other seven acquired their eligible target behind a short wall when a detour existed. Read `build/qa-legacy-hunters/native/measured.log`.
+- The port uses the same path endpoint check as the Ent, Hellhound and Mindrake. It preserves the creature-specific ownership, prey, and village filters. A tamed Imp can select its existing commanded target. A Village Guard can hunt a reachable Hobgoblin and still excludes Creepers, Witch Hunters, and village vampires from its ordinary hunt. Vampire acquisition selects villagers during village hunts. Retaliation remains a separate combat goal.
+- The preceding clean Forge package diverged in 19 cases. On the rebuilt package, a live Village Guard took the route around the fixture wall and brought the Hobgoblin from 20 to 16 health. The control Creeper kept all 20 health. The fixture supplied the terrain and entities. The survival client stayed hidden, muted and unfocused. Read `build/qa-legacy-hunters/{clean-baseline/verify,clean-fixed/verify,play/guard-live}.log`.
+- Clean Forge and copied Auram matched all 38 original cases on the exact reobfuscated JAR, SHA-256 `be180eceeace2d386e0a0228711e38871ce6fd966a52c2e437412bf7b978f2e2`. The copied-pack replay allowed successive target scans under its existing Mobtimizations configuration. Read `build/qa-legacy-hunters/pack-fixed/verify.log`.
+- All 687 required Forge GameTests passed locally. The two new tests cover all 38 acquisitions. The existing Spectre spawn test uses a clear landing pad and waits for the intruder and Sentinel to enter entity tracking before checking equipment. Read `build/qa-legacy-hunters/gametest-final.log`.
+
 ### Critter Snare and Plant Mine parity (2026-11-27)
 
 - The released 0.24.1 server checked 18 supports. A Critter Snare accepts motion-blocking supports, including both halves of a slab, fences, glass, leaves, and farmland. A Plant Mine uses the Forge Plains plant rule or accepts sand or mycelium. Its seven tested soils include podzol, farmland, and both colors of sand. Stone, glass, gravel, soul sand, and water rejected the mine.
@@ -3769,6 +3777,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [remaining creature-power casts](#remaining-creature-power-casts-2026-11-27). The original dedicated trace covers 24 buff, Squid and Creeper cases.
   - [x] Compare [passive creature-power and held-item movement](#passive-creature-powers-and-held-item-movement-2026-11-27). Clean Forge and copied Auram match all 42 original runtime cases and ten Branch and Brew Bag cases derived from the original code.
 - [ ] Entity AI/combat/spawn tuning parity.
+  - [x] Compare [original path-checked creature targeting](#original-path-checked-creature-targeting-2026-11-28) for Treefyds, Imps, Hobgoblins, village vampires, Village Guards, Baba Yaga, Witch Hunters and Nightmares.
   - [x] Compare [Hellhound and Mindrake target selection](#hellhound-and-mindrake-target-selection-2026-11-28), including open routes, detours, unreachable prey, tame state, distance and priority.
   - [x] Compare [Ent targeting, fertilization and death rewards](#ent-player-targeting-fertilization-and-death-rewards-2026-11-28), including a live survival pursuit around a wall.
   - [x] Compare [natural spawn eligibility](#natural-spawn-eligibility-2026-11-27) for Coven Witches, Dream Spirits, Hobgoblins, and Hellhounds.

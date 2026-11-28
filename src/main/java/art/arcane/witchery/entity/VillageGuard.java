@@ -40,7 +40,6 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -102,8 +101,8 @@ public final class VillageGuard extends PathfinderMob implements RangedAttackMob
         goalSelector.addGoal(12, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new DefendVillageGoal());
         targetSelector.addGoal(2, new HurtByTargetGoal(this, VillageGuard.class).setAlertOthers());
-        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, true,
-                entity -> entity instanceof Enemy));
+        targetSelector.addGoal(3, new ReachableTargetGoal<>(this, LivingEntity.class, false,
+                entity -> entity instanceof Enemy || entity instanceof Hobgoblin));
     }
 
     private boolean hasBow() {

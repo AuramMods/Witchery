@@ -41,7 +41,6 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TradeWithPlayerGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.AbstractVillager;
@@ -168,7 +167,7 @@ public final class Hobgoblin extends AbstractVillager {
         goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 3));
         goalSelector.addGoal(10, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Villager.class, 10, true, true,
+        targetSelector.addGoal(2, new ReachableTargetGoal<>(this, Villager.class, true,
                 villager -> !isLeashed() && !isTrading() && hasRaidingParty()));
     }
 

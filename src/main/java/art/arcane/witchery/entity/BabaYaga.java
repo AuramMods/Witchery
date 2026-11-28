@@ -35,7 +35,6 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
@@ -95,7 +94,7 @@ public final class BabaYaga extends Monster implements RangedAttackMob {
         goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(4, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 1, false, true, this::canAttack));
+        targetSelector.addGoal(2, new ReachableTargetGoal<>(this, Player.class, false, this::canAttack));
     }
 
     public void bind(ServerPlayer player) {

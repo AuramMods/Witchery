@@ -76,24 +76,32 @@ public final class SpectreEquipmentTests {
     @GameTest(template = "qa_coven_arena", batch = "witchery_spectre_spawn_paths")
     public static void spectralSummonsInitializePermanentAndTemporarySpectres(GameTestHelper helper) {
         var level = helper.getLevel();
-        var center = helper.absolutePos(new BlockPos(4, 13, 4));
+        var center = helper.absolutePos(new BlockPos(4, 0, 4)).atY(220);
         for (var floor : BlockPos.betweenClosed(center.offset(-3, -1, -3), center.offset(3, -1, 3))) {
             level.setBlockAndUpdate(floor, Blocks.STONE.defaultBlockState());
+            level.setBlockAndUpdate(floor.above(), Blocks.AIR.defaultBlockState());
+            level.setBlockAndUpdate(floor.above(2), Blocks.AIR.defaultBlockState());
         }
         var brazier = SpectralUndead.summonNear(level, center, SpectralUndead.Kind.SPECTRE, SpectralUndead.Summoning.BRAZIER);
         var stone = SpectralUndead.summonNear(level, center, SpectralUndead.Kind.SPECTRE, SpectralUndead.Summoning.STONE);
-        var intruder = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(4, 13, 4));
-        SpectralUndead.summonSentinel(level, intruder);
-        var sentinels = level.getEntitiesOfClass(SpectralUndead.class, new AABB(center).inflate(4), SpectralUndead::temporary);
-        helper.assertTrue(brazier != null && stone != null && sentinels.size() == 1, "All three Spectre summons reach the level");
-        var sentinel = sentinels.get(0);
-        for (var spirit : List.of(brazier, stone, sentinel)) {
-            var bonuses = spirit.getAttribute(Attributes.FOLLOW_RANGE).getModifiers(AttributeModifier.Operation.MULTIPLY_BASE);
-            helper.assertTrue(spirit.obscured() && bonuses.stream().anyMatch(bonus -> bonus.getName().equals("Random spawn bonus")),
-                    "Each summon initializes the Spectre's original spawn bonus and appearance");
-            spirit.discard();
-        }
-        intruder.discard();
-        helper.succeed();
+        helper.assertTrue(brazier != null, "The Brazier Spectre reaches the level");
+        helper.assertTrue(stone != null, "The Spectral Stone Spectre reaches the level");
+        var intruder = EntityType.PIG.create(level);
+        intruder.setPos(Vec3.atBottomCenterOf(center));
+        intruder.setNoAi(true);
+        level.addFreshEntity(intruder);
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(level.getEntity(intruder.getUUID()) == intruder, "The intruder is tracked");
+        }).thenExecute(() -> SpectralUndead.summonSentinel(level, intruder)).thenWaitUntil(() -> {
+            var sentinels = level.getEntitiesOfClass(SpectralUndead.class, new AABB(center).inflate(4), SpectralUndead::temporary);
+            helper.assertTrue(sentinels.size() == 1, "The Sentinel Spectre reaches the level");
+            for (var spirit : List.of(brazier, stone, sentinels.get(0))) {
+                var bonuses = spirit.getAttribute(Attributes.FOLLOW_RANGE).getModifiers(AttributeModifier.Operation.MULTIPLY_BASE);
+                helper.assertTrue(spirit.obscured() && bonuses.stream().anyMatch(bonus -> bonus.getName().equals("Random spawn bonus")),
+                        "Each summon initializes the Spectre's original spawn bonus and appearance");
+                spirit.discard();
+            }
+            intruder.discard();
+        }).thenSucceed();
     }
 }
