@@ -4,13 +4,15 @@ import art.arcane.witchery.block.entity.CrystalBallBlockEntity;
 import art.arcane.witchery.item.TaglockItem;
 import art.arcane.witchery.item.WaystoneItem;
 import art.arcane.witchery.item.WitcheryIngredient;
+import art.arcane.witchery.network.WitcheryNetwork;
 import art.arcane.witchery.power.AltarPower;
 import art.arcane.witchery.prediction.Predictions;
+import art.arcane.witchery.registry.WitcherySounds;
 import art.arcane.witchery.world.ScryingView;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.SectionPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -82,11 +84,11 @@ public final class CrystalBallBlock extends BaseEntityBlock {
                 player.startUsingItem(hand);
             } else if (level instanceof ServerLevel server && player instanceof ServerPlayer reader) {
                 if (!hasBinding) {
-                    failure(reader, "taglock_unbound");
+                    failure(reader, "taglock_unbound", true);
                 } else if (consumePower(server, pos, reader)) {
                     boolean opened = taglock ? ScryingView.startTaglock(reader, hand, TaglockItem.resolveTarget(server, held))
                             : ScryingView.start(reader, hand, WaystoneItem.location(held));
-                    if (!opened) failure(reader, taglock ? "taglock_unavailable" : "waystone_out_of_range");
+                    if (!opened) failure(reader, taglock ? "taglock_unavailable" : "waystone_out_of_range", true);
                 }
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
@@ -94,31 +96,36 @@ public final class CrystalBallBlock extends BaseEntityBlock {
         if (level instanceof ServerLevel server && player instanceof ServerPlayer reader
                 && server.getBlockEntity(pos) instanceof CrystalBallBlockEntity ball) {
             if (!ball.ready(server.getGameTime())) {
-                failure(reader, "recharging");
+                failure(reader, "recharging", false);
             } else if (consumePower(server, pos, reader)) {
                 Vec3 center = Vec3.atCenterOf(pos);
-                ServerPlayer subject = server.getEntitiesOfClass(ServerPlayer.class, new AABB(center, center).inflate(5, 2, 5),
-                        nearby -> nearby != reader && nearby.isAlive() && !nearby.isSpectator()).stream()
-                        .min(Comparator.comparingDouble(nearby -> nearby.distanceToSqr(center))).orElse(reader);
-                Predictions.read(subject, reader);
+                Predictions.read(predictionSubject(server, reader, center), reader);
                 ball.readAt(server.getGameTime());
-                server.sendParticles(ParticleTypes.POOF, center.x, pos.getY() + 0.28, center.z,
-                        16, 0.2, 0.2, 0.2, 0.03);
-                server.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.7F, 1.15F);
+                WitcheryNetwork.sendCrystalBallReading(server, Vec3.atBottomCenterOf(pos).add(0, 0.2, 0));
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
+    private static ServerPlayer predictionSubject(ServerLevel level, ServerPlayer reader, Vec3 center) {
+        // The original compared the reader's distance on every iteration, so the first visitor won.
+        return level.getEntitiesOfClass(ServerPlayer.class, new AABB(center, center).inflate(5, 2, 5),
+                        visitor -> visitor != reader && visitor.isAlive() && !visitor.isSpectator()).stream()
+                .min(Comparator.comparingInt((ServerPlayer visitor) -> visitor.chunkPosition().x)
+                        .thenComparingInt(visitor -> visitor.chunkPosition().z)
+                        .thenComparingInt(visitor -> SectionPos.blockToSectionCoord(visitor.getBlockY())))
+                .orElse(reader);
+    }
+
     private static boolean consumePower(ServerLevel level, BlockPos pos, ServerPlayer reader) {
         var altar = AltarPower.nearest(level, pos);
         if (altar != null && altar.consumePower(500)) return true;
-        failure(reader, "nopower");
+        failure(reader, "nopower", false);
         return false;
     }
 
-    private static void failure(ServerPlayer player, String reason) {
-        player.displayClientMessage(Component.translatable("witchery.prediction." + reason).withStyle(ChatFormatting.GRAY), true);
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.PLAYERS, 0.7F, 1);
+    private static void failure(ServerPlayer player, String reason, boolean overlay) {
+        player.displayClientMessage(Component.translatable("witchery.prediction." + reason).withStyle(ChatFormatting.GRAY), overlay);
+        WitcherySounds.playLegacyPlayerCue(player, SoundEvents.NOTE_BLOCK_SNARE.value(), SoundSource.RECORDS, 0.5F);
     }
 }

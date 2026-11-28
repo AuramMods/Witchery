@@ -1,7 +1,10 @@
 package art.arcane.witchery.prediction;
 
 import art.arcane.witchery.Witchery;
+import art.arcane.witchery.block.entity.AltarBlockEntity;
+import art.arcane.witchery.block.entity.CrystalBallBlockEntity;
 import art.arcane.witchery.entity.WitchOwl;
+import art.arcane.witchery.registry.WitcheryBlocks;
 import art.arcane.witchery.registry.WitcheryEntities;
 import art.arcane.witchery.registry.WitcherySounds;
 import com.mojang.authlib.GameProfile;
@@ -15,7 +18,9 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -30,7 +35,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -50,6 +57,70 @@ import java.util.function.Consumer;
 @GameTestHolder(Witchery.MODID)
 @PrefixGameTestTemplate(false)
 public final class PredictionSaveTests {
+    @GameTest(template = "qa_coven_arena", batch = "witchery_crystal_reading")
+    public static void crystalBallReadsTheFirstVisitorAndKeepsOriginalFailureCue(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var chunk = new ChunkPos(helper.absolutePos(new BlockPos(5, 4, 5)));
+        var pos = new BlockPos(chunk.getMiddleBlockX(), 170, chunk.getMiddleBlockZ());
+        level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
+        var state = WitcheryBlocks.getRequired("crystalball").get().defaultBlockState();
+        level.setBlockAndUpdate(pos, state);
+        var ball = (CrystalBallBlockEntity) level.getBlockEntity(pos);
+        long now = level.getGameTime();
+        ball.readAt(now - 101);
+        var core = pos.south(3);
+        var altarState = WitcheryBlocks.getRequired("altar").get().defaultBlockState();
+        for (BlockPos part : BlockPos.betweenClosed(core, core.offset(2, 0, 1))) level.setBlockAndUpdate(part, altarState);
+        AltarBlockEntity.form(level, core);
+        var altar = (AltarBlockEntity) level.getBlockEntity(core);
+        var saved = altar.saveWithoutMetadata();
+        saved.putFloat("Power", 900);
+        altar.load(saved);
+
+        var reader = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "CrystalReader"));
+        var first = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "CrystalFirst"));
+        var nearer = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "CrystalNearer"));
+        reader.setPos(Vec3.atBottomCenterOf(pos.south(2)));
+        first.setPos(Vec3.atBottomCenterOf(pos.west(4)));
+        nearer.setPos(Vec3.atBottomCenterOf(pos.east()));
+        Predictions.attune(reader);
+        var firstReadings = store(first);
+        var nearerReadings = store(nearer);
+        var sounds = new ArrayList<PlayLevelSoundEvent.AtEntity>();
+        Consumer<PlayLevelSoundEvent.AtEntity> listener = event -> {
+            if (event.getEntity() == reader) sounds.add(event);
+        };
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        MinecraftForge.EVENT_BUS.addListener(listener);
+        try {
+            level.addNewPlayer(first);
+            level.addNewPlayer(nearer);
+            level.random.setSeed(42);
+            state.use(level, reader, InteractionHand.MAIN_HAND, hit);
+            helper.assertTrue(firstReadings.size() == 1 && nearerReadings.isEmpty() && altar.power() == 400
+                            && level.random.nextInt(1000) == 763,
+                    "A paid reading chooses the first visitor in the section and makes just the original weighted draw");
+
+            for (boolean recharging : new boolean[]{true, false}) {
+                if (!recharging) ball.readAt(now - 101);
+                level.random.setSeed(42);
+                state.use(level, reader, InteractionHand.MAIN_HAND, hit);
+                helper.assertTrue(altar.power() == 400 && level.random.nextInt(1000) == 248,
+                        "Cooldown and insufficient power keep the altar charge and draw the original pitch");
+            }
+            helper.assertTrue(sounds.size() == 2 && sounds.stream().allMatch(sound ->
+                            sound.getSound().value() == SoundEvents.NOTE_BLOCK_SNARE.value()
+                                    && sound.getSource() == SoundSource.RECORDS && sound.getNewVolume() == 0.5F
+                                    && sound.getNewPitch() == 0.36662757F),
+                    "Both failures play the original half-volume Snare at the reader");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            level.removePlayerImmediately(first, Entity.RemovalReason.DISCARDED);
+            level.removePlayerImmediately(nearer, Entity.RemovalReason.DISCARDED);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "qa_coven_arena")
     public static void readingsKeepRegisteredLegacyForecasts(GameTestHelper helper) {
         List<String> messages = new ArrayList<>();

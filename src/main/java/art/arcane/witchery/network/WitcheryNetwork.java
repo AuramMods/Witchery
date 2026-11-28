@@ -640,6 +640,10 @@ public final class WitcheryNetwork {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 0.5, 2, 16);
     }
 
+    public static void sendCrystalBallReading(ServerLevel level, Vec3 center) {
+        sendParticlesAround(level, LEGACY_EXPLOSION_PARTICLE_ID, LEGACY_LEVEL_UP_SOUND_ID, center, 0.2, 0.2, 16);
+    }
+
     public static void sendWitchHunterArrival(ServerLevel level, Vec3 center, double height) {
         sendParticlesAround(level, LEGACY_SMOKE_PARTICLE_ID, LEGACY_NO_SOUND_ID, center, 1, height, 16);
     }

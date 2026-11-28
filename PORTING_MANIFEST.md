@@ -1365,6 +1365,20 @@ Mining predictions extend Forge block loot after the harvest. Deepslate and its 
 
 Buried Treasure fills the chest immediately with `witchery:chests/mineshaft_corridor` on the same world random source that advanced the forecast. The `mineshaftCorridor` hook prepares one level-30 book from the original 24 enchantments before drawing three to six rolls. Each roll draws the weighted item, inclusive quantity and slot. A repeated slot can overwrite an earlier stack. The book stores its enchantments by their current registry IDs. Datapacks can replace the table. Previously placed chests keep their contents or their saved loot table. [Forge 1.7.10 ChestGenHooks](https://raw.githubusercontent.com/MinecraftForge/MinecraftForge/1.7.10/src/main/java/net/minecraftforge/common/ChestGenHooks.java)
 
+### Prediction trigger comparison
+
+| IDs | Original callback and modern gameplay path | Runtime evidence |
+| --- | --- | --- |
+| 1, 2, 3, 10, 11, 12 | `PredictionFight` and `PredictionArrow` use attacker identity or arrow damage, with a forced zombie, skeleton, Ent, hostile Baba Yaga, allied Baba Yaga, or tamed wolf. `Predictions.onHurt` and the periodic encounter handler cover both paths. | [Hurt order](PORTING.md#hurt-and-harvest-predictions-2026-11-26), [live fights and visits](PORTING.md#crystal-ball-readings-2026-11-20) |
+| 4, 15 | `PredictionFall` uses fall damage. `PredictionWet` checks wetness on the world pulse. Both can force terrain changes through `Predictions.sinkGround`. | [Fall, Wet, and protected terrain](PORTING.md#crystal-ball-readings-2026-11-20) |
+| 5, 6, 7, 17 | `PredictionMultiMine` adds bonus ore on harvest. `PredictionLootModifier` dispatches `Predictions.onHarvest` and `MiningPredictions.addOre` with the broken block and its actual drops. | [Mining order and reward cases](PORTING.md#hurt-and-harvest-predictions-2026-11-26), [survival ore forecasts](PORTING.md#crystal-ball-readings-2026-11-20) |
+| 8 | `PredictionBuriedTreasure` creates a filled chest under a dirt harvest. `MiningPredictions.buryChest` checks the surrounding pocket and Forge protection before placement. | [Covered air and water pockets and original loot](PORTING.md#crystal-ball-readings-2026-11-20) |
+| 9 | `PredictionFallInLove` rolls on the periodic pulse. `PredictedCourtship` manages the suitor, birth, cooldown, and another adult pursuit. | [Original pulses and two survival births](PORTING.md#prediction-reading-and-courtship-comparison-2026-11-27) |
+| 13, 14 | `PredictionRescue` summons a temporary Owl or a wild Wolf against the creature that caused the player's injury. `Predictions.onHurt` preserves the original order and RNG. | [Hurt and rescue callbacks](PORTING.md#hurt-and-harvest-predictions-2026-11-26), [dedicated survival rescue](PORTING.md#crystal-ball-readings-2026-11-20) |
+| 16 | `PredictionNetherTrip` becomes eligible after visiting the Nether. An overdue Overworld forecast simulates one tick of portal contact and attempts to summon a Blaze. Nether entry fulfills the reading on the next pulse. | [Portal and Blaze replay](PORTING.md#crystal-ball-readings-2026-11-20) |
+
+The placed Crystal Ball uses the original first visitor in the chunk and section search order. Modern spectators and dead players are excluded. A paid read still emits its cue when the target cannot receive a prediction due to missing training. Both cooldown and insufficient power send their original chat messages and the shared Snare cue. See the [visitor and cue replay](PORTING.md#crystal-ball-visitors-and-cues-2026-11-27).
+
 ## Creature Power Registry
 Source: `/Users/cyberpwn/development/workspace/AuramMods/Witchery/old-1.7.10/com/emoniph/witchery/WitcheryRecipes.java`
 
