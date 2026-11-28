@@ -304,6 +304,7 @@ public final class WitcheryNetwork {
     }
 
     public static void sendDreamAtmosphere(ServerPlayer player, int nightmareLevel) {
+        if (player.connection == null || !player.connection.connection.isConnected()) return;
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new DreamAtmospherePacket(nightmareLevel));
     }
 

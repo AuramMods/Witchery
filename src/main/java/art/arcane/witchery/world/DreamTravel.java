@@ -125,7 +125,7 @@ public final class DreamTravel {
     }
 
     public static boolean isNightmare(ServerLevel level) {
-        return level.dimension().equals(WitcheryDimensions.DREAM) && level.players().stream().anyMatch(DreamTravel::isNightmare);
+        return DreamAtmosphere.mode(level) != 0;
     }
 
     public static boolean isNightmare(ServerPlayer player) {
@@ -133,17 +133,19 @@ public final class DreamTravel {
     }
 
     public static boolean hasNightmare(ServerPlayer player) {
-        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD).getBoolean("Nightmare");
+        return nightmareMode(player) != 0;
     }
 
     public static boolean isDemonicNightmare(ServerLevel level) {
-        return level.dimension().equals(WitcheryDimensions.DREAM)
-                && level.players().stream().anyMatch(DreamTravel::isDemonicNightmare);
+        return DreamAtmosphere.mode(level) == 2;
     }
 
     private static boolean isDemonicNightmare(ServerPlayer player) {
-        return isNightmare(player)
-                && player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD).getBoolean("Demonic");
+        return player.level().dimension().equals(WitcheryDimensions.DREAM) && nightmareMode(player) == 2;
+    }
+
+    static int nightmareMode(ServerPlayer player) {
+        return nightmareLevel(player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getCompound(SPIRIT_WORLD));
     }
 
     public static void markNightmareKilled(ServerPlayer player) {

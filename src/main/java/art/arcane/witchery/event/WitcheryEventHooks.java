@@ -419,11 +419,13 @@ public final class WitcheryEventHooks {
 
     @SubscribeEvent
     public static void onDreamAtmosphereTick(TickEvent.LevelTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)
-                || !level.dimension().equals(WitcheryDimensions.DREAM) || level.getGameTime() % 20 != 0
-                || level.players().isEmpty()) {
+        if (!(event.level instanceof ServerLevel level) || !level.dimension().equals(WitcheryDimensions.DREAM)) {
             return;
         }
+        boolean sync = event.phase == TickEvent.Phase.START
+                ? DreamAtmosphere.tickServer(level) : level.getGameTime() % 20 == 0;
+        if (!sync) return;
+
         int mode = DreamAtmosphere.mode(level);
         for (ServerPlayer player : level.players()) {
             WitcheryNetwork.sendDreamAtmosphere(player, mode);
