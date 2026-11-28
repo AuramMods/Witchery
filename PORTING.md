@@ -307,6 +307,13 @@ Audit each remaining behavior family against the original inventory before build
 - Using either half checks for a face intersecting the upper panel's collision box. A stray face outside that panel does not block the conversation. The frame sends colored smoke and half-volume speech at its center. Only nearby viewers receive that cue. The prompt itself reaches the asker's dimension.
 - Two quiet clean Forge survival clients verified both halves, renewal after expiration, the prompt and cue audiences, and the same apparition after a headless restart. The quiet copied Auram client independently mounted and asked a Mirror on the same JAR. Its headless server expired a second face in a loaded chunk with zero players online. All 628 local Forge GameTests passed.
 
+### Mirror glass occupancy (2026-11-27)
+
+- The original Mirror tile checks for living entities on its first client tick and then every ten loaded ticks. Each half uses its own one-block-high slice, three blocks wide and extending four blocks past the front edge of the frame's block. The normal frame and the room exit both apply the secondary texture to the center glass of an occupied half.
+- The previous packaged renderer activated both halves for creatures behind the frame or occupying just one slice. It also reacted above and below the frame. The rebuilt client samples both halves on the original cadence and uses the same viewing bounds as the server's visitor list.
+- Muted background clients in clean Forge and copied Auram verified all 208 panel results per profile across both Mirror types, all four facings, and 13 positions and controls. The controls included an item, an empty scene, targets just beyond the front and side limits, and removal of the creature. The fixture placed both frame halves and moved the test entities on the dedicated server.
+- Both profiles used the same reobfuscated JAR, SHA-256 `baf7f0116466df132d7da43c35ba3007ea1242a919efd826e6d5537d9537d553`. Local Java 17 packaging and all 680 required Forge GameTests passed. The focus monitors recorded the same foreground process throughout.
+
 ## Torment Milestone (2026-11-19)
 
 - [x] Generate the six original 31-by-31-cell mazes at their legacy elevations. Restore the invisible solid force walls, Torment Stone floors, cache rooms, and two-block exit portals. The surrounding dimension is void.
@@ -3571,6 +3578,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare the [Mystic Branch projectile sprite, tints, scale, and camera poses](#mystic-branch-projectile-rendering-2026-11-27) along with normal survival casting and a saved projectile.
   - [x] Restore the [Dark Mark's original skull placement and smoke](#dark-mark-rendering-and-creature-response-2026-11-27), with a comparison of six native poses.
   - [x] Restore the [Mirror apparition's original head pivot, scale, and opacity](#mirror-apparition-parity-2026-11-27), with measured vertex positions during head and body rotation.
+  - [x] Restore the [Mirror glass viewing volume and update cadence](#mirror-glass-occupancy-2026-11-27) on both halves of the exterior and room frames.
   - [x] Restore the [sleeping body's fixed pose and death rotation](#sleeping-body-pose-and-anchor-2026-11-27). Compare the original skin coordinates and verify the actual parked body.
   - [x] Restore the [Crossbow Bolt's geometry, texture coordinates, and normals](#crossbow-bolt-rendering-2026-11-27). Compare the muted packaged client in flight and at impact.
   - [x] Restore [Soulfire's full-bright billboard and the Zombie apparition's forward-arm poses](#soulfire-billboard-and-zombie-apparition-pose-2026-11-27). Verify the near-camera sprite, smoke trail, and viewer-only rendering.
@@ -3677,7 +3685,7 @@ See the current [release checklist](#remaining-release-verification-2026-11-27) 
   - [x] Compare [Blight and Blindness actions](#blight-and-blindness-action-comparison-2026-11-26), including terrain and creature conversion.
   - [x] Compare [Hell on Earth terrain and fire](#hell-on-earth-terrain-comparison-2026-11-26), including fire support, soil rolls, and Forge protections.
   - [x] Compare [Rain of Toads](#rain-of-toads-action-comparison-2026-11-26), including the shower's coordinates and ordering, the coven refund, and expiration and poison.
-- [ ] Infusion, prediction, creature power parity.
+- [x] Complete the behavior comparison for all four Infusions, 17 Predictions and 25 Creature Powers. The registries, handler comparisons and milestone links below cover the registered actions. The final survival and multiplayer replay remains in Remaining Release Verification.
   - [x] Compare the [Witch's Hand and four infusion action paths](PORTING_MANIFEST.md#witchs-hand-action-comparison), including the original death callback, exhausted travel, release cooldown and uninfused cues.
   - [x] Compare the [17 prediction triggers](PORTING_MANIFEST.md#prediction-trigger-comparison) and restore [the original Crystal Ball visitor order and cues](#crystal-ball-visitors-and-cues-2026-11-27).
   - [x] Compare [hurt and harvest predictions](#hurt-and-harvest-predictions-2026-11-26), including saved order, damage sources, companion placement, and unfinished forecasts.

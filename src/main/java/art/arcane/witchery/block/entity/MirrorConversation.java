@@ -36,9 +36,7 @@ final class MirrorConversation {
     @Nullable private UUID fairest;
     private long lastFairestSpawn;
 
-    boolean rememberVisitors(ServerLevel level, BlockPos pos, Direction front) {
-        AABB viewingArea = new AABB(pos).inflate(front.getAxis() == Direction.Axis.Z ? 1 : 0, 0,
-                front.getAxis() == Direction.Axis.X ? 1 : 0).expandTowards(front.getStepX() * 4, 0, front.getStepZ() * 4);
+    boolean rememberVisitors(ServerLevel level, AABB viewingArea) {
         boolean changed = false;
         for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, viewingArea,
                 candidate -> candidate.isAlive() && !candidate.isSpectator())) {

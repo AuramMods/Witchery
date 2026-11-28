@@ -22,12 +22,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -38,6 +40,8 @@ public final class MirrorBlockEntity extends BlockEntity {
     @Nullable private UUID connectionId;
     private boolean connected;
     private boolean demonSlain;
+    private int glassTicks;
+    private boolean glassOccupied;
 
     public MirrorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -99,9 +103,25 @@ public final class MirrorBlockEntity extends BlockEntity {
 
     public static void tickMirror(Level level, BlockPos pos, BlockState state, MirrorBlockEntity mirror) {
         if (level instanceof ServerLevel server && !mirror.demonSlain && !server.dimension().equals(WitcheryDimensions.MIRROR)
-                && server.getGameTime() % 40 == 1 && mirror.conversation.rememberVisitors(server, pos, mirror.facing())) {
+                && server.getGameTime() % 40 == 1 && mirror.conversation.rememberVisitors(server, viewingArea(pos, mirror.facing()))) {
             mirror.setChanged();
         }
+    }
+
+    public static void tickGlass(Level level, BlockPos pos, BlockState state, MirrorBlockEntity mirror) {
+        if (mirror.glassTicks == 0) {
+            mirror.glassOccupied = !level.getEntitiesOfClass(LivingEntity.class, viewingArea(pos, mirror.facing())).isEmpty();
+        }
+        mirror.glassTicks = (mirror.glassTicks + 1) % 10;
+    }
+
+    public boolean hasGlassVisitor() {
+        return glassOccupied;
+    }
+
+    private static AABB viewingArea(BlockPos pos, Direction front) {
+        return new AABB(pos).inflate(front.getAxis() == Direction.Axis.Z ? 1 : 0, 0,
+                front.getAxis() == Direction.Axis.X ? 1 : 0).expandTowards(front.getStepX() * 4, 0, front.getStepZ() * 4);
     }
 
     public void bind(GlobalPos destination, UUID connection) {

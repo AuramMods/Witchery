@@ -2,6 +2,11 @@
 Always read this file first, then check `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING.md`, then `/Users/cyberpwn/development/workspace/AuramMods/Witchery/PORTING_MANIFEST.md` before making porting changes.
 Use Java 17 and the local Gradle cache. When resources change, run `runData` before a separate `jar reobfJar` invocation, then run the headless `runGameTestServer` task. Use isolated, muted background profiles for packaged client checks.
 
+## Mirror glass occupancy (2026-11-27)
+
+- The 0.24.1 Mirror tile checks for living entities on its first client tick and every ten loaded ticks. Each half samples its own three-block-wide, one-block-high slice in front of the panel. Both block IDs use the same cadence and viewing area. The Forge renderer draws the original secondary glass texture from that sampled state.
+- The earlier reobfuscated JAR lit both halves when the creature stood behind the frame or overlapped only one half. It also reacted to targets above and below. Clean Forge and copied Auram matched all 208 final panel checks per profile on the same rebuilt JAR. Local Java 17 reobfuscation and all 680 required Forge GameTests passed. See `build/qa-mirror-glass/{baseline,clean,pack}/`.
+
 ## Soulfire billboard and Zombie apparition pose (2026-11-27)
 
 - The 0.24.1 Zombie model trace covers four idle, walk and attack poses. The previous package matched 22 of 48 arm values. The rebuilt client matched all 48, including both shoulder pivots. The assigned viewer rendered 168 vertices, and the apparition assigned to another player rendered zero.

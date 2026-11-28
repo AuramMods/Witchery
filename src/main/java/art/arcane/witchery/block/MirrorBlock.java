@@ -78,9 +78,11 @@ public final class MirrorBlock extends BaseEntityBlock {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide() || state.getValue(HALF) != DoubleBlockHalf.UPPER) return null;
-        return unbreakable ? createTickerHelper(type, WitcheryBlockEntities.ROOM_MIRROR.get(), MirrorTravel::tickRoom)
-                : createTickerHelper(type, WitcheryBlockEntities.MIRROR.get(), MirrorBlockEntity::tickMirror);
+        BlockEntityType<MirrorBlockEntity> mirrorType = unbreakable
+                ? WitcheryBlockEntities.ROOM_MIRROR.get() : WitcheryBlockEntities.MIRROR.get();
+        if (level.isClientSide()) return createTickerHelper(type, mirrorType, MirrorBlockEntity::tickGlass);
+        if (state.getValue(HALF) != DoubleBlockHalf.UPPER) return null;
+        return createTickerHelper(type, mirrorType, unbreakable ? MirrorTravel::tickRoom : MirrorBlockEntity::tickMirror);
     }
 
     @Override

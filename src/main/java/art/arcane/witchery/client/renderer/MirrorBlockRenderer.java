@@ -18,11 +18,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.phys.AABB;
 
 public final class MirrorBlockRenderer implements BlockEntityRenderer<MirrorBlockEntity> {
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(
@@ -72,10 +69,7 @@ public final class MirrorBlockRenderer implements BlockEntityRenderer<MirrorBloc
         if (state.getValue(MirrorBlock.HALF) == DoubleBlockHalf.LOWER) pose.mulPose(Axis.ZP.rotationDegrees(180));
         pose.translate(0, 0, 0.44);
         model.render(pose, buffers.getBuffer(FRAME), light, overlay);
-        Level level = mirror.getLevel();
-        AABB viewingArea = new AABB(mirror.getBlockPos()).inflate(1, 0.8, 1)
-                .expandTowards(front.getStepX() * 3, 0, front.getStepZ() * 3);
-        if (level != null && !level.getEntitiesOfClass(LivingEntity.class, viewingArea, LivingEntity::isAlive).isEmpty()) {
+        if (mirror.hasGlassVisitor()) {
             pose.translate(0, 0, -0.005);
             glass.render(pose, buffers.getBuffer(GLASS), light, overlay);
         }
